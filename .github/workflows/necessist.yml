@@ -38,7 +38,7 @@ jobs:
 
       - name: Generate new Image Tag
         run: |
-          echo "NECESSIST_IMAGE_TAG=${{ env.ECR_REPOSITORY }}:aquifi-liquidity-necessist-${GITHUB_SHA::7}" >> $GITHUB_ENV
+          echo "NECESSIST_IMAGE_TAG=${{ env.ECR_REPOSITORY }}:uint1024-necessist-${GITHUB_SHA::7}" >> $GITHUB_ENV
 
       - name: Build and push docker image
         run: |
@@ -47,10 +47,10 @@ jobs:
 
       - name: Update k8s manifest
         run: |
-          sed -i "s|{{NECESSIST_IMAGE_TAG}}|${{ env.NECESSIST_IMAGE_TAG }}|g" k8s/aquifi-liquidity/necessist-job.yaml
+          sed -i "s|{{NECESSIST_IMAGE_TAG}}|${{ env.NECESSIST_IMAGE_TAG }}|g" k8s/uint1024/necessist-job.yaml
 
       - name: Run the necessist job with k8s
         run: |
-          kubectl delete job necessist-aquifi-liquidity --ignore-not-found=true -n dev
+          kubectl delete job necessist-uint1024 --ignore-not-found=true -n dev
           sleep 5
-          kubectl apply -f k8s/aquifi-liquidity/necessist-job.yaml -n dev
+          kubectl apply -f k8s/uint1024/necessist-job.yaml -n dev

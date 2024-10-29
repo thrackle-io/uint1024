@@ -9,11 +9,11 @@
   ],
   "replacementPatterns": [
     {
-      "pattern": "https://github.com/thrackle-io/aquifi-liquidity",
+      "pattern": "https://github.com/thrackle-io/uint1024",
       "replacement": ""
     },
     {
-      "pattern": "https://github.com/thrackle-io/aquifi-liquidity",
+      "pattern": "https://github.com/thrackle-io/uint1024",
       "replacement": ""
     },
     {
