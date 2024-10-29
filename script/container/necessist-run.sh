@@ -10,4 +10,4 @@ cargo install necessist
 necessist --verbose --framework foundry -- --ffi
 
 date=$(date +"%Y-%m-%d")
-aws s3 cp necessist.db s3://necessist-database/aquifi-liquidity-necessist-${date}.db
+aws s3 cp necessist.db s3://necessist-database/uint1024-necessist-${date}.db

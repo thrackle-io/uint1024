@@ -1,66 +1,27 @@
-## Foundry
+# Uint1024
 
-**Foundry is a blazing fast, portable and modular toolkit for Ethereum application development written in Rust.**
+## Getting started
 
-Foundry consists of:
+After cloning the repository, run the following command to install the dependencies:
 
--   **Forge**: Ethereum testing framework (like Truffle, Hardhat and DappTools).
--   **Cast**: Swiss army knife for interacting with EVM smart contracts, sending transactions and getting chain data.
--   **Anvil**: Local Ethereum node, akin to Ganache, Hardhat Network.
--   **Chisel**: Fast, utilitarian, and verbose solidity REPL.
+#### Python
 
-## Documentation
+First, create a virtual environment. There are many ways to do this, but the following command will create a virtual environment in the current directory:
 
-https://book.getfoundry.sh/
-
-## Usage
-
-### Build
-
-```shell
-$ forge build
+```bash
+python3 -m venv .
 ```
 
-### Test
+Now install the dependencies:
 
-```shell
-$ forge test
+```bash
+pip3 install -r requirements.txt
 ```
 
-### Format
+#### Node.js
 
-```shell
-$ forge fmt
-```
+This will install the Prettier package in the current directory.
 
-### Gas Snapshots
-
-```shell
-$ forge snapshot
-```
-
-### Anvil
-
-```shell
-$ anvil
-```
-
-### Deploy
-
-```shell
-$ forge script script/Counter.s.sol:CounterScript --rpc-url <your_rpc_url> --private-key <your_private_key>
-```
-
-### Cast
-
-```shell
-$ cast <subcommand>
-```
-
-### Help
-
-```shell
-$ forge --help
-$ anvil --help
-$ cast --help
+```bash
+npm install
 ```
