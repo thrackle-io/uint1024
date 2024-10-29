@@ -13,7 +13,7 @@ pyvenv.cfg
 **/__pycache__
 pyvenv.cfg
 lib/python3.*
-lib/forge-std
+
 lib/openzeppelin-contracts
 lib/solady
 bin/
