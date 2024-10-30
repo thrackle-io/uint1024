@@ -142,6 +142,7 @@ library Uint1024 {
             // Calculate the multiplicative inverse mod 2**256 of b. See the paper for details.
             //slither-disable-next-line incorrect-exp
             inv0 := xor(bx3Lo, 2) // 4
+            // slither-disable-end divide-before-multiply
         }
         uint two = 2;
         uint interimLo;
