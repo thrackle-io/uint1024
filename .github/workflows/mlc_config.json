@@ -5,6 +5,12 @@
     },
     {
       "pattern": "^http://localhost"
+    },
+    {
+      "pattern": "https://www.researchgate.net"
+    },
+    {
+      "pattern": "/Uint512.sol"
     }
   ],
   "replacementPatterns": [
