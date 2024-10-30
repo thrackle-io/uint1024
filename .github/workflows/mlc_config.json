@@ -11,6 +11,12 @@
     },
     {
       "pattern": "/Uint512.sol"
+    },
+    {
+      "pattern": "/Uint512Extended.sol"
+    },
+    {
+      "pattern": "/Uint1024.sol"
     }
   ],
   "replacementPatterns": [
