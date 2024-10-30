@@ -4,7 +4,7 @@ pragma solidity ^0.8.24;
 /**
  * @title Uint512 Math Library
  * @dev Ported from https://github.com/SimonSuckut/Solidity_Uint512 functions updated to internal for gas optimization
- * @author  @oscarsernarosero @mpetersoCode55 @cirsteve
+ * @author  @oscarsernarosero @mpetersoCode55 @cirsteve @Palmerg4
  */
 library Uint512 {
     /**
