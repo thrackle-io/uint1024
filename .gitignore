@@ -19,6 +19,7 @@ lib/solady
 bin/
 share/
 etc/
+necessist.db
 
 pyvenv.cfg
 
