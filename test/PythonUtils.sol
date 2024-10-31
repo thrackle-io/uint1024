@@ -26,6 +26,98 @@ contract PythonUtils is Test {
         return inputs;
     }
 
+    function _buildFFIDiv1024x1024In1024(
+        uint256 a0, 
+        uint256 a1, 
+        uint256 a2, 
+        uint256 a3, 
+        uint256 b0, 
+        uint256 b1, 
+        uint256 b2, 
+        uint256 b3
+    ) internal pure returns (string[] memory){
+        string[] memory inputs = new string[](10);
+        inputs[0] = "python3";
+        inputs[1] = "script/div_1024x1024_in_1024.py";
+        inputs[2] = vm.toString(a0);
+        inputs[3] = vm.toString(a1);
+        inputs[4] = vm.toString(a2);
+        inputs[5] = vm.toString(a3);
+        inputs[6] = vm.toString(b0);
+        inputs[7] = vm.toString(b1);
+        inputs[8] = vm.toString(b2);
+        inputs[9] = vm.toString(b3);
+        return inputs;
+    }
+
+    function _buildFFIMul512x512In1024(
+        uint256 a0, 
+        uint256 a1, 
+        uint256 a2,
+        uint256 b0, 
+        uint256 b1, 
+        uint256 b2
+    ) internal pure returns (string[] memory){
+        string[] memory inputs = new string[](8);
+        inputs[0] = "python3";
+        inputs[1] = "script/mul_512x512_in_1024.py";
+        inputs[2] = vm.toString(a0);
+        inputs[3] = vm.toString(a1);
+        inputs[4] = vm.toString(a2);
+        inputs[5] = vm.toString(b0);
+        inputs[6] = vm.toString(b1);
+        inputs[7] = vm.toString(b2);
+        return inputs;
+    }
+
+    function _buildFFIAdd1024x1024In1024(
+        uint256 a0, 
+        uint256 a1, 
+        uint256 a2, 
+        uint256 a3, 
+        uint256 b0, 
+        uint256 b1, 
+        uint256 b2, 
+        uint256 b3
+    ) internal pure returns (string[] memory){
+        string[] memory inputs = new string[](10);
+        inputs[0] = "python3";
+        inputs[1] = "script/add_1024x1024_in_1024.py";
+        inputs[2] = vm.toString(a0);
+        inputs[3] = vm.toString(a1);
+        inputs[4] = vm.toString(a2);
+        inputs[5] = vm.toString(a3);
+        inputs[6] = vm.toString(b0);
+        inputs[7] = vm.toString(b1);
+        inputs[8] = vm.toString(b2);
+        inputs[9] = vm.toString(b3);
+        return inputs;
+    }
+
+    function _buildFFISub1024x1024In1024(
+        uint256 a0, 
+        uint256 a1, 
+        uint256 a2, 
+        uint256 a3, 
+        uint256 b0, 
+        uint256 b1, 
+        uint256 b2, 
+        uint256 b3
+    ) internal pure returns (string[] memory){
+        string[] memory inputs = new string[](10);
+        inputs[0] = "python3";
+        inputs[1] = "script/sub_1024x1024_in_1024.py";
+        inputs[2] = vm.toString(a0);
+        inputs[3] = vm.toString(a1);
+        inputs[4] = vm.toString(a2);
+        inputs[5] = vm.toString(a3);
+        inputs[6] = vm.toString(b0);
+        inputs[7] = vm.toString(b1);
+        inputs[8] = vm.toString(b2);
+        inputs[9] = vm.toString(b3);
+        return inputs;
+    }
+
     /**
      * compares if 2 uints are similar enough.
      * @param x value to compare against *y*

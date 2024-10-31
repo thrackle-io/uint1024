@@ -14,14 +14,12 @@ def calculate_division(args):
     enc = encode(["(uint256,uint256)"], [(r0,r1)])
     print("0x" + enc.hex(), end="")
 
-
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("a0", type=int)
     parser.add_argument("a1", type=int)
     parser.add_argument("b", type=int)
     return parser.parse_args()
-
 
 def main():
     args = parse_args()
