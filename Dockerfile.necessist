@@ -1,0 +1,33 @@
+FROM debian:bookworm
+
+RUN apt update
+RUN apt install -y curl unzip git make procps python3 python3-pip python3.11-venv pkg-config libsqlite3-dev build-essential openssl libssl-dev npm 
+
+WORKDIR /usr/local/src/aquifi-liquidity
+
+COPY . .
+
+## Install Foundry via Thrackle's foundryup, using version set in foundry.lock (awk ignores comments)
+RUN curl -sSL https://raw.githubusercontent.com/thrackle-io/foundry/refs/heads/master/foundryup/foundryup -o foundryup && \
+  FOUNDRY_DIR=/usr/local bash ./foundryup --version $(awk '$1~/^[^#]/' ./script/foundryScripts/foundry.lock)
+
+RUN chmod a+x script/containers/necessist-run.sh
+
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+RUN unzip awscliv2.zip
+RUN ./aws/install
+
+ARG AWS_ACCESS_KEY_ID
+ARG AWS_SECRET_ACCESS_KEY
+ARG AWS_REGION
+
+ENV AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+ENV AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+ENV AWS_DEFAULT_REGION=${AWS_REGION}
+
+RUN curl https://sh.rustup.rs -sSf > rustup.sh
+RUN chmod a+x rustup.sh
+RUN ./rustup.sh -y
+
+# CMD ["tail", "-f", "/dev/null"]
+CMD ["./script/containers/necessist-run.sh"]
