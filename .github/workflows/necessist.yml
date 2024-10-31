@@ -1,56 +1,56 @@
-# name: Run Necessist
+name: Run Necessist
 
-# on:
-#   push:
-#     branches:
-#       - main
-#   workflow_dispatch:
-#   pull_request:
-#     types: [opened, synchronize, reopened, edited, ready_for_review]
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+  pull_request:
+    types: [opened, synchronize, reopened, edited, ready_for_review]
 
-# env:
-#   AWS_REGION: us-east-1
-#   ECR_REPOSITORY: ${{ secrets.K8S_AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/universus-tf
+env:
+  AWS_REGION: us-east-1
+  ECR_REPOSITORY: ${{ secrets.K8S_AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/universus-tf
 
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-#     environment:
-#       name: ${{ github.ref_name }}
-#     steps:
-#       - name: Checkout Repository
-#         uses: actions/checkout@v2
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    environment:
+      name: ${{ github.ref_name }}
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
 
-#       - name: Configure AWS Credentials
-#         uses: aws-actions/configure-aws-credentials@v1
-#         with:
-#           aws-access-key-id: ${{ secrets.K8S_AWS_ACCESS_KEY_ID }}
-#           aws-secret-access-key: ${{ secrets.K8S_AWS_SECRET_ACCESS_KEY }}
-#           aws-region: ${{ env.AWS_REGION }}
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.K8S_AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.K8S_AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
 
-#       - name: Login to Amazon ECR
-#         id: login-ecr
-#         uses: aws-actions/amazon-ecr-login@v1
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v1
 
-#       - name: Configure AWS CLI
-#         run: |
-#           aws eks update-kubeconfig --name universus --region ${{ env.AWS_REGION }}
+      - name: Configure AWS CLI
+        run: |
+          aws eks update-kubeconfig --name universus --region ${{ env.AWS_REGION }}
 
-#       - name: Generate new Image Tag
-#         run: |
-#           echo "NECESSIST_IMAGE_TAG=${{ env.ECR_REPOSITORY }}:uint1024-necessist-${GITHUB_SHA::7}" >> $GITHUB_ENV
+      - name: Generate new Image Tag
+        run: |
+          echo "NECESSIST_IMAGE_TAG=${{ env.ECR_REPOSITORY }}:uint1024-necessist-${GITHUB_SHA::7}" >> $GITHUB_ENV
 
-#       - name: Build and push docker image
-#         run: |
-#           docker build -t ${{ env.NECESSIST_IMAGE_TAG }} -f Dockerfile.necessist . --build-arg AWS_ACCESS_KEY_ID=${{ secrets.K8S_AWS_ACCESS_KEY_ID }} --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.K8S_AWS_SECRET_ACCESS_KEY }} --build-arg AWS_REGION=${{ env.AWS_REGION }}
-#           docker push ${{ env.NECESSIST_IMAGE_TAG }}
+      - name: Build and push docker image
+        run: |
+          docker build -t ${{ env.NECESSIST_IMAGE_TAG }} -f Dockerfile.necessist . --build-arg AWS_ACCESS_KEY_ID=${{ secrets.K8S_AWS_ACCESS_KEY_ID }} --build-arg AWS_SECRET_ACCESS_KEY=${{ secrets.K8S_AWS_SECRET_ACCESS_KEY }} --build-arg AWS_REGION=${{ env.AWS_REGION }}
+          docker push ${{ env.NECESSIST_IMAGE_TAG }}
 
-#       - name: Update k8s manifest
-#         run: |
-#           sed -i "s|{{NECESSIST_IMAGE_TAG}}|${{ env.NECESSIST_IMAGE_TAG }}|g" k8s/uint1024/necessist-job.yaml
+      - name: Update k8s manifest
+        run: |
+          sed -i "s|{{NECESSIST_IMAGE_TAG}}|${{ env.NECESSIST_IMAGE_TAG }}|g" k8s/uint1024/necessist-job.yaml
 
-#       - name: Run the necessist job with k8s
-#         run: |
-#           kubectl delete job necessist-uint1024 --ignore-not-found=true -n dev
-#           sleep 5
-#           kubectl apply -f k8s/uint1024/necessist-job.yaml -n dev
+      - name: Run the necessist job with k8s
+        run: |
+          kubectl delete job necessist-uint1024 --ignore-not-found=true -n dev
+          sleep 5
+          kubectl apply -f k8s/uint1024/necessist-job.yaml -n dev
