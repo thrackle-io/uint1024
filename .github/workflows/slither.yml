@@ -40,7 +40,7 @@ jobs:
           npm install
 
       - name: Slither Analyze
-        uses: crytic/slither-action@v0.3.1
+        uses: crytic/slither-action@v0.4.0
         if: github.event_name != 'pull_request'
         id: slither
         with:
@@ -57,11 +57,11 @@ jobs:
           retention-days: 5
 
       - name: Slither Analyze Pull Request
-        uses: crytic/slither-action@v0.3.1
+        uses: crytic/slither-action@v0.4.0
         if: always() && (github.event_name == 'pull_request')
         id: slither-pull
         with:
-          fail-on: none
+          fail-on: low
           slither-args: --checklist --checklist-limit 50 --markdown-root ${{ github.server_url }}/${{ github.repository }}/blob/${{ github.sha }}/
 
       - name: Create/update checklist as PR comment
