@@ -15,68 +15,44 @@ contract SafeUint512FuzzTests is Test, PythonUtils {
     using Uint512Extended for uint256;
 
     function testSafeDiv512x256(uint256 a0, uint256 a1, uint256 b) public {
-        if (a1 >= b) vm.expectRevert("Uint512: a1 >= b div512x256");
-        uint256 solR0 = a0.safeDiv512x256(a1, b);
-        console2.log("solRes: ", solR0);
-
-        string[] memory inputs = _buildFFIDiv1024x1024In1024(a0, a1, 0, 0, b, 0, 0, 0);
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, 0, 0, b, 0, 0, 0, "div");
         bytes memory res = vm.ffi(inputs);
         console2.logBytes(res);
-        (uint256 pyValLo,,,) = abi.decode(res, (uint256,uint256,uint256,uint256));
-        console2.log("pyRes: ", pyValLo);
+        (uint256 pyValLo, uint256 pyValHi,,) = abi.decode(res, (uint256,uint256,uint256,uint256));
+        console2.log("pyRes: ", pyValLo, pyValHi);
+
+        if (pyValHi >= 1 || b == 0) vm.expectRevert("Uint512: a1 >= b div512x256");
+        uint256 solR0 = a0.safeDiv512x256(a1, b);
+        console2.log("solRes: ", solR0);
 
         if (solR0 != pyValLo) revert("lower bits different");
     }
 
     function testSafeMul512x256(uint256 a0, uint256 a1, uint256 b) public {
-        bool willRevert;
-        
-        assembly {
-            let mm := mulmod(a0, b, not(0))
-            let r0 := mul(a0, b)
-            let r1 := sub(sub(mm, r0), lt(mm, r0))
-            r1 := add(r1, mul(a1, b))
-
-            if lt(r1, a1) {
-                willRevert := true
-            }
-        }
-
-        if(willRevert) vm.expectRevert("mul512x256 overflow");
-        (uint256 solR0, uint256 solR1) = a0.safeMul512x256(a1, b);
-        console2.log("solRes:", solR0, solR1);
-
-        string[] memory inputs = _buildFFIMul512x512In1024(a0, a1, 0, b, 0, 0);
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, 0, 0, b, 0, 0, 0, "mul");
         bytes memory res = vm.ffi(inputs);
         console2.logBytes(res);
-        (uint256 pyValLo, uint256 pyValHi,,) = abi.decode(res, (uint256,uint256,uint256,uint256));
-        console2.log("pyRes: ", pyValLo, pyValHi);
+        (uint256 pyValLo, uint256 pyValHi, uint256 r2,) = abi.decode(res, (uint256,uint256,uint256,uint256));
+        console2.log("pyRes: ", pyValLo, pyValHi, r2);
+
+        if(r2 > 0) vm.expectRevert("mul512x256 overflow");
+        (uint256 solR0, uint256 solR1) = a0.safeMul512x256(a1, b);
+        console2.log("solRes:", solR0, solR1);
 
         if (solR0 != pyValLo) revert("lower bits different");
         if (solR1 != pyValHi) revert("higher bits different");
     }
 
     function testSafeAdd512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) public {
-        bool willRevert;
-        
-        assembly {
-            let r0 := add(a0, b0)
-            let r1 := add(add(a1, b1), lt(r0, a0))
-
-            if lt(r1, b1) {
-                willRevert := true
-            }
-        }
-
-        if(willRevert) vm.expectRevert("add512x512 overflow");
-        (uint256 solR0, uint256 solR1) = a0.safeAdd512x512(a1, b0, b1);
-        console2.log("solRes:", solR0, solR1);
-
-        string[] memory inputs = _buildFFIAdd1024x1024In1024(a0, a1, 0, 0, b0, b1, 0, 0);
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, 0, 0, b0, b1, 0, 0, "add");
         bytes memory res = vm.ffi(inputs);
         console2.logBytes(res);
         (uint256 pyValLo, uint256 pyValHi,,) = abi.decode(res, (uint256,uint256,uint256,uint256));
         console2.log("pyRes: ", pyValLo, pyValHi);
+
+        if(b1 > pyValHi) vm.expectRevert("add512x512 overflow");
+        (uint256 solR0, uint256 solR1) = a0.safeAdd512x512(a1, b0, b1);
+        console2.log("solRes:", solR0, solR1);
 
         if (solR0 != pyValLo) revert("lower bits different");
         if (solR1 != pyValHi) revert("higher bits different");
@@ -87,7 +63,7 @@ contract SafeUint512FuzzTests is Test, PythonUtils {
         (uint256 solR0, uint256 solR1) = a0.safeSub512x512(a1, b0, b1);
         console2.log("solRes:", solR0, solR1);
 
-        string[] memory inputs = _buildFFISub1024x1024In1024(a0, a1, 0, 0, b0, b1, 0, 0);
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, 0, 0, b0, b1, 0, 0, "sub");
         bytes memory res = vm.ffi(inputs);
         console2.logBytes(res);
         (uint256 pyValLo, uint256 pyValHi,,) = abi.decode(res, (uint256,uint256,uint256,uint256));

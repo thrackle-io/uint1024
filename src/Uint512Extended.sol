@@ -91,14 +91,12 @@ library Uint512Extended {
      * @return r1 The higher bits of the result
      */
     function safeMul512x256(uint256 a0, uint256 a1, uint256 b) internal pure returns (uint256 r0, uint256 r1) {
+        (uint r0Lo, uint r0Hi) = a0.mul256x256(b);
+        (uint r1Lo, uint r1Hi) = a1.mul256x256(b);
+        r0 = r0Lo;
         assembly {
-            let mm := mulmod(a0, b, not(0))
-            r0 := mul(a0, b)
-            r1 := sub(sub(mm, r0), lt(mm, r0))
-            r1 := add(r1, mul(a1, b))
-
-            // overflow check
-            if lt(r1, a1) {
+            r1 := add(r0Hi, r1Lo)
+            if or(lt(r1, r0Hi), gt(r1Hi, 0)) {
                 let ptr := mload(0x40) // Get free memory pointer
                 mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
                 mstore(add(ptr, 0x04), 0x20) // String offset

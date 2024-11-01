@@ -21,8 +21,7 @@ contract Uint1024FuzzTests is Test, PythonUtils {
         (uint solR0, uint solR1) = a0.div512x256In512(a1, b);
         console2.log("solRes:", solR0, solR1);
 
-        //string[] memory inputs = _buildFFIDiv512x256In512(a0, a1, b);
-        string[] memory inputs = _buildFFIDiv1024x1024In1024(a0, a1, 0, 0, b, 0, 0, 0);
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, 0, 0, b, 0, 0, 0, "div");
         bytes memory res = vm.ffi(inputs);
         console2.logBytes(res);
         (uint pyValLo, uint pyValHi) = abi.decode(res, (uint, uint));
