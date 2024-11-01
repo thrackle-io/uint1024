@@ -24,7 +24,6 @@ library Uint1024 {
 
     function sub768x768(uint a0, uint a1, uint a2, uint b0, uint b1, uint b2) internal pure returns (uint r0, uint r1, uint r2) {
         if (lt768(a0, a1, a2, b0, b1, b2)) revert("Uint768: negative result sub768x768");
-        uint z = 2 ^ (256 - 1);
         assembly {
             if or(lt(b0, a0), eq(b0, a0)) {
                 r0 := sub(a0, b0)
@@ -143,7 +142,6 @@ library Uint1024 {
             // Calculate the multiplicative inverse mod 2**256 of b. See the paper for details.
             //slither-disable-next-line incorrect-exp
             inv0 := xor(bx3Lo, 2) // 4
-            // slither-disable-end divide-before-multiply
         }
         uint two = 2;
         uint interimLo;
