@@ -122,7 +122,7 @@ library Uint512Extended {
             r1 := add(add(a1, b1), lt(r0, a0))
 
             //overflow check
-            if lt(r1, b1) {
+            if or(lt(r1,a1),lt(r1,b1)){
                 let ptr := mload(0x40) // Get free memory pointer
                 mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
                 mstore(add(ptr, 0x04), 0x20) // String offset
@@ -175,7 +175,8 @@ library Uint512Extended {
     function mulInverseMod256(uint b) internal pure returns (uint inv) {
         assembly {
             // Calculate the multiplicative inverse mod 2**256 of b. See the paper for details.
-            //slither-disable-next-line incorrect-exp
+            // slither-disable-start divide-before-multiply
+            // slither-disable-next-line incorrect-exp
             inv := xor(mul(3, b), 2) // 4
             inv := mul(inv, sub(2, mul(b, inv))) // 8
             inv := mul(inv, sub(2, mul(b, inv))) // 16

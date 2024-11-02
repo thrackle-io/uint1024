@@ -120,6 +120,7 @@ library Uint1024 {
         assembly {
             r0 := mul(a0, inv)
         }
+        // slither-disable-end divide-before-multiply
     }
 
     

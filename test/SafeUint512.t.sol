@@ -47,10 +47,10 @@ contract SafeUint512FuzzTests is Test, PythonUtils {
         string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, 0, 0, b0, b1, 0, 0, "add");
         bytes memory res = vm.ffi(inputs);
         console2.logBytes(res);
-        (uint256 pyValLo, uint256 pyValHi,,) = abi.decode(res, (uint256,uint256,uint256,uint256));
-        console2.log("pyRes: ", pyValLo, pyValHi);
+        (uint256 pyValLo, uint256 pyValHi, uint256 r2,) = abi.decode(res, (uint256,uint256,uint256,uint256));
+        console2.log("pyRes: ", pyValLo, pyValHi, r2);
 
-        if(b1 > pyValHi) vm.expectRevert("add512x512 overflow");
+        if(r2 > 0) vm.expectRevert("add512x512 overflow");
         (uint256 solR0, uint256 solR1) = a0.safeAdd512x512(a1, b0, b1);
         console2.log("solRes:", solR0, solR1);
 
