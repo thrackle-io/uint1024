@@ -2,9 +2,11 @@
 pragma solidity ^0.8.24;
 
 import "src/Uint512.sol";
+import "src/Uint512Extended.sol";
 
 library Uint1024 {
     using Uint512 for uint256;
+    using Uint512Extended for uint256;
 
     function add768x768(uint a0, uint a1, uint a2, uint b0, uint b1, uint b2) internal pure returns (uint r0, uint r1, uint r2) {
         assembly {
@@ -113,27 +115,15 @@ library Uint1024 {
             pow := add(div(sub(0, pow), pow), 1)
             a0 := or(a0, mul(a1, pow))
         }
-        uint inv = mulInverseMod256(b);
+        uint inv = b.mulInverseMod256();
 
         assembly {
             r0 := mul(a0, inv)
         }
+        // slither-disable-end divide-before-multiply
     }
 
-    function mulInverseMod256(uint b) internal pure returns (uint inv) {
-        assembly {
-            // Calculate the multiplicative inverse mod 2**256 of b. See the paper for details.
-            //slither-disable-next-line incorrect-exp
-            inv := xor(mul(3, b), 2) // 4
-            inv := mul(inv, sub(2, mul(b, inv))) // 8
-            inv := mul(inv, sub(2, mul(b, inv))) // 16
-            inv := mul(inv, sub(2, mul(b, inv))) // 32
-            inv := mul(inv, sub(2, mul(b, inv))) // 64
-            inv := mul(inv, sub(2, mul(b, inv))) // 128
-            inv := mul(inv, sub(2, mul(b, inv))) // 256
-            // slither-disable-end divide-before-multiply
-        }
-    }
+    
 
     function mulInverseMod512(uint b0, uint b1) internal pure returns (uint inv0, uint inv1) {
         (uint bx3Lo, uint bx3Hi) = b0.mul512x256(b1, 3);

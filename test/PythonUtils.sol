@@ -16,13 +16,29 @@ contract PythonUtils is Test {
     using Uint512 for uint256;
     using Uint512Extended for uint256;
 
-    function _buildFFIDiv512x256In512(uint a0, uint a1, uint b) internal pure returns (string[] memory) {
-        string[] memory inputs = new string[](5);
+    function _buildFFI1024Arithmetic(
+        uint256 a0, 
+        uint256 a1, 
+        uint256 a2, 
+        uint256 a3, 
+        uint256 b0, 
+        uint256 b1, 
+        uint256 b2, 
+        uint256 b3,
+        string memory operator
+    ) internal pure returns (string[] memory){
+        string[] memory inputs = new string[](11);
         inputs[0] = "python3";
-        inputs[1] = "script/div_512x256_in_512.py";
+        inputs[1] = "script/1024_arithmetic.py";
         inputs[2] = vm.toString(a0);
         inputs[3] = vm.toString(a1);
-        inputs[4] = vm.toString(b);
+        inputs[4] = vm.toString(a2);
+        inputs[5] = vm.toString(a3);
+        inputs[6] = vm.toString(b0);
+        inputs[7] = vm.toString(b1);
+        inputs[8] = vm.toString(b2);
+        inputs[9] = vm.toString(b3);
+        inputs[10] = operator;
         return inputs;
     }
 
