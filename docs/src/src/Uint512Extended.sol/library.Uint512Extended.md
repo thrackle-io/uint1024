@@ -1,5 +1,5 @@
 # Uint512Extended
-[Git Source](https://github.com/thrackle-io/uint1024/blob/41b0918eb7db301f04374cac21cfee8b5ac5a4fd/src/Uint512Extended.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/f5aff05ef5207190cd83f457795a26f1b9c57700/src/Uint512Extended.sol)
 
 **Author:**
 @oscarsernarosero @mpetersoCode55 @cirsteve @Palmerg4
@@ -140,4 +140,120 @@ function div512ByPowerOf2(uint256 a0, uint256 a1, uint8 n)
 |`r1`|`uint256`|The higher bits of the result|
 |`remainder`|`uint256`|of the division|
 
+
+### safeMul512x256
+
+Calculates the product of two uint512 and uint256 safely
+
+*Used the chinese remainder theoreme*
+
+
+```solidity
+function safeMul512x256(uint256 a0, uint256 a1, uint256 b) internal pure returns (uint256 r0, uint256 r1);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a0`|`uint256`|A uint256 representing lower bits of the first factor|
+|`a1`|`uint256`|A uint256 representing higher bits of the first factor|
+|`b`|`uint256`|A uint256 representing the second factor|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`r0`|`uint256`|The result as a uint512. r0 contains the lower bits|
+|`r1`|`uint256`|The higher bits of the result|
+
+
+### safeAdd512x512
+
+Calculates the sum of two uint512 safely
+
+
+```solidity
+function safeAdd512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1)
+    internal
+    pure
+    returns (uint256 r0, uint256 r1);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a0`|`uint256`|A uint256 representing the lower bits of the first addend|
+|`a1`|`uint256`|A uint256 representing the higher bits of the first addend|
+|`b0`|`uint256`|A uint256 representing the lower bits of the seccond addend|
+|`b1`|`uint256`|A uint256 representing the higher bits of the seccond addend|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`r0`|`uint256`|The result as a uint512. r0 contains the lower bits|
+|`r1`|`uint256`|The higher bits of the result|
+
+
+### safeSub512x512
+
+Calculates the difference of two uint512 safely
+
+
+```solidity
+function safeSub512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1)
+    internal
+    pure
+    returns (uint256 r0, uint256 r1);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a0`|`uint256`|A uint256 representing the lower bits of the minuend|
+|`a1`|`uint256`|A uint256 representing the higher bits of the minuend|
+|`b0`|`uint256`|A uint256 representing the lower bits of the subtrahend|
+|`b1`|`uint256`|A uint256 representing the higher bits of the subtrahend|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`r0`|`uint256`|The result as a uint512. r0 contains the lower bits|
+|`r1`|`uint256`|The higher bits of the result|
+
+
+### safeDiv512x256
+
+Calculates the division of a 512 bit unsigned integer by a 256 bit integer safely. It
+requires the result to fit in a 256 bit integer
+
+*For a detailed explaination see:
+https://www.researchgate.net/publication/235765881_Efficient_long_division_via_Montgomery_multiply*
+
+
+```solidity
+function safeDiv512x256(uint256 a0, uint256 a1, uint256 b) internal pure returns (uint256 r);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a0`|`uint256`|A uint256 representing the low bits of the nominator|
+|`a1`|`uint256`|A uint256 representing the high bits of the nominator|
+|`b`|`uint256`|A uint256 representing the denominator|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`r`|`uint256`|The result as an uint256. Result must have at most 256 bit|
+
+
+### mulInverseMod256
+
+
+```solidity
+function mulInverseMod256(uint256 b) internal pure returns (uint256 inv);
+```
 

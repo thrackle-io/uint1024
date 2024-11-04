@@ -1,5 +1,5 @@
 # Uint1024
-[Git Source](https://github.com/thrackle-io/uint1024/blob/41b0918eb7db301f04374cac21cfee8b5ac5a4fd/src/Uint1024.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/f5aff05ef5207190cd83f457795a26f1b9c57700/src/Uint1024.sol)
 
 
 ## Functions
@@ -52,13 +52,6 @@ r3
 
 ```solidity
 function div512x256In512(uint256 a0, uint256 a1, uint256 b) internal pure returns (uint256 r0, uint256 r1);
-```
-
-### mulInverseMod256
-
-
-```solidity
-function mulInverseMod256(uint256 b) internal pure returns (uint256 inv);
 ```
 
 ### mulInverseMod512
