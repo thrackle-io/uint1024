@@ -141,8 +141,10 @@ library Uint1024 {
     function mul512x512Mod512(uint a0, uint a1, uint b0, uint b1) internal pure returns (uint r0, uint r1) {
         uint r0Hi;
         (r0, r0Hi) = a0.mul256x256(b0);
+        // slither-disable-start unused-return --> the modulo 512 doesn't care of the upper bits because they are not part of the result
         (uint r1Lo, ) = a1.mul256x256(b0);
         (uint r2Lo, ) = a0.mul256x256(b1);
+        // slither-disable-end unused-return
         assembly {
             /// r1
             let sumA := add(r0Hi, r1Lo)
@@ -215,9 +217,13 @@ library Uint1024 {
         uint interimHi;
 
 <<<<<<< HEAD
+<<<<<<< HEAD
         /// expansion of the inverse with Hensel's lemma
 =======
 >>>>>>> 9df9cb0 (created test for mul512x512mod512)
+=======
+        /// expansion of the inverse with Hensel's lemma
+>>>>>>> 8aa6f17 (PR changes and Slither fix)
         (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
         (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
         (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 8
