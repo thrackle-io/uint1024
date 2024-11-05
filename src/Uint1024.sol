@@ -214,7 +214,10 @@ library Uint1024 {
         uint interimLo;
         uint interimHi;
 
+<<<<<<< HEAD
         /// expansion of the inverse with Hensel's lemma
+=======
+>>>>>>> 9df9cb0 (created test for mul512x512mod512)
         (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
         (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
         (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 8
