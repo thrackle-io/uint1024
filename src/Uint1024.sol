@@ -206,42 +206,42 @@ library Uint1024 {
         (uint bx3Lo, uint bx3Hi) = b0.mul512x256(b1, 3);
         inv1 = bx3Hi;
         assembly {
-            // Calculate the multiplicative inverse mod 2**256 of b. See the paper for details.
+            // Calculate the multiplicative inverse mod 2**256 of b. See Montgomery reduction for more details.
             //slither-disable-next-line incorrect-exp
             inv0 := xor(bx3Lo, 2) // 4
         }
         uint two = 2;
         uint interimLo;
         uint interimHi;
-        
+
         /// expansion of the inverse with Hensel's lemma
-        (interimLo, interimHi, , ) = mul512x512In1024(b0, b1, inv0, inv1);
+        (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
         (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
-        (inv0, inv1, , ) = mul512x512In1024(inv0, inv1, interimLo, interimHi); // 8
+        (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 8
 
-        (interimLo, interimHi, , ) = mul512x512In1024(b0, b1, inv0, inv1);
+        (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
         (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
-        (inv0, inv1, , ) = mul512x512In1024(inv0, inv1, interimLo, interimHi); // 16
+        (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 16
 
-        (interimLo, interimHi, , ) = mul512x512In1024(b0, b1, inv0, inv1);
+        (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
         (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
-        (inv0, inv1, , ) = mul512x512In1024(inv0, inv1, interimLo, interimHi); // 32
+        (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 32
 
-        (interimLo, interimHi, , ) = mul512x512In1024(b0, b1, inv0, inv1);
+        (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
         (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
-        (inv0, inv1, , ) = mul512x512In1024(inv0, inv1, interimLo, interimHi); // 64
+        (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 64
 
-        (interimLo, interimHi, , ) = mul512x512In1024(b0, b1, inv0, inv1);
+        (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
         (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
-        (inv0, inv1, , ) = mul512x512In1024(inv0, inv1, interimLo, interimHi); // 128
+        (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 128
 
-        (interimLo, interimHi, , ) = mul512x512In1024(b0, b1, inv0, inv1);
+        (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
         (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
-        (inv0, inv1, , ) = mul512x512In1024(inv0, inv1, interimLo, interimHi); // 256
+        (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 256
 
-        (interimLo, interimHi, , ) = mul512x512In1024(b0, b1, inv0, inv1);
+        (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
         (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
-        (inv0, inv1, , ) = mul512x512In1024(inv0, inv1, interimLo, interimHi); // 512
+        (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 512
     }
 
     /**
