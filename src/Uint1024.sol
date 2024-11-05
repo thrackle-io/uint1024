@@ -141,7 +141,7 @@ library Uint1024 {
         (uint bx3Lo, uint bx3Hi) = b0.mul512x256(b1, 3);
         inv1 = bx3Hi;
         assembly {
-            // Calculate the multiplicative inverse mod 2**256 of b. See the paper for details.
+            // Calculate the multiplicative inverse mod 2**256 of b. See Montgomery reduction for more details.
             //slither-disable-next-line incorrect-exp
             inv0 := xor(bx3Lo, 2) // 4
         }
@@ -149,36 +149,33 @@ library Uint1024 {
         uint interimLo;
         uint interimHi;
 
-        /// gas consumption with for loop: 11698. Without for loop: 11380. Diff: 2.8% increase with for loop
-        for (uint i = 0; i < 7; i++) {
-            (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
-            (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
-            (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 8
-        }
+        (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
+        (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
+        (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 8
 
-        // (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
-        // (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
-        // (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 16
+        (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
+        (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
+        (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 16
 
-        // (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
-        // (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
-        // (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 32
+        (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
+        (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
+        (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 32
 
-        // (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
-        // (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
-        // (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 64
+        (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
+        (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
+        (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 64
 
-        // (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
-        // (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
-        // (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 128
+        (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
+        (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
+        (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 128
 
-        // (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
-        // (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
-        // (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 256
+        (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
+        (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
+        (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 256
 
-        // (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
-        // (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
-        // (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 512
+        (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
+        (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
+        (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 512
     }
 
     function lt768(uint a0, uint a1, uint a2, uint b0, uint b1, uint b2) internal pure returns (bool) {

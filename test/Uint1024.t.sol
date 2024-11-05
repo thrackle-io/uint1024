@@ -52,4 +52,18 @@ contract Uint1024FuzzTests is Test, PythonUtils {
         }
         if (solR1 != pyValHi) revert("higher bits different");
     }
+
+    function testMul512x512Mod512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) public {
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, 0, 0, b0, b1, 0, 0, "mul");
+        bytes memory res = vm.ffi(inputs);
+        console2.logBytes(res);
+        (uint256 pyValLo, uint256 pyValHi, , ) = abi.decode(res, (uint256, uint256, uint256, uint256));
+        console2.log("pyRes: ", pyValLo, pyValHi);
+
+        (uint256 solR0, uint256 solR1) = a0.mul512x512Mod512(a1, b0, b1);
+        console2.log("solRes:", solR0, solR1);
+
+        if (solR0 != pyValLo) revert("lower bits different");
+        if (solR1 != pyValHi) revert("higher bits different");
+    }
 }
