@@ -7,7 +7,6 @@ import {Uint1024} from "src/Uint1024.sol";
 import {Uint512} from "src/Uint512.sol";
 import {Uint512Extended} from "src/Uint512Extended.sol";
 
-
 /**
  * @title Utils for interacting with Python
  */
@@ -17,16 +16,16 @@ contract PythonUtils is Test {
     using Uint512Extended for uint256;
 
     function _buildFFI1024Arithmetic(
-        uint256 a0, 
-        uint256 a1, 
-        uint256 a2, 
-        uint256 a3, 
-        uint256 b0, 
-        uint256 b1, 
-        uint256 b2, 
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint256 a3,
+        uint256 b0,
+        uint256 b1,
+        uint256 b2,
         uint256 b3,
         string memory operator
-    ) internal pure returns (string[] memory){
+    ) internal pure returns (string[] memory) {
         string[] memory inputs = new string[](11);
         inputs[0] = "python3";
         inputs[1] = "script/1024_arithmetic.py";
@@ -39,6 +38,15 @@ contract PythonUtils is Test {
         inputs[8] = vm.toString(b2);
         inputs[9] = vm.toString(b3);
         inputs[10] = operator;
+        return inputs;
+    }
+
+    function _buildFFIMulInv512(uint256 b0, uint256 b1) internal pure returns (string[] memory) {
+        string[] memory inputs = new string[](4);
+        inputs[0] = "python3";
+        inputs[1] = "script/mul_inverse_512.py";
+        inputs[2] = vm.toString(b0);
+        inputs[3] = vm.toString(b1);
         return inputs;
     }
 
@@ -127,8 +135,6 @@ contract PythonUtils is Test {
             : y0.mul512x256(y1, uint(maxTolerance));
     }
 
-
-
     /**
      * @dev calculates the difference between 2 512 uints without risk of overflow/underflow
      * @param x0 uint lower bits of x
@@ -144,7 +150,7 @@ contract PythonUtils is Test {
         if (diffH > 0) revert("diffGreaterThanUint256");
     }
 
-     /**
+    /**
      * @dev calculates the difference between 2 uints without risk of overflow/underflow
      * @param x uint
      * @param y uint
