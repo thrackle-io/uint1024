@@ -85,6 +85,20 @@ library Uint1024 {
         }
     }
 
+    function mul512x512Mod512(uint a0, uint a1, uint b0, uint b1) internal pure returns (uint r0, uint r1) {
+        uint r0Hi;
+        (r0, r0Hi) = a0.mul256x256(b0);
+        (uint r1Lo, ) = a1.mul256x256(b0);
+        (uint r2Lo, ) = a0.mul256x256(b1);
+        assembly {
+            /// r1
+            let sumA := add(r0Hi, r1Lo)
+            r1 := add(sumA, r2Lo)
+            let overflowA := lt(sumA, r0Hi)
+            let overflowB := lt(r1, sumA)
+        }
+    }
+
     function div512x256In512(uint256 a0, uint256 a1, uint256 b) internal pure returns (uint256 r0, uint r1) {
         assembly {
             let remHi := mod(a1, b)
@@ -123,8 +137,6 @@ library Uint1024 {
         // slither-disable-end divide-before-multiply
     }
 
-    
-
     function mulInverseMod512(uint b0, uint b1) internal pure returns (uint inv0, uint inv1) {
         (uint bx3Lo, uint bx3Hi) = b0.mul512x256(b1, 3);
         inv1 = bx3Hi;
@@ -136,24 +148,34 @@ library Uint1024 {
         uint two = 2;
         uint interimLo;
         uint interimHi;
+
+        /// gas consumption with for loop: 11698. Without for loop: 11380. Diff: 2.8% increase with for loop
+        // for (uint i = 0; i < 7; i++) {
         (interimLo, interimHi, , ) = mul512x512In1024(b0, b1, inv0, inv1);
         (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
         (inv0, inv1, , ) = mul512x512In1024(inv0, inv1, interimLo, interimHi); // 8
+        // }
+
         (interimLo, interimHi, , ) = mul512x512In1024(b0, b1, inv0, inv1);
         (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
         (inv0, inv1, , ) = mul512x512In1024(inv0, inv1, interimLo, interimHi); // 16
+
         (interimLo, interimHi, , ) = mul512x512In1024(b0, b1, inv0, inv1);
         (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
         (inv0, inv1, , ) = mul512x512In1024(inv0, inv1, interimLo, interimHi); // 32
+
         (interimLo, interimHi, , ) = mul512x512In1024(b0, b1, inv0, inv1);
         (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
         (inv0, inv1, , ) = mul512x512In1024(inv0, inv1, interimLo, interimHi); // 64
+
         (interimLo, interimHi, , ) = mul512x512In1024(b0, b1, inv0, inv1);
         (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
         (inv0, inv1, , ) = mul512x512In1024(inv0, inv1, interimLo, interimHi); // 128
+
         (interimLo, interimHi, , ) = mul512x512In1024(b0, b1, inv0, inv1);
         (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
         (inv0, inv1, , ) = mul512x512In1024(inv0, inv1, interimLo, interimHi); // 256
+
         (interimLo, interimHi, , ) = mul512x512In1024(b0, b1, inv0, inv1);
         (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
         (inv0, inv1, , ) = mul512x512In1024(inv0, inv1, interimLo, interimHi); // 512
