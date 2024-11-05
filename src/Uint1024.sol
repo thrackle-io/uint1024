@@ -138,6 +138,7 @@ library Uint1024 {
     }
 
     function mulInverseMod512(uint b0, uint b1) internal pure returns (uint inv0, uint inv1) {
+        if (b0 % 2 == 0) revert("Uint1024: denominator must be odd");
         (uint bx3Lo, uint bx3Hi) = b0.mul512x256(b1, 3);
         inv1 = bx3Hi;
         assembly {

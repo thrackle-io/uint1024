@@ -35,21 +35,18 @@ contract Uint1024FuzzTests is Test, PythonUtils {
     function testDivMulInverse512(uint b0, uint b1) public {
         TesterContract testerContract = new TesterContract();
         b1 = bound(b1, 1, type(uint256).max);
-        if (b0 % 2 == 0) b0++;
 
+        if (b0 % 2 == 0) vm.expectRevert("Uint1024: denominator must be odd");
         (uint solR0, uint solR1) = testerContract.mulInverseMod512(b0, b1);
         console2.log("solRes:", solR0, solR1);
 
+        if (b0 % 2 == 0) return; // python code will fail because inverse of an even number is not defined
         string[] memory inputs = _buildFFIMulInv512(b0, b1);
         bytes memory res = vm.ffi(inputs);
         console2.logBytes(res);
         (uint pyValLo, uint pyValHi) = abi.decode(res, (uint, uint));
         console2.log("pythonRes:", pyValLo, pyValHi);
-
-        if (solR0 != pyValLo) {
-            solR0++;
-            if (solR0 != pyValLo) revert("lower bits different");
-        }
+        if (solR0 != pyValLo) revert("lower bits different");
         if (solR1 != pyValHi) revert("higher bits different");
     }
 
