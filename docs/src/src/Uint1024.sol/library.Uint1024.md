@@ -1,5 +1,5 @@
 # Uint1024
-[Git Source](https://github.com/thrackle-io/uint1024/blob/f5aff05ef5207190cd83f457795a26f1b9c57700/src/Uint1024.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/3fff9207dd27fad1c0078f6e7d4e632ca48ddc2d/src/Uint1024.sol)
 
 
 ## Functions
@@ -43,11 +43,23 @@ function mul512x512In1024(uint256 a0, uint256 a1, uint256 b0, uint256 b1)
     returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3);
 ```
 
-### div512x256In512
+### mul512x512Mod512
 
 r1
 r2
 r3
+
+
+```solidity
+function mul512x512Mod512(uint256 a0, uint256 a1, uint256 b0, uint256 b1)
+    internal
+    pure
+    returns (uint256 r0, uint256 r1);
+```
+
+### div512x256In512
+
+r1
 
 
 ```solidity
@@ -62,6 +74,8 @@ function mulInverseMod512(uint256 b0, uint256 b1) internal pure returns (uint256
 ```
 
 ### lt768
+
+expansion of the inverse with Hensel's lemma
 
 
 ```solidity
