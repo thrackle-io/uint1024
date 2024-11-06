@@ -86,7 +86,6 @@ contract Uint1024FuzzTests is Test, PythonUtils {
         (pyR0, pyR1, pyR2, pyR3, pyR4) = abi.decode(res, (uint256, uint256, uint256, uint256, uint256));
         console2.log("pythonRes:", pyR0, pyR1, pyR2);
         console2.log("Python highest Bits: ", pyR4);
-
         if(pyR4 > 0) vm.expectRevert("Uint768: negative result sub768x768");
         (solR0, solR1, solR2) = Uint1024.sub768x768(a0, a1, a2, b0, b1, b2);
         console2.log("solRes:", solR0, solR1, solR2);
