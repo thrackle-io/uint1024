@@ -26,15 +26,19 @@ def calculate_in_1024(args):
     elif(operator == "add"):
         result = int(leftOperand) + int(rightOperand)
     elif(operator == "sub"):
-        result = int(leftOperand) - int(rightOperand)
+        if(leftOperand < rightOperand):
+            # Setting result to int(word)**4 instead of negative result to ensure correct reversion on the solidity implementation
+            result = int(word)**4 
+        else: result = int(leftOperand) - int(rightOperand)
     else: raise ValueError("Incorrect operator passed as argument")
 
-    r3 = int(result) // int(word)**3
-    r2 = int(result - (r3 * int(word)**3)) // int(word)**2
-    r1 = int(result - (r3 * int(word)**3) - (r2 * int(word)**2)) // int(word)
-    r0 = int(result - (r3 * int(word)**3) - (r2 * int(word)**2)) % int(word)
+    r4 = int(result) // int(word)**4
+    r3 = int(result - (r4 * int(word)**4)) // int(word)**3
+    r2 = int(result - (r4 * int(word)**4) - (r3 * int(word)**3)) // int(word)**2
+    r1 = int(result - (r4 * int(word)**4) - (r3 * int(word)**3) - (r2 * int(word)**2)) // int(word)
+    r0 = int(result - (r4 * int(word)**4) - (r3 * int(word)**3) - (r2 * int(word)**2)) % int(word)
 
-    enc = encode(["(uint256,uint256,uint256,uint256)"], [(r0,r1,r2,r3)])
+    enc = encode(["(uint256,uint256,uint256,uint256,uint256)"], [(r0,r1,r2,r3,r4)])
     print("0x" + enc.hex(), end="")
 
 def parse_args():
