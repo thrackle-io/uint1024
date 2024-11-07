@@ -275,7 +275,7 @@ library Uint1024 {
      * @return Returns true if there would be an underflow/negative result
      */
     function lt1024(uint a0, uint a1, uint a2, uint256 a3, uint b0, uint b1, uint b2, uint256 b3) internal pure returns (bool) {
-        return a3 < b3 || (a3 == b3 && (a2 < b2 || (a1 == b1 && a0 < b0)));
+        return a3 < b3 || (a3 == b3 && (a2 < b2 || (a2 == b2 && (a1 < b1 || a1 == b1 && a0 < b0))));
     }
 
     /**
