@@ -6,9 +6,9 @@ def calculate_mul_inv(args):
 
     result = pow(b, -1, utils.word**2)
 
-    r0, r1, r2, r3 = utils.deconstruct_1024(result)
+    r0, r1, r2, r3, r4 = utils.deconstruct_1024(result)
 
-    utils.return_encoded_1024(r0, r1, r2, r3)
+    utils.return_encoded_1024(r0, r1, r2, r3, r4)
 
 def main():
     args = utils.parse_args_b_512()

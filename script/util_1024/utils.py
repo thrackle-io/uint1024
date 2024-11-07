@@ -24,14 +24,15 @@ def reconstruct_b_512(args):
     return (b1 * int(word)) + b0
 
 def deconstruct_1024(result):
-    r3 = int(result) // int(word)**3
-    r2 = int(result - (r3 * int(word)**3)) // int(word)**2
-    r1 = int(result - (r3 * int(word)**3) - (r2 * int(word)**2)) // int(word)
-    r0 = int(result - (r3 * int(word)**3) - (r2 * int(word)**2)) % int(word)
-    return r0, r1, r2, r3
+    r4 = int(result) // int(word)**4
+    r3 = int(result - (r4 * int(word)**4)) // int(word)**3
+    r2 = int(result - (r4 * int(word)**4) - (r3 * int(word)**3)) // int(word)**2
+    r1 = int(result - (r4 * int(word)**4) - (r3 * int(word)**3) - (r2 * int(word)**2)) // int(word)
+    r0 = int(result - (r4 * int(word)**4) - (r3 * int(word)**3) - (r2 * int(word)**2)) % int(word)
+    return r0, r1, r2, r3, r4
 
-def return_encoded_1024(r0, r1, r2, r3):
-    enc = encode(["(uint256,uint256,uint256,uint256)"], [(r0,r1,r2,r3)])
+def return_encoded_1024(r0, r1, r2, r3, r4):
+    enc = encode(["(uint256,uint256,uint256,uint256,uint256)"], [(r0,r1,r2,r3,r4)])
     print("0x" + enc.hex(), end="")
 
 def parse_args_a_b_1024():
