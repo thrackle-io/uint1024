@@ -141,8 +141,10 @@ library Uint1024 {
     function mul512x512Mod512(uint a0, uint a1, uint b0, uint b1) internal pure returns (uint r0, uint r1) {
         uint r0Hi;
         (r0, r0Hi) = a0.mul256x256(b0);
+        // slither-disable-start unused-return --> the modulo 512 doesn't care of the upper bits because they are not part of the result
         (uint r1Lo, ) = a1.mul256x256(b0);
         (uint r2Lo, ) = a0.mul256x256(b1);
+        // slither-disable-end unused-return
         assembly {
             /// r1
             let sumA := add(r0Hi, r1Lo)
