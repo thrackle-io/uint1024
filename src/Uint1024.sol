@@ -56,7 +56,7 @@ library Uint1024 {
      */
     function sub768x768(uint a0, uint a1, uint a2, uint b0, uint b1, uint b2) internal pure returns (uint r0, uint r1, uint r2) {
         if (lt768(a0, a1, a2, b0, b1, b2)) revert("Uint768: negative result sub768x768");
-        
+
         assembly {
             if or(lt(b0, a0), eq(b0, a0)) {
                 r0 := sub(a0, b0)
@@ -130,11 +130,13 @@ library Uint1024 {
             let overflowB := lt(r1, sumA)
             /// r2
             sumA := add(r1Hi, r2Hi)
-            r2 := add(add(add(sumA, r3Lo), overflowA), overflowB)
+            let sumB := add(sumA, r3Lo)
+            let overflowC := lt(sumB, sumA)
+            r2 := add(add(sumB, overflowA), overflowB)
             overflowA := lt(sumA, r1Hi)
-            overflowB := lt(r2, sumA)
+            overflowB := lt(r2, sumB)
             /// r3
-            r3 := add(add(r3Hi, overflowA), overflowB)
+            r3 := add(add(add(r3Hi, overflowA), overflowB), overflowC)
         }
     }
 
@@ -275,7 +277,7 @@ library Uint1024 {
      * @return Returns true if there would be an underflow/negative result
      */
     function lt1024(uint a0, uint a1, uint a2, uint256 a3, uint b0, uint b1, uint b2, uint256 b3) internal pure returns (bool) {
-        return a3 < b3 || (a3 == b3 && (a2 < b2 || (a2 == b2 && (a1 < b1 || a1 == b1 && a0 < b0))));
+        return a3 < b3 || (a3 == b3 && (a2 < b2 || (a2 == b2 && (a1 < b1 || (a1 == b1 && a0 < b0)))));
     }
 
     /**
@@ -293,7 +295,16 @@ library Uint1024 {
      * @return r2 The higher bits of the result
      * @return r3 The highest bits of the result
      */
-    function add1024x1024(uint256 a0, uint256 a1, uint256 a2, uint256 a3, uint256 b0, uint256 b1, uint256 b2, uint256 b3) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3) {
+    function add1024x1024(
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint256 a3,
+        uint256 b0,
+        uint256 b1,
+        uint256 b2,
+        uint256 b3
+    ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3) {
         assembly {
             r0 := add(a0, b0)
             let carryoverA := lt(r0, b0)
@@ -319,7 +330,6 @@ library Uint1024 {
             }
         }
     }
-    
 
     /**
      * @notice Calculates the difference of two uint1024. The result is a uint1024.
@@ -336,7 +346,16 @@ library Uint1024 {
      * @return r2 The higher bits of the result
      * @return r3 The highest bits of the result
      */
-    function sub1024x1024(uint a0, uint a1, uint a2, uint256 a3, uint b0, uint b1, uint b2, uint256 b3) internal pure returns (uint r0, uint r1, uint r2, uint256 r3) {
+    function sub1024x1024(
+        uint a0,
+        uint a1,
+        uint a2,
+        uint256 a3,
+        uint b0,
+        uint b1,
+        uint b2,
+        uint256 b3
+    ) internal pure returns (uint r0, uint r1, uint r2, uint256 r3) {
         if (lt1024(a0, a1, a2, a3, b0, b1, b2, b3)) revert("Uint1024: negative result sub1024x1024");
         assembly {
             if or(lt(b0, a0), eq(b0, a0)) {
