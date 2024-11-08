@@ -214,7 +214,7 @@ contract Uint1024FuzzTests is Test, PythonUtils {
         if (solR1 != pyR1) revert("R1 bits different");
     }
 
-    function testDiv1024x512In512(uint b0, uint b1, uint r0, uint r1) public {
+    function testDiv1024x512In512Rem(uint b0, uint b1, uint r0, uint r1) public {
         // b0 = bound(b0, 1, type(uint256).max);
         // we avoid b being zero. We randomize what bits to set to 1
         if (b0 == 0 && b1 == 0) {
@@ -224,7 +224,7 @@ contract Uint1024FuzzTests is Test, PythonUtils {
 
         (uint a0, uint a1, uint a2, uint a3) = b0.mul512x512In1024(b1, r0, r1);
 
-        (solR0, solR1) = a0.div1024x512In512(a1, a2, a3, b0, b1);
+        (solR0, solR1) = a0.div1024x512In512Rem(a1, a2, a3, b0, b1, 0, 0);
         console2.log("solRes:", solR0, solR1);
 
         // string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, 0, 0, b, 0, 0, 0, "div");

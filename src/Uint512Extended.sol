@@ -137,9 +137,10 @@ library Uint512Extended {
             r1 := add(r1, carryoverA)
             // Check for carryover from the recalc of r1, taking into account previous carryoverB value
             carryoverB := or(carryoverB, lt(r1, carryoverA))
+            r1 := add(add(a1, b1), lt(r0, a0))
         }
         // If carryoverB has some value, it indicates an overflow for some or all of the results bits
-        if (carryoverB > 0) revert ("Uint512: safeAdd512 overflow");
+        if (carryoverB > 0) revert("Uint512: safeAdd512 overflow");
     }
 
     /**
@@ -161,6 +162,14 @@ library Uint512Extended {
         }
     }
 
+    function mod512x256(uint256 a0, uint256 a1, uint b) internal pure returns (uint256 rem) {
+        assembly {
+            rem := mulmod(a1, not(0), b)
+            rem := addmod(rem, a1, b)
+            rem := addmod(rem, a0, b)
+        }
+    }
+
     /**
      * @notice Calculates the division of a 512 bit unsigned integer by a 256 bit integer safely. It
      * requires the result to fit in a 256 bit integer
@@ -173,14 +182,8 @@ library Uint512Extended {
      */
     function safeDiv512x256(uint256 a0, uint256 a1, uint256 b) internal pure returns (uint256 r) {
         if (a1 >= b) revert("Uint512: a1 >= b div512x256");
-        uint256 rem;
-        assembly {
-            // calculate the remainder
-            rem := mulmod(a1, not(0), b)
-            rem := addmod(rem, a1, b)
-            rem := addmod(rem, a0, b)
-        }
-            r = a0.divRem512x256(a1, b, rem);
+        uint256 rem = mod512x256(a0, a1, b);
+        r = a0.divRem512x256(a1, b, rem);
     }
 
     function mulInverseMod256(uint b) internal pure returns (uint inv) {

@@ -253,14 +253,17 @@ library Uint1024 {
         // slither-disable-end divide-before-multiply
     }
 
-    function div1024x512In512(
+    function div1024x512In512Rem(
         uint256 a0,
         uint256 a1,
         uint256 a2,
         uint256 a3,
         uint256 b0,
-        uint256 b1
+        uint256 b1,
+        uint256 rem0,
+        uint256 rem1
     ) internal pure returns (uint256 r0, uint r1) {
+        (a0, a1, a2, a3) = sub1024x1024(a0, a1, a2, a3, rem0, rem1, 0, 0);
         assembly {
             // The integer space mod 2**256 is not an abilian group on the multiplication operation. In fact the
             // multiplicative inserve only exists for odd numbers. The denominator gets shifted right until the
@@ -299,6 +302,32 @@ library Uint1024 {
 
         (r0, r1) = mul512x512Mod512(a0, a1, inv0, inv1);
         // slither-disable-end divide-before-multiply
+    }
+
+    function longDiv1024x512In768(
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint256 a3,
+        uint256 b0,
+        uint256 b1
+    ) internal pure returns (uint256 r0, uint r1, uint r2) {
+        /// r2
+        r2 = a3 / b1;
+        uint m2 = a3 % b1;
+        /// r1
+        (uint temp0, uint temp1) = (a2, m2);
+        (uint subtrahendLo, uint subtrahendHi) = r2.mul256x256(b0);
+        (temp0, temp1) = temp0.safeSub512x512(temp1, subtrahendLo, subtrahendHi);
+        r1 = temp0.safeDiv512x256(temp1, b1);
+        uint m1 = temp0.mod512x256(temp1, b1);
+        // r0
+        (temp0, temp1) = (a1, m1);
+        (subtrahendLo, subtrahendHi) = r1.mul256x256(b0);
+        (temp0, temp1) = temp0.safeSub512x512(temp1, subtrahendLo, subtrahendHi);
+        r0 = temp0.safeDiv512x256(temp1, b1);
+        uint m0 = temp0.mod512x256(temp1, b1);
+        m0;
     }
 
     function mulInverseMod512(uint b0, uint b1) internal pure returns (uint inv0, uint inv1) {
