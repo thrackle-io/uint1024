@@ -318,12 +318,20 @@ library Uint1024 {
         /// r1
         (uint temp0, uint temp1) = (a2, m2);
         (uint subtrahendLo, uint subtrahendHi) = r2.mul256x256(b0);
+        // if (temp0.lt512(temp1, subtrahendLo, subtrahendHi)) {
+        //     --r2;
+        //     (subtrahendLo, subtrahendHi) = r2.mul256x256(b0);
+        // }
         (temp0, temp1) = temp0.safeSub512x512(temp1, subtrahendLo, subtrahendHi);
         r1 = temp0.safeDiv512x256(temp1, b1);
         uint m1 = temp0.mod512x256(temp1, b1);
         // r0
         (temp0, temp1) = (a1, m1);
         (subtrahendLo, subtrahendHi) = r1.mul256x256(b0);
+        // if (temp0.lt512(temp1, subtrahendLo, subtrahendHi)) {
+        //     --r1;
+        //     (subtrahendLo, subtrahendHi) = r1.mul256x256(b0);
+        // }
         (temp0, temp1) = temp0.safeSub512x512(temp1, subtrahendLo, subtrahendHi);
         r0 = temp0.safeDiv512x256(temp1, b1);
         uint m0 = temp0.mod512x256(temp1, b1);
