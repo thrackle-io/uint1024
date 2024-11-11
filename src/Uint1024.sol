@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import "src/Uint512.sol";
 import "src/Uint512Extended.sol";
+import "forge-std/console2.sol";
 
 library Uint1024 {
     using Uint512 for uint256;
@@ -253,6 +254,79 @@ library Uint1024 {
         // slither-disable-end divide-before-multiply
     }
 
+    function div768x256(uint256 a0, uint256 a1, uint256 a2, uint256 b) internal pure returns (uint256 r0, uint r1, uint r2) {
+        assembly {
+            let remHi := mod(a2, b)
+            r2 := div(sub(a2, remHi), b)
+            a2 := remHi
+        }
+        uint rem = a1.mod512x256(a2, b);
+        r1 = a1.divRem512x256(a2, b, rem);
+        r0 = a0.safeDiv512x256(rem, b);
+    }
+
+    /**
+     * @dev Calculates the division of a 512-bit unsigned integer by a denominator which is
+     * a power of 2. It doesn't require the result to be a uint256.
+     * @notice very useful if a division of a 512 is expected to be also a 512.
+     * @param a0 A uint256 representing the low bits of the numerator
+     * @param a1 A uint256 representing the high bits of the numerator
+     * @param n the power of 2 that the division will be carried out by (demominator = 2**n).
+     * @return r0 The lower bits of the result
+     * @return r1 The middle bits of the result
+     * @return r2 The higher bits of the result
+     * @return remainder of the division
+     */
+    function div768ByPowerOf2(
+        uint256 a0,
+        uint256 a1,
+        uint a2,
+        uint8 n
+    ) internal pure returns (uint256 r0, uint256 r1, uint r2, uint256 remainder) {
+        if (n == 0) revert("n must be greater than 0");
+        uint _2ToTheNth = 2 ** n;
+        uint mask = _2ToTheNth - 1;
+        uint shiftedBitsA2 = a2 & mask;
+        uint shiftedBitsA1 = a1 & mask;
+        remainder = a0 & mask;
+        r2 = a2 >> n;
+        r1 = (shiftedBitsA2 << (256 - n)) | (a1 >> n);
+        r0 = (shiftedBitsA1 << (256 - n)) | (a0 >> n);
+    }
+
+    function div768x512(uint256 a0, uint256 a1, uint a2, uint256 b0, uint256 b1) internal pure returns (uint256 r0, uint r1) {
+        // we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
+        uint n = b1.log2() + 1;
+        // d = 2**n;
+        // if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
+        (uint c, uint c1, ) = b0.div512ByPowerOf2(b1, uint8(n));
+        if (c1 > 0) revert("div512x512: unsuccessful division by 2**n");
+        // if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
+        // making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
+        /// a / d
+        (uint resultLo, uint resultMi, uint resultHi, ) = div768ByPowerOf2(a0, a1, a2, uint8(n));
+        // (a / d) / c
+        (r0, r1, ) = div768x256(resultLo, resultMi, resultHi, c);
+    }
+
+    function mod768x256(uint a0, uint a1, uint a2, uint b) internal pure returns (uint rem) {
+        uint rem_a2x256;
+        uint rem_a2x512;
+        assembly {
+            // (a2*2**512)%b
+            rem_a2x256 := mulmod(a2, not(0), b) // (a2*(2**256 - 1))%b
+            rem_a2x256 := addmod(rem, a2, b) // (a2*(2**256 - 1) + a2)%b = (a2*(2**256))%b
+            rem_a2x512 := mulmod(rem_a2x256, not(0), b) // (a2*(2**256)*(2**256 - 1))%b = (a2*2**512 - a2*2**256)%b
+            rem_a2x512 := addmod(rem_a2x512, sub(0, rem_a2x256), b) // (a2*2**512 - a2*2**256 - a2*(2**256))%b
+        }
+        // (a1*2**256 + a0)%b
+        rem = a0.mod512x256(a1, b);
+        // (a2*2**512 + a1*2**256 + a0)%b
+        assembly {
+            rem := addmod(rem, rem_a2x512, b)
+        }
+    }
+
     function div1024x512In512Rem(
         uint256 a0,
         uint256 a1,
@@ -312,29 +386,58 @@ library Uint1024 {
         uint256 b0,
         uint256 b1
     ) internal pure returns (uint256 r0, uint r1, uint r2) {
+        console2.log("a3, b1: ", a3, b1);
         /// r2
-        r2 = a3 / b1;
-        uint m2 = a3 % b1;
+        uint m2;
+        r2 = a2.div512x512(a3, b0, b1);
+        (uint proofLo, uint proofHi) = b0.mul512x256(b1, r2);
+        if (a2.lt512(a3, proofLo, proofHi)) {
+            --r2;
+            (uint lo, uint hi) = proofLo.sub512x512(proofHi, a2, a3);
+            (m2, ) = b0.sub512x512(b1, lo, hi);
+        } else (m2, ) = a2.sub512x512(a3, proofLo, proofHi);
+        console2.log("r2, m2: ", r2, m2);
         /// r1
         (uint temp0, uint temp1) = (a2, m2);
+        console2.log("temp0, temp1: ", temp0, temp1);
         (uint subtrahendLo, uint subtrahendHi) = r2.mul256x256(b0);
-        // if (temp0.lt512(temp1, subtrahendLo, subtrahendHi)) {
-        //     --r2;
-        //     (subtrahendLo, subtrahendHi) = r2.mul256x256(b0);
-        // }
+        console2.log("subtrahendLo, subtrahendHi: ", subtrahendLo, subtrahendHi);
+        if (temp0.lt512(temp1, subtrahendLo, subtrahendHi)) {
+            console2.log("r1 negative value");
+            // if temp < subtrahend
+            r2 = r2 - 1; // r2 - 1
+            m2 = m2 + b1;
+            console2.log("rewriting r2, m2: ", r2, m2);
+            (temp0, temp1) = (a2, m2);
+            console2.log("rewriting temp0, temp1: ", temp0, temp1);
+            (subtrahendLo, subtrahendHi) = r2.mul256x256(b0);
+            console2.log("rewriting subtrahendLo, subtrahendHi: ", subtrahendLo, subtrahendHi);
+        }
         (temp0, temp1) = temp0.safeSub512x512(temp1, subtrahendLo, subtrahendHi);
+        console2.log("after subtraction temp0, temp1: ", temp0, temp1);
         r1 = temp0.safeDiv512x256(temp1, b1);
         uint m1 = temp0.mod512x256(temp1, b1);
+        console2.log("r1, m1: ", r1, m1);
         // r0
         (temp0, temp1) = (a1, m1);
+        console2.log("temp0, temp1: ", temp0, temp1);
         (subtrahendLo, subtrahendHi) = r1.mul256x256(b0);
-        // if (temp0.lt512(temp1, subtrahendLo, subtrahendHi)) {
-        //     --r1;
-        //     (subtrahendLo, subtrahendHi) = r1.mul256x256(b0);
-        // }
+        console2.log("subtrahendLo, subtrahendHi: ", subtrahendLo, subtrahendHi);
+        if (temp0.lt512(temp1, subtrahendLo, subtrahendHi)) {
+            console2.log("r0 negative value");
+            r1 = r1 - 1;
+            m1 = m1 + b1;
+            console2.log("rewriting r1, m1: ", r1, m1);
+            (temp0, temp1) = (a1, m1);
+            console2.log("rewriting temp0, temp1: ", temp0, temp1);
+            (subtrahendLo, subtrahendHi) = r1.mul256x256(b0);
+            console2.log("rewriting subtrahendLo, subtrahendHi: ", subtrahendLo, subtrahendHi);
+        }
         (temp0, temp1) = temp0.safeSub512x512(temp1, subtrahendLo, subtrahendHi);
+        console2.log("after subtraction temp0, temp1: ", temp0, temp1);
         r0 = temp0.safeDiv512x256(temp1, b1);
         uint m0 = temp0.mod512x256(temp1, b1);
+        console2.log("r0, m0: ", r0, m0);
         m0;
     }
 

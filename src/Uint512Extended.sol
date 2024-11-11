@@ -58,7 +58,7 @@ library Uint512Extended {
      * @return boolean. True if x < y
      */
     function lt512(uint256 x0, uint256 x1, uint256 y0, uint256 y1) internal pure returns (bool) {
-        return !ge512(x0, x1, y0, y1);
+        return x1 < y1 || (x1 == y1 && x0 < y0);
     }
 
     /**
@@ -79,6 +79,32 @@ library Uint512Extended {
         remainder = a0 & (_2ToTheNth - 1);
         r1 = a1 >> n;
         r0 = (shiftedBits << (256 - n)) | (a0 >> n);
+    }
+
+    /**
+     * @dev Calculates the division of a 512-bit unsigned integer by a 256-bit uint where the result
+     * can be a 512 bit unsigned integer.
+     * @param a0 A uint256 representing the low bits of the numerator
+     * @param a1 A uint256 representing the high bits of the numerator
+     * @param b0 A uint256 representing the high bits of the denominator
+     * @param b1 A uint256 representing the low bits of the denominator
+     * @return result
+     */
+    function div512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pure returns (uint256 result) {
+        // we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
+        uint n = log2(b1) + 1;
+        // d = 2**n;
+        // if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
+        (uint c, uint c1, uint e) = div512ByPowerOf2(b0, b1, uint8(n));
+        e;
+        if (c1 > 0) revert("div512x512: unsuccessful division by 2**n");
+        // if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
+        // making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
+        /// a / d
+        (uint resultLo, uint resultHi, uint remainder) = div512ByPowerOf2(a0, a1, uint8(n));
+        remainder;
+        // (a / d) / c
+        result = resultLo.div512x256(resultHi, c);
     }
 
     /**
@@ -199,6 +225,48 @@ library Uint512Extended {
             inv := mul(inv, sub(2, mul(b, inv))) // 128
             inv := mul(inv, sub(2, mul(b, inv))) // 256
             // slither-disable-end divide-before-multiply
+        }
+    }
+
+    function log2(uint x) internal pure returns (uint n) {
+        // 2 ** 128
+        if (x >= 340282366920938463463374607431768211456) {
+            x >>= 128;
+            n += 128;
+        }
+        // 2 ** 64
+        if (x >= 18446744073709551616) {
+            x >>= 64;
+            n += 64;
+        }
+        // 2 ** 32
+        if (x >= 4294967296) {
+            x >>= 32;
+            n += 32;
+        }
+        // 2 ** 16
+        if (x >= 65536) {
+            x >>= 16;
+            n += 16;
+        }
+        // 2 ** 8
+        if (x >= 256) {
+            x >>= 8;
+            n += 8;
+        }
+        // 2 ** 4
+        if (x >= 16) {
+            x >>= 4;
+            n += 4;
+        }
+        // 2 ** 2
+        if (x >= 4) {
+            x >>= 2;
+            n += 2;
+        }
+        // 2 ** 1
+        if (x >= 2) {
+            /* x >>= 1; */ n += 1;
         }
     }
 }
