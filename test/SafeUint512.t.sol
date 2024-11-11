@@ -1,4 +1,4 @@
-/// SPDX-License-Identifier: UNLICENSED
+/// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
 import "forge-std/console2.sol";
@@ -35,7 +35,7 @@ contract SafeUint512FuzzTests is Test, PythonUtils {
         (uint256 pyValLo, uint256 pyValHi, uint256 r2,) = abi.decode(res, (uint256,uint256,uint256,uint256));
         console2.log("pyRes: ", pyValLo, pyValHi, r2);
 
-        if(r2 > 0) vm.expectRevert("mul512x256 overflow");
+        if(r2 > 0) vm.expectRevert("Uint512: mul512x256 overflow");
         (uint256 solR0, uint256 solR1) = a0.safeMul512x256(a1, b);
         console2.log("solRes:", solR0, solR1);
 
@@ -50,7 +50,7 @@ contract SafeUint512FuzzTests is Test, PythonUtils {
         (uint256 pyValLo, uint256 pyValHi, uint256 r2,) = abi.decode(res, (uint256,uint256,uint256,uint256));
         console2.log("pyRes: ", pyValLo, pyValHi, r2);
 
-        if(r2 > 0) vm.expectRevert("add512x512 overflow");
+        if(r2 > 0) vm.expectRevert("Uint512: safeAdd512 overflow");
         (uint256 solR0, uint256 solR1) = a0.safeAdd512x512(a1, b0, b1);
         console2.log("solRes:", solR0, solR1);
 

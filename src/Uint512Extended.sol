@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: GPLv3
 pragma solidity ^0.8.24;
 
 import "src/Uint512.sol";
@@ -73,7 +73,7 @@ library Uint512Extended {
      * @return remainder of the division
      */
     function div512ByPowerOf2(uint256 a0, uint256 a1, uint8 n) internal pure returns (uint256 r0, uint256 r1, uint256 remainder) {
-        if (n == 0) revert("n must be greater than 0");
+        if (n == 0) revert("Uint512: n must be greater than 0");
         uint _2ToTheNth = 2 ** n;
         uint shiftedBits = a1 & (_2ToTheNth - 1);
         remainder = a0 & (_2ToTheNth - 1);
@@ -100,8 +100,8 @@ library Uint512Extended {
                 let ptr := mload(0x40) // Get free memory pointer
                 mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
                 mstore(add(ptr, 0x04), 0x20) // String offset
-                mstore(add(ptr, 0x24), 19) // Revert reason length
-                mstore(add(ptr, 0x44), "mul512x256 overflow")
+                mstore(add(ptr, 0x24), 28) // Revert reason length
+                mstore(add(ptr, 0x44), "Uint512: mul512x256 overflow")
                 revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
             }
         }
@@ -111,26 +111,22 @@ library Uint512Extended {
      * @notice Calculates the sum of two uint512 safely
      * @param a0 A uint256 representing the lower bits of the first addend
      * @param a1 A uint256 representing the higher bits of the first addend
-     * @param b0 A uint256 representing the lower bits of the seccond addend
-     * @param b1 A uint256 representing the higher bits of the seccond addend
+     * @param b0 A uint256 representing the lower bits of the second addend
+     * @param b1 A uint256 representing the higher bits of the second addend
      * @return r0 The result as a uint512. r0 contains the lower bits
      * @return r1 The higher bits of the result
      */
     function safeAdd512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pure returns (uint256 r0, uint256 r1) {
+        uint carryoverB;
         assembly {
             r0 := add(a0, b0)
-            r1 := add(add(a1, b1), lt(r0, a0))
-
-            //overflow check
-            if or(lt(r1,a1),lt(r1,b1)){
-                let ptr := mload(0x40) // Get free memory pointer
-                mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
-                mstore(add(ptr, 0x04), 0x20) // String offset
-                mstore(add(ptr, 0x24), 19) // Revert reason length
-                mstore(add(ptr, 0x44), "add512x512 overflow")
-                revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
-            }
+            let carryoverA := lt(r0, b0)
+            r1 := add(a1, b1)
+            carryoverB := lt(r1, b1)
+            r1 := add(r1, carryoverA)
+            carryoverB := or(carryoverB, lt(r1, carryoverA))
         }
+        if (carryoverB > 0) revert ("Uint512: safeAdd512 overflow");
     }
 
     /**

@@ -1,4 +1,4 @@
-/// SPDX-License-Identifier: UNLICENSED
+/// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 import "forge-std/console2.sol";
 import "forge-std/Test.sol";
@@ -78,7 +78,7 @@ contract Uint1024FuzzTests is Test, PythonUtils {
         console2.log("pythonRes:", pyR0, pyR1, pyR2);
         console2.log("pythonRes cont:", pyR3, pyR4);
 
-        if (pyR3 > 0) vm.expectRevert("add768 overflow");
+        if (pyR3 > 0) vm.expectRevert("Uint1024: add768 overflow");
         (solR0, solR1, solR2) = Uint1024.add768x768(a0, a1, a2, b0, b1, b2);
         console2.log("solRes:", solR0, solR1, solR2);
 
@@ -95,7 +95,7 @@ contract Uint1024FuzzTests is Test, PythonUtils {
         console2.log("pythonRes:", pyR0, pyR1, pyR2);
         console2.log("pythonRes cont:", pyR3, pyR4);
 
-        if (pyR4 > 0) vm.expectRevert("add1024 overflow");
+        if (pyR4 > 0) vm.expectRevert("Uint1024: add1024 overflow");
         (solR0, solR1, solR2, solR3) = Uint1024.add1024x1024(a0, a1, a2, a3, b0, b1, b2, b3);
         console2.log("solRes:", solR0, solR1, solR2);
         console2.log("solRes cont:", solR3);
@@ -115,7 +115,7 @@ contract Uint1024FuzzTests is Test, PythonUtils {
         (pyR0, pyR1, pyR2, pyR3, pyR4) = abi.decode(res, (uint256, uint256, uint256, uint256, uint256));
         console2.log("pythonRes:", pyR0, pyR1, pyR2);
         console2.log("Python highest Bits: ", pyR4);
-        if (pyR4 > 0) vm.expectRevert("Uint768: negative result sub768x768");
+        if (pyR4 > 0) vm.expectRevert("Uint1024: negative result sub768x768");
         (solR0, solR1, solR2) = Uint1024.sub768x768(a0, a1, a2, b0, b1, b2);
         console2.log("solRes:", solR0, solR1, solR2);
 
@@ -185,7 +185,7 @@ contract Uint1024FuzzTests is Test, PythonUtils {
     function testDivMulInverse512(uint b0, uint b1) public {
         TesterContract testerContract = new TesterContract();
         b1 = bound(b1, 1, type(uint256).max);
-        if (b0 % 2 == 0) vm.expectRevert("Uint1024: denominator must be odd");
+        if (b0 % 2 == 0) vm.expectRevert("Uint1024: mulInverseMod512 denominator must be odd");
         (solR0, solR1) = testerContract.mulInverseMod512(b0, b1);
         console2.log("solRes:", solR0, solR1);
 
