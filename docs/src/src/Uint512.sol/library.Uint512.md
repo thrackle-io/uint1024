@@ -1,5 +1,5 @@
 # Uint512
-[Git Source](https://github.com/thrackle-io/uint1024/blob/95bbd0a26aeb39df62d9cabf274b2a857355077c/src/Uint512.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/22ddf238a691a8567c23d473fd67784b1462e5c6/src/Uint512.sol)
 
 **Author:**
 @oscarsernarosero @mpetersoCode55 @cirsteve @Palmerg4
@@ -11,6 +11,8 @@
 ### mul256x256
 
 Calculates the product of two uint256
+
+This method has been changed from the original Uint512 library: visibility changed from public to internal
 
 *Used the chinese remainder theoreme*
 
@@ -37,6 +39,8 @@ function mul256x256(uint256 a, uint256 b) internal pure returns (uint256 r0, uin
 
 Calculates the product of two uint512 and uint256
 
+This method has been changed from the original Uint512 library: visibility changed from public to internal
+
 *Used the chinese remainder theoreme*
 
 
@@ -62,6 +66,8 @@ function mul512x256(uint256 a0, uint256 a1, uint256 b) internal pure returns (ui
 ### mulMod256x256
 
 Calculates the product and remainder of two uint256
+
+This method has been changed from the original Uint512 library: visibility changed from public to internal
 
 *Used the chinese remainder theorem*
 
@@ -90,6 +96,8 @@ function mulMod256x256(uint256 a, uint256 b, uint256 c) internal pure returns (u
 
 Calculates the sum of two uint512
 
+This method has been changed from the original Uint512 library: visibility changed from public to internal
+
 
 ```solidity
 function add512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pure returns (uint256 r0, uint256 r1);
@@ -100,8 +108,8 @@ function add512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pur
 |----|----|-----------|
 |`a0`|`uint256`|A uint256 representing the lower bits of the first addend|
 |`a1`|`uint256`|A uint256 representing the higher bits of the first addend|
-|`b0`|`uint256`|A uint256 representing the lower bits of the seccond addend|
-|`b1`|`uint256`|A uint256 representing the higher bits of the seccond addend|
+|`b0`|`uint256`|A uint256 representing the lower bits of the second addend|
+|`b1`|`uint256`|A uint256 representing the higher bits of the second addend|
 
 **Returns**
 
@@ -114,6 +122,8 @@ function add512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pur
 ### sub512x512
 
 Calculates the difference of two uint512
+
+This method has been changed from the original Uint512 library: visibility changed from public to internal
 
 
 ```solidity
@@ -140,6 +150,8 @@ function sub512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pur
 
 Calculates the division of a 512 bit unsigned integer by a 256 bit integer. It
 requires the remainder to be known and the result must fit in a 256 bit integer
+
+This method has been changed from the original Uint512 library: visibility changed from public to internal
 
 *For a detailed explaination see:
 https://www.researchgate.net/publication/235765881_Efficient_long_division_via_Montgomery_multiply*
@@ -169,6 +181,8 @@ function divRem512x256(uint256 a0, uint256 a1, uint256 b, uint256 rem) internal 
 Calculates the division of a 512 bit unsigned integer by a 256 bit integer. It
 requires the result to fit in a 256 bit integer
 
+This method has been changed from the original Uint512 library: visibility changed from public to internal
+
 *For a detailed explaination see:
 https://www.researchgate.net/publication/235765881_Efficient_long_division_via_Montgomery_multiply*
 
@@ -195,6 +209,8 @@ function div512x256(uint256 a0, uint256 a1, uint256 b) internal pure returns (ui
 
 Calculates the square root of x, rounding down
 
+This method has been changed from the original Uint512 library: visibility changed from public to internal
+
 *Uses the Babylonian method https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method*
 
 
@@ -217,6 +233,8 @@ function sqrt256(uint256 x) internal pure returns (uint256 s);
 ### sqrt512
 
 Calculates the square root of a 512 bit unsigned integer, rounding down
+
+This method has been changed from the original Uint512 library: visibility changed from public to internal
 
 *Uses the Karatsuba Square Root method. See https://hal.inria.fr/inria-00072854/document for details*
 
