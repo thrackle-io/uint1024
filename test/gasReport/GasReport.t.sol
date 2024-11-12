@@ -76,6 +76,10 @@ contract GasReports is Test, GasHelpers {
         _writeJson(".Mul.mulInverseMod256");
 
         _resetGasUsed();
+        _mulInverseMod512GasUsed();
+        _writeJson(".Mul.mulInverseMod512");
+
+        _resetGasUsed();
         _div512ByPowerOf2GasUsed();
         _writeJson(".Div.div512ByPowerOf2");
 
@@ -269,6 +273,15 @@ contract GasReports is Test, GasHelpers {
         startMeasuringGas("mulInverseMod256 - returns uint256");
         Uint512Extended.mulInverseMod256(
             10000000000000000000000000000 // b
+        );
+        gasUsed = stopMeasuringGas();
+    }
+
+    function _mulInverseMod512GasUsed() internal {
+        startMeasuringGas("mulInverseMod512 - returns uint512");
+        Uint1024.mulInverseMod512(
+            10000000000000000000000000001, // b0
+            10000000000000000000000000000  // b1
         );
         gasUsed = stopMeasuringGas();
     }
