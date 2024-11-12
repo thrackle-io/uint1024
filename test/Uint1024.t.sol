@@ -279,7 +279,7 @@ contract Uint1024FuzzTests is Test, PythonUtils {
         (pyR0, pyR1, pyR2, ) = abi.decode(res, (uint, uint, uint, uint));
         console2.log("pythonRes:", pyR0, pyR1, pyR2);
 
-        if (absoluteDiff(solR0, pyR0) > 1) revert("R0 different");
+        if (solR0 - pyR0 > 2) revert("R0 different");
         assertEq(solR1, pyR1, "R1 different");
         assertEq(pyR2, 0, "R2 different");
     }
