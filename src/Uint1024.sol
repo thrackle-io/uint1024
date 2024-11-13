@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
 import "src/Uint512.sol";
@@ -13,33 +13,40 @@ library Uint1024 {
      * @param a0 A uint256 representing the lower bits of the first addend
      * @param a1 A uint256 representing the higher bits of the first addend
      * @param a2 A uint256 representing the highest bits of the first addend
-     * @param b0 A uint256 representing the lower bits of the seccond addend
-     * @param b1 A uint256 representing the higher bits of the seccond addend
-     * @param b2 A uint256 representing the highest bits of the seccond addend
+     * @param b0 A uint256 representing the lower bits of the second addend
+     * @param b1 A uint256 representing the higher bits of the second addend
+     * @param b2 A uint256 representing the highest bits of the second addend
      * @return r0 The lower bits of the result
      * @return r1 The higher bits of the result
      * @return r2 The highest bits of the result
      */
-    function add768x768(uint a0, uint a1, uint a2, uint b0, uint b1, uint b2) internal pure returns (uint r0, uint r1, uint r2) {
+    function add768x768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2) internal pure returns (uint256 r0, uint256 r1, uint256 r2) {
+        // Initialize the carryover check here so we can check outside of the assembly block
+        uint256 carryoverA;
         assembly {
+            // Add the lowest bits together
             r0 := add(a0, b0)
-            let carryoverA := lt(r0, b0)
+            // Check if the lower bits have a carryover
+            carryoverA := lt(r0, b0)
+            // Add the higher bits together
             r1 := add(a1, b1)
+            // Check if the higher bits have a carryover
             let carryoverB := lt(r1, b1)
+            // Add the potental carryover to the higher bits of the result
             r1 := add(r1, carryoverA)
+            // Check for carryover from the recalc of r1, taking into account previous carryoverB value
             carryoverB := or(carryoverB, lt(r1, carryoverA))
+            // Add the highest bits together
             r2 := add(a2, b2)
+            // Check if the highest bits have a carryover
             carryoverA := lt(r2, b2)
+            // Add the potential carryover to the highest bits of the result
             r2 := add(r2, carryoverB)
-            if carryoverA {
-                let ptr := mload(0x40) // Get free memory pointer
-                mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
-                mstore(add(ptr, 0x04), 0x20) // String offset
-                mstore(add(ptr, 0x24), 15) // Revert reason length
-                mstore(add(ptr, 0x44), "add768 overflow")
-                revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
-            }
+            // Check for carryover from the recalc of r2, taking into account previous carryoverA value
+            carryoverA := or(carryoverA, lt(r2, carryoverB))
         }
+        // If carryoverA has some value, it indicates an overflow for some or all of the results bits
+        if (carryoverA > 0) revert ("Uint1024: add768 overflow");
     }
 
     /**
@@ -54,29 +61,40 @@ library Uint1024 {
      * @return r1 The higher bits of the result
      * @return r2 The highest bits of the result
      */
-    function sub768x768(uint a0, uint a1, uint a2, uint b0, uint b1, uint b2) internal pure returns (uint r0, uint r1, uint r2) {
-        if (lt768(a0, a1, a2, b0, b1, b2)) revert("Uint768: negative result sub768x768");
+    function sub768x768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2) internal pure returns (uint256 r0, uint256 r1, uint256 r2) {
+        if (lt768(a0, a1, a2, b0, b1, b2)) revert("Uint1024: negative result sub768x768");
 
         assembly {
+            // If b0 <= a0, find the difference of the lowest set of bits
             if or(lt(b0, a0), eq(b0, a0)) {
                 r0 := sub(a0, b0)
             }
+            // When b0 > a0, we'll have to borrow from a higher set of bits
             if gt(b0, a0) {
+                // r0 is the sum of a0 and negative b0
                 r0 := add(a0, sub(0, b0))
+                // If a1 == 0, we "borrow" a bit from a2 for the next step
                 if iszero(a1) {
                     a2 := sub(a2, 1)
                 }
+                // Subtract the extra bit from a1
                 a1 := sub(a1, 1)
             }
+            // set a switch condition to 1 if b1 <= a1, else set the condition to 0
             let condition := or(lt(b1, a1), eq(b1, a1))
             switch condition
+            // case 0, where b1 > a1
             case 0 {
+                // r1 is the sum of a1 and negative b1
                 r1 := add(a1, sub(0, b1))
                 a2 := sub(a2, 1)
             }
+            // case 1, where b1 <= a1
             case 1 {
+                // r1 is simply the difference of a1 and b1
                 r1 := sub(a1, b1)
             }
+            // r2 is the difference of a2 and b2
             r2 := sub(a2, b2)
         }
     }
@@ -91,15 +109,22 @@ library Uint1024 {
      * @return r1 The higher bits of the result
      * @return r2 The highest bits of the result
      */
-    function mul512x256In768(uint a0, uint a1, uint b) internal pure returns (uint r0, uint r1, uint r2) {
-        (uint r0Lo, uint r0Hi) = a0.mul256x256(b);
-        (uint r1Lo, uint r1Hi) = a1.mul256x256(b);
+    function mul512x256In768(uint256 a0, uint256 a1, uint256 b) internal pure returns (uint256 r0, uint256 r1, uint256 r2) {
+        // Get the low and high bits of r0
+        (uint256 r0Lo, uint256 r0Hi) = a0.mul256x256(b);
+        // Get the low and high bits of r1
+        (uint256 r1Lo, uint256 r1Hi) = a1.mul256x256(b);
+        // r0 is equal to the lowest bits of a0 * b
         r0 = r0Lo;
         assembly {
+            // r1 is equal to the sum of the higher bits of a0 * b and the lower bits of a1 * b
             r1 := add(r0Hi, r1Lo)
+            // If r1 < r0Hi, there was a phantom overflow
             if lt(r1, r0Hi) {
+                // Account for the overflow
                 r2 := 1
             }
+            // r2 is equal to the higher bits of a1 * b 
             r2 := add(r2, r1Hi)
         }
     }
@@ -116,12 +141,16 @@ library Uint1024 {
      * @return r2 The higher bits of the result
      * @return r3 The highest bits of the result
      */
-    function mul512x512In1024(uint a0, uint a1, uint b0, uint b1) internal pure returns (uint r0, uint r1, uint r2, uint r3) {
-        uint r0Hi;
+    function mul512x512In1024(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3) {
+        uint256 r0Hi;
+        // Get the low and high bits of r0
         (r0, r0Hi) = a0.mul256x256(b0);
-        (uint r1Lo, uint r1Hi) = a1.mul256x256(b0);
-        (uint r2Lo, uint r2Hi) = a0.mul256x256(b1);
-        (uint r3Lo, uint r3Hi) = a1.mul256x256(b1);
+        // Get the low and high bits of r1
+        (uint256 r1Lo, uint256 r1Hi) = a1.mul256x256(b0);
+        // Get the low and high bits of r2
+        (uint256 r2Lo, uint256 r2Hi) = a0.mul256x256(b1);
+        // Get the low and high bits of r3
+        (uint256 r3Lo, uint256 r3Hi) = a1.mul256x256(b1);
         assembly {
             /// r1
             let sumA := add(r0Hi, r1Lo)
@@ -140,12 +169,12 @@ library Uint1024 {
         }
     }
 
-    function mul512x512Mod512(uint a0, uint a1, uint b0, uint b1) internal pure returns (uint r0, uint r1) {
-        uint r0Hi;
+    function mul512x512Mod512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pure returns (uint256 r0, uint256 r1) {
+        uint256 r0Hi;
         (r0, r0Hi) = a0.mul256x256(b0);
         // slither-disable-start unused-return --> the modulo 512 doesn't care of the upper bits because they are not part of the result
-        (uint r1Lo, ) = a1.mul256x256(b0);
-        (uint r2Lo, ) = a0.mul256x256(b1);
+        (uint256 r1Lo, ) = a1.mul256x256(b0);
+        (uint256 r2Lo, ) = a0.mul256x256(b1);
         // slither-disable-end unused-return
         assembly {
             /// r1
@@ -167,7 +196,7 @@ library Uint1024 {
      * @return r0 The lower bits of the result
      * @return r1 The higher bits of the result
      */
-    function div512x256In512(uint256 a0, uint256 a1, uint256 b) internal pure returns (uint256 r0, uint r1) {
+    function div512x256In512(uint256 a0, uint256 a1, uint256 b) internal pure returns (uint256 r0, uint256 r1) {
         assembly {
             let remHi := mod(a1, b)
             r1 := div(sub(a1, remHi), b)
@@ -197,7 +226,7 @@ library Uint1024 {
             pow := add(div(sub(0, pow), pow), 1)
             a0 := or(a0, mul(a1, pow))
         }
-        uint inv = b.mulInverseMod256();
+        uint256 inv = b.mulInverseMod256();
 
         assembly {
             r0 := mul(a0, inv)
@@ -205,18 +234,18 @@ library Uint1024 {
         // slither-disable-end divide-before-multiply
     }
 
-    function mulInverseMod512(uint b0, uint b1) internal pure returns (uint inv0, uint inv1) {
-        if (b0 % 2 == 0) revert("Uint1024: denominator must be odd");
-        (uint bx3Lo, uint bx3Hi) = b0.mul512x256(b1, 3);
+    function mulInverseMod512(uint256 b0, uint256 b1) internal pure returns (uint256 inv0, uint256 inv1) {
+        if (b0 % 2 == 0) revert("Uint1024: mulInverseMod512 denominator must be odd");
+        (uint256 bx3Lo, uint256 bx3Hi) = b0.mul512x256(b1, 3);
         inv1 = bx3Hi;
         assembly {
             // Calculate the multiplicative inverse mod 2**256 of b. See Montgomery reduction for more details.
             //slither-disable-next-line incorrect-exp
             inv0 := xor(bx3Lo, 2) // 4
         }
-        uint two = 2;
-        uint interimLo;
-        uint interimHi;
+        uint256 two = 2;
+        uint256 interimLo;
+        uint256 interimHi;
 
         /// expansion of the inverse with Hensel's lemma
         (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
@@ -259,7 +288,7 @@ library Uint1024 {
      * @param b2 A uint256 representing the higher bits of the subtrahend
      * @return Returns true if there would be an underflow/negative result
      */
-    function lt768(uint a0, uint a1, uint a2, uint b0, uint b1, uint b2) internal pure returns (bool) {
+    function lt768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2) internal pure returns (bool) {
         return a2 < b2 || (a2 == b2 && (a1 < b1 || (a1 == b1 && a0 < b0)));
     }
 
@@ -276,20 +305,20 @@ library Uint1024 {
      * @param b3 A uint256 representing the highest bits of the subtrahend
      * @return Returns true if there would be an underflow/negative result
      */
-    function lt1024(uint a0, uint a1, uint a2, uint256 a3, uint b0, uint b1, uint b2, uint256 b3) internal pure returns (bool) {
+    function lt1024(uint256 a0, uint256 a1, uint256 a2, uint256 a3, uint256 b0, uint256 b1, uint256 b2, uint256 b3) internal pure returns (bool) {
         return a3 < b3 || (a3 == b3 && (a2 < b2 || (a2 == b2 && (a1 < b1 || (a1 == b1 && a0 < b0)))));
     }
 
     /**
-     * @notice Calculates the sum of two uint1024. The result is a uint1024.
+     * @notice Calculates the sum of two Uint1024. The result is a Uint1024.
      * @param a0 A uint256 representing the lower bits of the first addend
      * @param a1 A uint256 representing the high bits of the first addend
      * @param a2 A uint256 representing the higher bits of the first addend
      * @param a3 A uint256 representing the highest bits of the first addend
-     * @param b0 A uint256 representing the lower bits of the seccond addend
-     * @param b1 A uint256 representing the high bits of the seccond addend
-     * @param b2 A uint256 representing the higher bits of the seccond addend
-     * @param b3 A uint256 representing the highest bits of the seccond addend
+     * @param b0 A uint256 representing the lower bits of the second addend
+     * @param b1 A uint256 representing the high bits of the second addend
+     * @param b2 A uint256 representing the higher bits of the second addend
+     * @param b3 A uint256 representing the highest bits of the second addend
      * @return r0 The lower bits of the result
      * @return r1 The high bits of the result
      * @return r2 The higher bits of the result
@@ -305,34 +334,44 @@ library Uint1024 {
         uint256 b2,
         uint256 b3
     ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3) {
+        // Initialize the carryover check here so we can check outside of the assembly block
+        uint256 carryoverB;
         assembly {
+            // Add the lowest bits together
             r0 := add(a0, b0)
+            // Check if the lower bits have a carryover
             let carryoverA := lt(r0, b0)
+            // Add the high bits together
             r1 := add(a1, b1)
-            let carryoverB := lt(r1, b1)
+            // Check if the high bits have a carryover
+            carryoverB := lt(r1, b1)
+            // Add the potental carryover to the high bits of the result
             r1 := add(r1, carryoverA)
+            // Check for carryover from the recalc of r1, taking into account previous carryoverB value
             carryoverB := or(carryoverB, lt(r1, carryoverA))
+            // Add the higher bits together
             r2 := add(a2, b2)
+            // Check if the higher bits have a carryover
             carryoverA := lt(r2, b2)
+            // Add the potential carryover to the higher bits of the result
             r2 := add(r2, carryoverB)
+            // Check for carryover from the recalc of r2, taking into account previous carryoverA value
             carryoverA := or(carryoverA, lt(r2, carryoverB))
+            // Add the highest bits together
             r3 := add(a3, b3)
+            // Check if the highest bits have a carryover
             carryoverB := lt(r3, b3)
+            // Add the potential carryover to the highest bits of the result
             r3 := add(r3, carryoverA)
+            // Check for carryover from the recalc of r3, taking into account previous carryoverB value
             carryoverB := or(carryoverB, lt(r3, carryoverA))
-            if carryoverB {
-                let ptr := mload(0x40) // Get free memory pointer
-                mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
-                mstore(add(ptr, 0x04), 0x20) // String offset
-                mstore(add(ptr, 0x24), 16) // Revert reason length
-                mstore(add(ptr, 0x44), "add1024 overflow")
-                revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
-            }
         }
+        // If carryoverB has some value, it indicates an overflow for some or all of the results bits
+        if (carryoverB > 0) revert ("Uint1024: add1024 overflow");
     }
 
     /**
-     * @notice Calculates the difference of two uint1024. The result is a uint1024.
+     * @notice Calculates the difference of two Uint1024. The result is a Uint1024.
      * @param a0 A uint256 representing the lower bits of the minuend
      * @param a1 A uint256 representing the high bits of the minuend
      * @param a2 A uint256 representing the higher bits of the minuend
@@ -347,51 +386,70 @@ library Uint1024 {
      * @return r3 The highest bits of the result
      */
     function sub1024x1024(
-        uint a0,
-        uint a1,
-        uint a2,
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
         uint256 a3,
-        uint b0,
-        uint b1,
-        uint b2,
+        uint256 b0,
+        uint256 b1,
+        uint256 b2,
         uint256 b3
-    ) internal pure returns (uint r0, uint r1, uint r2, uint256 r3) {
+    ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3) {
         if (lt1024(a0, a1, a2, a3, b0, b1, b2, b3)) revert("Uint1024: negative result sub1024x1024");
+
         assembly {
+            // If b0 <= a0, find the difference of the lowest set of bits
             if or(lt(b0, a0), eq(b0, a0)) {
                 r0 := sub(a0, b0)
             }
+            // When b0 > a0, we'll have to borrow from a higher set of bits
             if gt(b0, a0) {
+                // r0 is the difference of a0 and negative b0
                 r0 := add(a0, sub(0, b0))
+                // If a1 == 0, we "borrow" a bit from a2 for the next step
                 if iszero(a1) {
                     if iszero(a2) {
                         a3 := sub(a3, 1)
                     }
                     a2 := sub(a2, 1)
                 }
+                // Subtract the extra bit from a1
                 a1 := sub(a1, 1)
             }
+            // set a switch condition to 1 if b1 <= a1, else set the condition to 0
             let condition := or(lt(b1, a1), eq(b1, a1))
             switch condition
+            // case 0, where b1 > a1
             case 0 {
+                // r1 is the sum of a1 and negative b1
                 r1 := add(a1, sub(0, b1))
+                // If a2 == 0, we "borrow" a bit from a3 for the next step
                 if iszero(a2) {
                     a3 := sub(a3, 1)
                 }
+                // Subtract the extra bit from a2
                 a2 := sub(a2, 1)
             }
+            // case 1, where b1 <= a1
             case 1 {
+                // r1 is simply the difference of a1 and b1
                 r1 := sub(a1, b1)
             }
+            // set a switch condition to 1 if b2 <= a2, else set the condition to 0
             condition := or(lt(b2, a2), eq(b2, a2))
             switch condition
+            // case 0, where b2 > a2
             case 0 {
+                // r2 is the sum of a2 and negative b2
                 r2 := add(a2, sub(0, b2))
                 a3 := sub(a3, 1)
             }
+            // case 1, where b2 <= a2
             case 1 {
+                // r2 is simply the difference of a2 and b2
                 r2 := sub(a2, b2)
             }
+            // r3 is the difference of a3 and b3
             r3 := sub(a3, b3)
         }
     }

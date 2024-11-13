@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: GPLv3
 pragma solidity ^0.8.24;
 
 import "src/Uint512.sol";
@@ -73,7 +73,7 @@ library Uint512Extended {
      * @return remainder of the division
      */
     function div512ByPowerOf2(uint256 a0, uint256 a1, uint8 n) internal pure returns (uint256 r0, uint256 r1, uint256 remainder) {
-        if (n == 0) revert("n must be greater than 0");
+        if (n == 0) revert("Uint512: n must be greater than 0");
         uint _2ToTheNth = 2 ** n;
         uint shiftedBits = a1 & (_2ToTheNth - 1);
         remainder = a0 & (_2ToTheNth - 1);
@@ -91,17 +91,22 @@ library Uint512Extended {
      * @return r1 The higher bits of the result
      */
     function safeMul512x256(uint256 a0, uint256 a1, uint256 b) internal pure returns (uint256 r0, uint256 r1) {
+        // Get the low and high bits of r0
         (uint r0Lo, uint r0Hi) = a0.mul256x256(b);
+        // Get the low and high bits of r1
         (uint r1Lo, uint r1Hi) = a1.mul256x256(b);
+        // r0 is equal to the lowest bits of a0 * b
         r0 = r0Lo;
         assembly {
+            // r1 is equal to the sum of the higher bits of a0 * b and the lower bits of a1 * b
             r1 := add(r0Hi, r1Lo)
+            // If r1 < r0Hi or r1Hi > 0, it indicates a phantom overflow has happened. Revert in this case.
             if or(lt(r1, r0Hi), gt(r1Hi, 0)) {
                 let ptr := mload(0x40) // Get free memory pointer
                 mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
                 mstore(add(ptr, 0x04), 0x20) // String offset
-                mstore(add(ptr, 0x24), 19) // Revert reason length
-                mstore(add(ptr, 0x44), "mul512x256 overflow")
+                mstore(add(ptr, 0x24), 28) // Revert reason length
+                mstore(add(ptr, 0x44), "Uint512: mul512x256 overflow")
                 revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
             }
         }
@@ -111,26 +116,30 @@ library Uint512Extended {
      * @notice Calculates the sum of two uint512 safely
      * @param a0 A uint256 representing the lower bits of the first addend
      * @param a1 A uint256 representing the higher bits of the first addend
-     * @param b0 A uint256 representing the lower bits of the seccond addend
-     * @param b1 A uint256 representing the higher bits of the seccond addend
+     * @param b0 A uint256 representing the lower bits of the second addend
+     * @param b1 A uint256 representing the higher bits of the second addend
      * @return r0 The result as a uint512. r0 contains the lower bits
      * @return r1 The higher bits of the result
      */
     function safeAdd512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pure returns (uint256 r0, uint256 r1) {
+        // Initialize the carryover check here so we can check outside of the assembly block
+        uint carryoverB;
         assembly {
+            // Add the lowest bits together
             r0 := add(a0, b0)
-            r1 := add(add(a1, b1), lt(r0, a0))
-
-            //overflow check
-            if or(lt(r1,a1),lt(r1,b1)){
-                let ptr := mload(0x40) // Get free memory pointer
-                mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
-                mstore(add(ptr, 0x04), 0x20) // String offset
-                mstore(add(ptr, 0x24), 19) // Revert reason length
-                mstore(add(ptr, 0x44), "add512x512 overflow")
-                revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
-            }
+            // Check if the lower bits have a carryover
+            let carryoverA := lt(r0, b0)
+            // Add the highest bits together
+            r1 := add(a1, b1)
+            // Check if the higher bits have a carryover
+            carryoverB := lt(r1, b1)
+            // Add the potental carryover to the higher bits of the result
+            r1 := add(r1, carryoverA)
+            // Check for carryover from the recalc of r1, taking into account previous carryoverB value
+            carryoverB := or(carryoverB, lt(r1, carryoverA))
         }
+        // If carryoverB has some value, it indicates an overflow for some or all of the results bits
+        if (carryoverB > 0) revert ("Uint512: safeAdd512 overflow");
     }
 
     /**
@@ -145,7 +154,9 @@ library Uint512Extended {
     function safeSub512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pure returns (uint256 r0, uint256 r1) {
         if (lt512(a0, a1, b0, b1)) revert("Uint512: negative result sub512x512");
         assembly {
+            // r0 is the difference of a0 and b0
             r0 := sub(a0, b0)
+            // r1 is the difference of a1 and b1. If a0 < b0, subtract 1
             r1 := sub(sub(a1, b1), lt(a0, b0))
         }
     }
