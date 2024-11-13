@@ -2,6 +2,9 @@
   "ignorePatterns": [
     {
       "pattern": "https://www.researchgate.net"
+    },
+    {
+      "pattern": "./docs/src/**.md"
     }
   ],
   "replacementPatterns": [

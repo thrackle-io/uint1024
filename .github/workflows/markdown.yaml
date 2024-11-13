@@ -17,4 +17,3 @@ jobs:
         with:
           config-file: ".github/workflows/mlc_config.json"
           folder-path: "."
-          max-depth: "2"
