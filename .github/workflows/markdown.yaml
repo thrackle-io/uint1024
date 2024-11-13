@@ -17,3 +17,4 @@ jobs:
         with:
           config-file: ".github/workflows/mlc_config.json"
           folder-path: "."
+          use-verbose-mode: true
