@@ -4,7 +4,7 @@
       "pattern": "https://www.researchgate.net"
     },
     {
-      "pattern": "./docs/src/**"
+      "pattern": "./docs/src/README.md"
     }
   ],
   "replacementPatterns": [
