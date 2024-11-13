@@ -3,7 +3,6 @@ pragma solidity ^0.8.24;
 
 import "src/Uint512.sol";
 import "src/Uint512Extended.sol";
-import "forge-std/console2.sol";
 
 library Uint1024 {
     using Uint512 for uint256;
