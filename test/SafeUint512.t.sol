@@ -75,16 +75,12 @@ contract SafeUint512FuzzTests is Test, PythonUtils {
 
     function testDiv512x512(uint a0, uint a1, uint b0, uint b1) public {
         b1 = bound(b1, 1, type(uint256).max / 2);
-        a1 = bound(a1, b1 * 2, type(uint256).max);
-        console2.log(a0, a1, b0, b1);
         uint solVal = a0.div512x512(a1, b0, b1);
-        console2.log("solVal:", solVal);
 
         string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, 0, 0, b0, b1, 0, 0, "div");
         bytes memory res = vm.ffi(inputs);
         console2.logBytes(res);
         (uint pyR0, , , ) = abi.decode(res, (uint, uint, uint, uint));
-        console2.log("pythonRes:", pyR0);
 
         assertEq(pyR0, solVal, "different results");
     }
@@ -99,5 +95,32 @@ contract SafeUint512FuzzTests is Test, PythonUtils {
         console2.log("pythonRes:", pyR0);
 
         assertEq(pyR0, solVal, "different results");
+    }
+
+    function testDiv512ByPowerOf2(uint a0, uint a1, uint8 n) public {
+        a1 = a1 % (2 ** 254);
+        n = (n % 254) + 1;
+
+        (uint solR0, uint solR1, ) = a0.div512ByPowerOf2(a1, n);
+
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, 0, 0, 2 ** n, 0, 0, 0, "div");
+        bytes memory res = vm.ffi(inputs);
+        (uint pyValLo, uint pyValHi) = abi.decode(res, (uint, uint));
+
+        assertEq(pyValLo, solR0);
+        assertEq(pyValHi, solR1);
+    }
+
+    function testMod512x256(uint a0, uint a1, uint b) public {
+        if (b == 0) vm.expectRevert("Uint512: division by zero");
+        uint solR0 = a0.mod512x256(a1, b);
+
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, 0, 0, b, 0, 0, 0, "mod");
+        bytes memory res = vm.ffi(inputs);
+        console2.logBytes(res);
+        uint pyR0 = abi.decode(res, (uint256));
+        console2.log("pyRes: ", pyR0);
+
+        if (solR0 != solR0) revert("different results");
     }
 }

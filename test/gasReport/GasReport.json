@@ -23,7 +23,7 @@
   },
   "Div": {
     "div512ByPowerOf2": 702,
-    "safeDiv512x256": 600,
+    "safeDiv512x256": 623,
     "div512x256In512": 486,
     "div512x256": 465,
     "divRem512x256": 403

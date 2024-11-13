@@ -259,4 +259,21 @@ contract Uint1024FuzzTests is Test, PythonUtils {
 
         if (solR0 != solR0) revert("different results");
     }
+
+    function testDiv768ByPowerOf2(uint a0, uint a1, uint a2, uint8 n) public {
+        a1 = a1 % (2 ** 254);
+        n = (n % 254) + 1;
+
+        (solR0, solR1, solR2, ) = a0.div768ByPowerOf2(a1, a2, n);
+        console2.log("solRes:", solR0, solR1, solR3);
+
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, 0, 2 ** n, 0, 0, 0, "div");
+        bytes memory res = vm.ffi(inputs);
+        (pyR0, pyR1, pyR2) = abi.decode(res, (uint, uint, uint));
+        console2.log("pyRes:", pyR0, pyR1, pyR2);
+
+        assertEq(pyR0, solR0);
+        assertEq(pyR1, solR1);
+        assertEq(pyR2, solR2);
+    }
 }

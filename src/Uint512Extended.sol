@@ -209,6 +209,7 @@ library Uint512Extended {
      * @return rem The remainder of a/b
      */
     function mod512x256(uint256 a0, uint256 a1, uint b) internal pure returns (uint256 rem) {
+        if (b == 0) revert("Uint512: division by zero");
         assembly {
             rem := mulmod(a1, not(0), b)
             rem := addmod(rem, a1, b)

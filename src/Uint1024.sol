@@ -301,7 +301,7 @@ library Uint1024 {
     function div768ByPowerOf2(
         uint256 a0,
         uint256 a1,
-        uint a2,
+        uint256 a2,
         uint8 n
     ) internal pure returns (uint256 r0, uint256 r1, uint r2, uint256 remainder) {
         if (n == 0) revert("n must be greater than 0");
