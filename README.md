@@ -8,7 +8,7 @@ After cloning the repository, run the following command to install the dependenc
 
 First, make sure to have venv installed. If you don't have it installed, run the following command:
 
-*__Note__* _This requires python3 to be installed_
+_**Note**_ _This requires python3 to be installed_
 
 ```bash
 python3 -m venv .venv
@@ -22,7 +22,7 @@ source .venv/bin/activate
 
 Now install the python dependencies:
 
-*__Note__* _These python dependencies are needed for the python implementation of 1024 arithmetic. We use this implementation as a source of truth, one we can check the correctness of the solidity implementation against._
+_**Note**_ _These python dependencies are needed for the python implementation of 1024 arithmetic. We use this implementation as a source of truth, one we can check the correctness of the solidity implementation against._
 
 ```bash
 python3 -m pip install -r requirements.txt
@@ -40,7 +40,7 @@ npm install
 
 If you dont have foundry installed already, it can be installed by running this command and following the installation instructions:
 
-*__Note__* _The installation documentation for foundry can be found [here](https://book.getfoundry.sh/getting-started/installation)_
+_**Note**_ _The installation documentation for foundry can be found [here](https://book.getfoundry.sh/getting-started/installation)_
 
 ```bash
 curl -L https://foundry.paradigm.xyz | bash
@@ -87,7 +87,7 @@ The mathematical principles used in the Uint1024 library are not dissimilar to t
 
 ## Contribute
 
-If you'd like to contribute, please check out our [contribution guide](./CONTRIBUTORS.md). Please do reach out if you feel something could be improved or done differently, or if you have any related needs that aren't met by this library.
+If you'd like to contribute, please check out our [contribution guide](./CONTRIBUTORSS.md). Please do reach out if you feel something could be improved or done differently, or if you have any related needs that aren't met by this library.
 
 ## License
 
