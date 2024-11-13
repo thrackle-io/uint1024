@@ -21,10 +21,6 @@
     {
       "pattern": "/blob/(.*)/",
       "replacement": "/"
-    },
-    {
-      "pattern": "(./)",
-      "replacement": ""
     }
   ],
   "httpHeaders": [
