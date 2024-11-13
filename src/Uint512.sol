@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: GLPv3
 pragma solidity ^0.8.24;
 
 /**
@@ -9,6 +9,7 @@ pragma solidity ^0.8.24;
 library Uint512 {
     /**
      * @notice Calculates the product of two uint256
+     * @notice This method has been changed from the original Uint512 library: visibility changed from public to internal
      * @dev Used the chinese remainder theoreme
      * @param a A uint256 representing the first factor
      * @param b A uint256 representing the second factor
@@ -25,6 +26,7 @@ library Uint512 {
 
     /**
      * @notice Calculates the product of two uint512 and uint256
+     * @notice This method has been changed from the original Uint512 library: visibility changed from public to internal
      * @dev Used the chinese remainder theoreme
      * @param a0 A uint256 representing lower bits of the first factor
      * @param a1 A uint256 representing higher bits of the first factor
@@ -43,6 +45,7 @@ library Uint512 {
 
     /**
      * @notice Calculates the product and remainder of two uint256
+     * @notice This method has been changed from the original Uint512 library: visibility changed from public to internal
      * @dev Used the chinese remainder theorem
      * @param a A uint256 representing the first factor
      * @param b A uint256 representing the second factor
@@ -61,10 +64,11 @@ library Uint512 {
 
     /**
      * @notice Calculates the sum of two uint512
+     * @notice This method has been changed from the original Uint512 library: visibility changed from public to internal
      * @param a0 A uint256 representing the lower bits of the first addend
      * @param a1 A uint256 representing the higher bits of the first addend
-     * @param b0 A uint256 representing the lower bits of the seccond addend
-     * @param b1 A uint256 representing the higher bits of the seccond addend
+     * @param b0 A uint256 representing the lower bits of the second addend
+     * @param b1 A uint256 representing the higher bits of the second addend
      * @return r0 The result as an uint512. r0 contains the lower bits
      * @return r1 The higher bits of the result
      */
@@ -77,6 +81,7 @@ library Uint512 {
 
     /**
      * @notice Calculates the difference of two uint512
+     * @notice This method has been changed from the original Uint512 library: visibility changed from public to internal
      * @param a0 A uint256 representing the lower bits of the minuend
      * @param a1 A uint256 representing the higher bits of the minuend
      * @param b0 A uint256 representing the lower bits of the subtrahend
@@ -94,6 +99,7 @@ library Uint512 {
     /**
      * @notice Calculates the division of a 512 bit unsigned integer by a 256 bit integer. It
      * requires the remainder to be known and the result must fit in a 256 bit integer
+     * @notice This method has been changed from the original Uint512 library: visibility changed from public to internal
      * @dev For a detailed explaination see:
      * https://www.researchgate.net/publication/235765881_Efficient_long_division_via_Montgomery_multiply
      * @param a0 A uint256 representing the low bits of the nominator
@@ -147,6 +153,7 @@ library Uint512 {
     /**
      * @notice Calculates the division of a 512 bit unsigned integer by a 256 bit integer. It
      * requires the result to fit in a 256 bit integer
+     * @notice This method has been changed from the original Uint512 library: visibility changed from public to internal
      * @dev For a detailed explaination see:
      * https://www.researchgate.net/publication/235765881_Efficient_long_division_via_Montgomery_multiply
      * @param a0 A uint256 representing the low bits of the nominator
@@ -202,6 +209,7 @@ library Uint512 {
 
     /**
      * @notice Calculates the square root of x, rounding down
+     * @notice This method has been changed from the original Uint512 library: visibility changed from public to internal
      * @dev Uses the Babylonian method https://en.wikipedia.org/wiki/Methods_of_computing_square_roots#Babylonian_method
      * @param x The uint256 number for which to calculate the square root
      * @return s The square root as an uint256
@@ -256,6 +264,7 @@ library Uint512 {
 
     /**
      * @notice Calculates the square root of a 512 bit unsigned integer, rounding down
+     * @notice This method has been changed from the original Uint512 library: visibility changed from public to internal
      * @dev Uses the Karatsuba Square Root method. See https://hal.inria.fr/inria-00072854/document for details
      * @param a0 A uint256 representing the low bits of the input
      * @param a1 A uint256 representing the high bits of the input

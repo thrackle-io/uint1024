@@ -1,5 +1,5 @@
 # Uint512Extended
-[Git Source](https://github.com/thrackle-io/uint1024/blob/95bbd0a26aeb39df62d9cabf274b2a857355077c/src/Uint512Extended.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/22ddf238a691a8567c23d473fd67784b1462e5c6/src/Uint512Extended.sol)
 
 **Author:**
 @oscarsernarosero @mpetersoCode55 @cirsteve @Palmerg4
@@ -184,8 +184,8 @@ function safeAdd512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1)
 |----|----|-----------|
 |`a0`|`uint256`|A uint256 representing the lower bits of the first addend|
 |`a1`|`uint256`|A uint256 representing the higher bits of the first addend|
-|`b0`|`uint256`|A uint256 representing the lower bits of the seccond addend|
-|`b1`|`uint256`|A uint256 representing the higher bits of the seccond addend|
+|`b0`|`uint256`|A uint256 representing the lower bits of the second addend|
+|`b1`|`uint256`|A uint256 representing the higher bits of the second addend|
 
 **Returns**
 

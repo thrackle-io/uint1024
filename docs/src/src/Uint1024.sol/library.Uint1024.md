@@ -1,5 +1,5 @@
 # Uint1024
-[Git Source](https://github.com/thrackle-io/uint1024/blob/95bbd0a26aeb39df62d9cabf274b2a857355077c/src/Uint1024.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/22ddf238a691a8567c23d473fd67784b1462e5c6/src/Uint1024.sol)
 
 
 ## Functions
@@ -21,9 +21,9 @@ function add768x768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, 
 |`a0`|`uint256`|A uint256 representing the lower bits of the first addend|
 |`a1`|`uint256`|A uint256 representing the higher bits of the first addend|
 |`a2`|`uint256`|A uint256 representing the highest bits of the first addend|
-|`b0`|`uint256`|A uint256 representing the lower bits of the seccond addend|
-|`b1`|`uint256`|A uint256 representing the higher bits of the seccond addend|
-|`b2`|`uint256`|A uint256 representing the highest bits of the seccond addend|
+|`b0`|`uint256`|A uint256 representing the lower bits of the second addend|
+|`b1`|`uint256`|A uint256 representing the higher bits of the second addend|
+|`b2`|`uint256`|A uint256 representing the highest bits of the second addend|
 
 **Returns**
 
@@ -243,7 +243,7 @@ function lt1024(uint256 a0, uint256 a1, uint256 a2, uint256 a3, uint256 b0, uint
 
 ### add1024x1024
 
-Calculates the sum of two uint1024. The result is a uint1024.
+Calculates the sum of two Uint1024. The result is a Uint1024.
 
 
 ```solidity
@@ -260,10 +260,10 @@ function add1024x1024(uint256 a0, uint256 a1, uint256 a2, uint256 a3, uint256 b0
 |`a1`|`uint256`|A uint256 representing the high bits of the first addend|
 |`a2`|`uint256`|A uint256 representing the higher bits of the first addend|
 |`a3`|`uint256`|A uint256 representing the highest bits of the first addend|
-|`b0`|`uint256`|A uint256 representing the lower bits of the seccond addend|
-|`b1`|`uint256`|A uint256 representing the high bits of the seccond addend|
-|`b2`|`uint256`|A uint256 representing the higher bits of the seccond addend|
-|`b3`|`uint256`|A uint256 representing the highest bits of the seccond addend|
+|`b0`|`uint256`|A uint256 representing the lower bits of the second addend|
+|`b1`|`uint256`|A uint256 representing the high bits of the second addend|
+|`b2`|`uint256`|A uint256 representing the higher bits of the second addend|
+|`b3`|`uint256`|A uint256 representing the highest bits of the second addend|
 
 **Returns**
 
@@ -277,7 +277,7 @@ function add1024x1024(uint256 a0, uint256 a1, uint256 a2, uint256 a3, uint256 b0
 
 ### sub1024x1024
 
-Calculates the difference of two uint1024. The result is a uint1024.
+Calculates the difference of two Uint1024. The result is a Uint1024.
 
 
 ```solidity
