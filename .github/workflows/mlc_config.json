@@ -1,12 +1,6 @@
 {
   "ignorePatterns": [
     {
-      "pattern": "^https://www.infura.io"
-    },
-    {
-      "pattern": "^http://localhost"
-    },
-    {
       "pattern": "https://www.researchgate.net"
     },
     {
@@ -25,12 +19,12 @@
       "replacement": ""
     },
     {
-      "pattern": "https://github.com/thrackle-io/uint1024",
-      "replacement": ""
-    },
-    {
       "pattern": "/blob/(.*)/",
       "replacement": "/"
+    },
+    {
+      "pattern": "(./)",
+      "replacement": ""
     }
   ],
   "httpHeaders": [
