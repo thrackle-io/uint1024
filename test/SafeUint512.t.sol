@@ -86,6 +86,6 @@ contract SafeUint512FuzzTests is Test, PythonUtils {
         (uint pyR0, , , ) = abi.decode(res, (uint, uint, uint, uint));
         console2.log("pythonRes:", pyR0);
 
-        if (solVal - pyR0 > 1) revert(string.concat("absolute difference is greater than 1 and the number is greater than "));
+        assertEq(pyR0, solVal, "different results");
     }
 }
