@@ -109,27 +109,27 @@ contract GasReports is Test, GasHelpers {
 
         _resetGasUsed();
         _div768x256GasUsed();
-        _writeJson(".Sqrt.sqrt512");
+        _writeJson(".Div.div768x256");
 
         _resetGasUsed();
         _div768ByPowerOf2GasUsed();
-        _writeJson(".Sqrt.sqrt512");
+        _writeJson(".Div.div768ByPowerOf2");
 
         _resetGasUsed();
         _mod768x256GasUsed();
-        _writeJson(".Sqrt.sqrt512");
+        _writeJson(".Mod.mod768x256");
 
         _resetGasUsed();
         _divRem1024x512In512GasUsed();
-        _writeJson(".Sqrt.sqrt512");
+        _writeJson(".Div.divRem1024x512In512");
 
         _resetGasUsed();
         _div512x512GasUsed();
-        _writeJson(".Sqrt.sqrt512");
+        _writeJson(".Div.div512x512");
 
         _resetGasUsed();
         _log2GasUsed();
-        _writeJson(".Sqrt.sqrt512");
+        _writeJson(".Log.log2");
     }
 
     function _add1024x1024GasUsed() internal {
