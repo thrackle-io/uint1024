@@ -14,7 +14,7 @@ contract GasReports is Test, GasHelpers {
 
     function testMeasureGas() public {
         _primer();
-        
+
         _resetGasUsed();
         _add1024x1024GasUsed();
         _writeJson(".Add.add1024x1024");
@@ -106,6 +106,30 @@ contract GasReports is Test, GasHelpers {
         _resetGasUsed();
         _sqrt512GasUsed();
         _writeJson(".Sqrt.sqrt512");
+
+        _resetGasUsed();
+        _div768x256GasUsed();
+        _writeJson(".Div.div768x256");
+
+        _resetGasUsed();
+        _div768ByPowerOf2GasUsed();
+        _writeJson(".Div.div768ByPowerOf2");
+
+        _resetGasUsed();
+        _mod768x256GasUsed();
+        _writeJson(".Mod.mod768x256");
+
+        _resetGasUsed();
+        _divRem1024x512In512GasUsed();
+        _writeJson(".Div.divRem1024x512In512");
+
+        _resetGasUsed();
+        _div512x512GasUsed();
+        _writeJson(".Div.div512x512");
+
+        _resetGasUsed();
+        _log2GasUsed();
+        _writeJson(".Log.log2");
     }
 
     function _add1024x1024GasUsed() internal {
@@ -118,7 +142,7 @@ contract GasReports is Test, GasHelpers {
             10000000000000000000000000000, // b0
             10000000000000000000000000000, // b1
             10000000000000000000000000000, // b2
-            10000000000000000000000000000  // b3
+            10000000000000000000000000000 // b3
         );
         gasUsed = stopMeasuringGas();
     }
@@ -131,7 +155,74 @@ contract GasReports is Test, GasHelpers {
             10000000000000000000000000000, // a2
             10000000000000000000000000000, // b0
             10000000000000000000000000000, // b1
-            10000000000000000000000000000  // b2
+            10000000000000000000000000000 // b2
+        );
+        gasUsed = stopMeasuringGas();
+    }
+
+    function _div768x256GasUsed() internal {
+        startMeasuringGas("div768x256 - returns uint768");
+        Uint1024.div768x256(
+            10000000000000000000000000000, // a0
+            10000000000000000000000000000, // a1
+            10000000000000000000000000000, // a2
+            10000000000000000000000000000 // b
+        );
+        gasUsed = stopMeasuringGas();
+    }
+
+    function _div768ByPowerOf2GasUsed() internal {
+        startMeasuringGas("div768ByPowerOf2 - returns uint768");
+        Uint1024.div768ByPowerOf2(
+            10000000000000000000000000000, // a0
+            10000000000000000000000000000, // a1
+            10000000000000000000000000000, // a2
+            100 // n
+        );
+        gasUsed = stopMeasuringGas();
+    }
+
+    function _mod768x256GasUsed() internal {
+        startMeasuringGas("mod768x256 - returns uint256");
+        Uint1024.mod768x256(
+            10000000000000000000000000000, // a0
+            10000000000000000000000000000, // a1
+            10000000000000000000000000000, // a2
+            10000000000000000000000000000 // b
+        );
+        gasUsed = stopMeasuringGas();
+    }
+
+    function _divRem1024x512In512GasUsed() internal {
+        startMeasuringGas("divRem1024x512In512 - returns uint512");
+        Uint1024.divRem1024x512In512(
+            101, // a0
+            1010, // a1
+            90, // a2
+            0, // a3
+            1, // b0
+            10, // b1
+            1, // rem0
+            1 // rem1
+        );
+        gasUsed = stopMeasuringGas();
+    }
+
+    function _div512x512GasUsed() internal {
+        startMeasuringGas("div512x512 - returns uint256");
+        Uint512Extended.div512x512(
+            10000000000000000000000000000, // a0
+            10000000000000000000000000000, // a1
+            10000000000000000000000000000, // b0
+            10000000000000000000000000000 // b1
+        );
+        gasUsed = stopMeasuringGas();
+    }
+
+    function _log2GasUsed() internal {
+        startMeasuringGas("log2 - returns uint256");
+        Uint512Extended.log2(
+            10000000000000000000000000000 // x
         );
         gasUsed = stopMeasuringGas();
     }
@@ -142,7 +233,7 @@ contract GasReports is Test, GasHelpers {
             10000000000000000000000000000, // a0
             10000000000000000000000000000, // a1
             10000000000000000000000000000, // b0
-            10000000000000000000000000000  // b1
+            10000000000000000000000000000 // b1
         );
         gasUsed = stopMeasuringGas();
     }
@@ -153,7 +244,7 @@ contract GasReports is Test, GasHelpers {
             10000000000000000000000000000, // a0
             10000000000000000000000000000, // a1
             10000000000000000000000000000, // b0
-            10000000000000000000000000000  // b1
+            10000000000000000000000000000 // b1
         );
         gasUsed = stopMeasuringGas();
     }
@@ -168,7 +259,7 @@ contract GasReports is Test, GasHelpers {
             10000000000000000000000000000, // b0
             10000000000000000000000000000, // b1
             10000000000000000000000000000, // b2
-            10000000000000000000000000000  // b3
+            10000000000000000000000000000 // b3
         );
         gasUsed = stopMeasuringGas();
     }
@@ -181,7 +272,7 @@ contract GasReports is Test, GasHelpers {
             10000000000000000000000000000, // a2
             10000000000000000000000000000, // b0
             10000000000000000000000000000, // b1
-            10000000000000000000000000000  // b2
+            10000000000000000000000000000 // b2
         );
         gasUsed = stopMeasuringGas();
     }
@@ -192,7 +283,7 @@ contract GasReports is Test, GasHelpers {
             10000000000000000000000000000, // a0
             10000000000000000000000000000, // a1
             10000000000000000000000000000, // b0
-            10000000000000000000000000000  // b1
+            10000000000000000000000000000 // b1
         );
         gasUsed = stopMeasuringGas();
     }
@@ -203,7 +294,7 @@ contract GasReports is Test, GasHelpers {
             10000000000000000000000000000, // a0
             10000000000000000000000000000, // a1
             10000000000000000000000000000, // b0
-            10000000000000000000000000000  // b1
+            10000000000000000000000000000 // b1
         );
         gasUsed = stopMeasuringGas();
     }
@@ -214,7 +305,7 @@ contract GasReports is Test, GasHelpers {
             10000000000000000000000000000, // a0
             10000000000000000000000000000, // a1
             10000000000000000000000000000, // b0
-            10000000000000000000000000000  // b1
+            10000000000000000000000000000 // b1
         );
         gasUsed = stopMeasuringGas();
     }
@@ -225,7 +316,7 @@ contract GasReports is Test, GasHelpers {
             10000000000000000000000000000, // a0
             10000000000000000000000000000, // a1
             10000000000000000000000000000, // b0
-            10000000000000000000000000000  // b1
+            10000000000000000000000000000 // b1
         );
         gasUsed = stopMeasuringGas();
     }
@@ -235,7 +326,7 @@ contract GasReports is Test, GasHelpers {
         Uint1024.mul512x256In768(
             10000000000000000000000000000, // a0
             10000000000000000000000000000, // a1
-            10000000000000000000000000000  // b
+            10000000000000000000000000000 // b
         );
         gasUsed = stopMeasuringGas();
     }
@@ -245,7 +336,7 @@ contract GasReports is Test, GasHelpers {
         Uint512Extended.safeMul512x256(
             10000000000000000000000000000, // a0
             10000000000000000000000000000, // a1
-            10000000000000000000000000000  // b
+            10000000000000000000000000000 // b
         );
         gasUsed = stopMeasuringGas();
     }
@@ -255,7 +346,7 @@ contract GasReports is Test, GasHelpers {
         Uint512.mul512x256(
             10000000000000000000000000000, // a0
             10000000000000000000000000000, // a1
-            10000000000000000000000000000  // b
+            10000000000000000000000000000 // b
         );
         gasUsed = stopMeasuringGas();
     }
@@ -264,14 +355,14 @@ contract GasReports is Test, GasHelpers {
         startMeasuringGas("mul256x256 - returns uint512");
         Uint512.mul256x256(
             10000000000000000000000000000, // a
-            10000000000000000000000000000  // b
+            10000000000000000000000000000 // b
         );
         gasUsed = stopMeasuringGas();
     }
 
     function _mulInverseMod256GasUsed() internal {
         startMeasuringGas("mulInverseMod256 - returns uint256");
-        Uint512Extended.mulInverseMod256(
+        Uint512.mulInverseMod256(
             10000000000000000000000000000 // b
         );
         gasUsed = stopMeasuringGas();
@@ -281,7 +372,7 @@ contract GasReports is Test, GasHelpers {
         startMeasuringGas("mulInverseMod512 - returns uint512");
         Uint1024.mulInverseMod512(
             10000000000000000000000000001, // b0
-            10000000000000000000000000000  // b1
+            10000000000000000000000000000 // b1
         );
         gasUsed = stopMeasuringGas();
     }
@@ -290,8 +381,8 @@ contract GasReports is Test, GasHelpers {
         startMeasuringGas("safeDiv512x256 - returns uint256");
         Uint512Extended.safeDiv512x256(
             10000000000000000000000000000, // a0
-            1000000000000000000000000000,  // a1
-            10000000000000000000000000000  // b
+            1000000000000000000000000000, // a1
+            10000000000000000000000000000 // b
         );
         gasUsed = stopMeasuringGas();
     }
@@ -301,7 +392,7 @@ contract GasReports is Test, GasHelpers {
         Uint512Extended.div512ByPowerOf2(
             10000000000000000000000000000, // a0
             10000000000000000000000000000, // a1
-            100                            // b
+            100 // b
         );
         gasUsed = stopMeasuringGas();
     }
@@ -310,8 +401,8 @@ contract GasReports is Test, GasHelpers {
         startMeasuringGas("div512x256 - returns uint256");
         Uint512.div512x256(
             10000000000000000000000000000, // a0
-            1000000000000000000000000000,  // a1
-            10000000000000000000000000000  // b
+            1000000000000000000000000000, // a1
+            10000000000000000000000000000 // b
         );
         gasUsed = stopMeasuringGas();
     }
@@ -322,7 +413,7 @@ contract GasReports is Test, GasHelpers {
             10000000000000000000000000000, // a0
             10000000000000000000000000000, // a1
             10000000000000000000000000000, // b
-            10000000000000000000000000000  // rem
+            10000000000000000000000000000 // rem
         );
         gasUsed = stopMeasuringGas();
     }
@@ -332,7 +423,7 @@ contract GasReports is Test, GasHelpers {
         Uint1024.div512x256In512(
             10000000000000000000000000000, // a0
             10000000000000000000000000000, // a1
-            10000000000000000000000000000  // b
+            10000000000000000000000000000 // b
         );
         gasUsed = stopMeasuringGas();
     }
@@ -349,7 +440,7 @@ contract GasReports is Test, GasHelpers {
         startMeasuringGas("sqrt512 - returns uint256");
         Uint512.sqrt512(
             10000000000000000000000000000, // a0
-            10000000000000000000000000000  // a1
+            10000000000000000000000000000 // a1
         );
         gasUsed = stopMeasuringGas();
     }

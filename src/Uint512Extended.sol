@@ -58,7 +58,7 @@ library Uint512Extended {
      * @return boolean. True if x < y
      */
     function lt512(uint256 x0, uint256 x1, uint256 y0, uint256 y1) internal pure returns (bool) {
-        return !ge512(x0, x1, y0, y1);
+        return x1 < y1 || (x1 == y1 && x0 < y0);
     }
 
     /**
@@ -79,6 +79,43 @@ library Uint512Extended {
         remainder = a0 & (_2ToTheNth - 1);
         r1 = a1 >> n;
         r0 = (shiftedBits << (256 - n)) | (a0 >> n);
+    }
+
+    /**
+     * @dev Calculates the division of a 512-bit unsigned integer by a 512-bit. The result will be a uint256.
+     * @param a0 A uint256 representing the low bits of the numerator
+     * @param a1 A uint256 representing the high bits of the numerator
+     * @param b0 A uint256 representing the low bits of the denominator
+     * @param b1 A uint256 representing the high bits of the denominator
+     * @return result
+     */
+    function div512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pure returns (uint256 result) {
+        if (b1 == 0) revert("Uint512Extended: div512x512 b1 can't be zero");
+        if (a1 < b1) return 0;
+        {
+            /// block to avoid stack too deep
+            /// we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
+            uint n = log2(b1) + 1;
+            /// d = 2**n;
+            /// if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
+            (uint c, uint c1, uint e) = div512ByPowerOf2(b0, b1, uint8(n));
+            e;
+            if (c1 > 0) revert("div512x512: unsuccessful division by 2**n");
+            /// if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
+            /// making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
+            /// a / d
+            (uint resultLo, uint resultHi, uint remainder) = div512ByPowerOf2(a0, a1, uint8(n));
+            remainder;
+            /// (a / d) / c
+            result = resultLo.div512x256(resultHi, c);
+        }
+        /// However, ignoring e can cause the result to be off by +1 which makes this whole division an approximation.
+        /// to make this exact, we need to check if the result is accurate. For this, we simply compute back *a*, and
+        /// a correct result must be in the range (a - b) < r*b <= a
+        (uint computed_a0, uint computed_a1) = b0.mul512x256(b1, result);
+        (uint minLo, uint minHi) = a0.sub512x512(a1, b0, b1);
+        /// our approximation can only be off by +1, which means that if theresult is incorrect, we just need to subtract 1
+        if (gt512(computed_a0, computed_a1, a0, a1) || !gt512(computed_a0, computed_a1, minLo, minHi)) --result;
     }
 
     /**
@@ -139,7 +176,7 @@ library Uint512Extended {
             carryoverB := or(carryoverB, lt(r1, carryoverA))
         }
         // If carryoverB has some value, it indicates an overflow for some or all of the results bits
-        if (carryoverB > 0) revert ("Uint512: safeAdd512 overflow");
+        if (carryoverB > 0) revert("Uint512: safeAdd512 overflow");
     }
 
     /**
@@ -173,29 +210,54 @@ library Uint512Extended {
      */
     function safeDiv512x256(uint256 a0, uint256 a1, uint256 b) internal pure returns (uint256 r) {
         if (a1 >= b) revert("Uint512: a1 >= b div512x256");
-        uint256 rem;
-        assembly {
-            // calculate the remainder
-            rem := mulmod(a1, not(0), b)
-            rem := addmod(rem, a1, b)
-            rem := addmod(rem, a0, b)
-        }
-            r = a0.divRem512x256(a1, b, rem);
+        uint256 rem = a0.mod512x256(a1, b);
+        r = a0.divRem512x256(a1, b, rem);
     }
 
-    function mulInverseMod256(uint b) internal pure returns (uint inv) {
-        assembly {
-            // Calculate the multiplicative inverse mod 2**256 of b. See the paper for details.
-            // slither-disable-start divide-before-multiply
-            // slither-disable-next-line incorrect-exp
-            inv := xor(mul(3, b), 2) // 4
-            inv := mul(inv, sub(2, mul(b, inv))) // 8
-            inv := mul(inv, sub(2, mul(b, inv))) // 16
-            inv := mul(inv, sub(2, mul(b, inv))) // 32
-            inv := mul(inv, sub(2, mul(b, inv))) // 64
-            inv := mul(inv, sub(2, mul(b, inv))) // 128
-            inv := mul(inv, sub(2, mul(b, inv))) // 256
-            // slither-disable-end divide-before-multiply
+    /**
+     * @dev calculates the logarithm base 2 of x
+     * @param x the number to calculate the logarithm base 2 of
+     * @return n the result of log2(x)
+     */
+    function log2(uint x) internal pure returns (uint n) {
+        // 2 ** 128
+        if (x >= 340282366920938463463374607431768211456) {
+            x >>= 128;
+            n += 128;
+        }
+        // 2 ** 64
+        if (x >= 18446744073709551616) {
+            x >>= 64;
+            n += 64;
+        }
+        // 2 ** 32
+        if (x >= 4294967296) {
+            x >>= 32;
+            n += 32;
+        }
+        // 2 ** 16
+        if (x >= 65536) {
+            x >>= 16;
+            n += 16;
+        }
+        // 2 ** 8
+        if (x >= 256) {
+            x >>= 8;
+            n += 8;
+        }
+        // 2 ** 4
+        if (x >= 16) {
+            x >>= 4;
+            n += 4;
+        }
+        // 2 ** 2
+        if (x >= 4) {
+            x >>= 2;
+            n += 2;
+        }
+        // 2 ** 1
+        if (x >= 2) {
+            /* x >>= 1; */ n += 1;
         }
     }
 }

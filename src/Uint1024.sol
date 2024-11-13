@@ -20,7 +20,14 @@ library Uint1024 {
      * @return r1 The higher bits of the result
      * @return r2 The highest bits of the result
      */
-    function add768x768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2) internal pure returns (uint256 r0, uint256 r1, uint256 r2) {
+    function add768x768(
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint256 b0,
+        uint256 b1,
+        uint256 b2
+    ) internal pure returns (uint256 r0, uint256 r1, uint256 r2) {
         // Initialize the carryover check here so we can check outside of the assembly block
         uint256 carryoverA;
         assembly {
@@ -46,7 +53,7 @@ library Uint1024 {
             carryoverA := or(carryoverA, lt(r2, carryoverB))
         }
         // If carryoverA has some value, it indicates an overflow for some or all of the results bits
-        if (carryoverA > 0) revert ("Uint1024: add768 overflow");
+        if (carryoverA > 0) revert("Uint1024: add768 overflow");
     }
 
     /**
@@ -61,7 +68,14 @@ library Uint1024 {
      * @return r1 The higher bits of the result
      * @return r2 The highest bits of the result
      */
-    function sub768x768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2) internal pure returns (uint256 r0, uint256 r1, uint256 r2) {
+    function sub768x768(
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint256 b0,
+        uint256 b1,
+        uint256 b2
+    ) internal pure returns (uint256 r0, uint256 r1, uint256 r2) {
         if (lt768(a0, a1, a2, b0, b1, b2)) revert("Uint1024: negative result sub768x768");
 
         assembly {
@@ -124,7 +138,7 @@ library Uint1024 {
                 // Account for the overflow
                 r2 := 1
             }
-            // r2 is equal to the higher bits of a1 * b 
+            // r2 is equal to the higher bits of a1 * b
             r2 := add(r2, r1Hi)
         }
     }
@@ -141,7 +155,12 @@ library Uint1024 {
      * @return r2 The higher bits of the result
      * @return r3 The highest bits of the result
      */
-    function mul512x512In1024(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3) {
+    function mul512x512In1024(
+        uint256 a0,
+        uint256 a1,
+        uint256 b0,
+        uint256 b1
+    ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3) {
         uint256 r0Hi;
         // Get the low and high bits of r0
         (r0, r0Hi) = a0.mul256x256(b0);
@@ -169,8 +188,18 @@ library Uint1024 {
         }
     }
 
-    function mul512x512Mod512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pure returns (uint256 r0, uint256 r1) {
-        uint256 r0Hi;
+    /**
+     * @dev Calculates the product of two uint512 modulo 512. The result is a uint512.
+     * @notice Used the chinese remainder theoreme
+     * @param a0 A uint256 representing the lower bits of the first factor
+     * @param a1 A uint256 representing the higher bits of the first factor
+     * @param b0 A uint256 representing the lower bits of the second factor
+     * @param b1 A uint256 representing the higher bits of the second factor
+     * @return r0 The lower bits of the result
+     * @return r1 The high bits of the result
+     */
+    function mul512x512Mod512(uint a0, uint a1, uint b0, uint b1) internal pure returns (uint r0, uint r1) {
+        uint r0Hi;
         (r0, r0Hi) = a0.mul256x256(b0);
         // slither-disable-start unused-return --> the modulo 512 doesn't care of the upper bits because they are not part of the result
         (uint256 r1Lo, ) = a1.mul256x256(b0);
@@ -234,9 +263,163 @@ library Uint1024 {
         // slither-disable-end divide-before-multiply
     }
 
-    function mulInverseMod512(uint256 b0, uint256 b1) internal pure returns (uint256 inv0, uint256 inv1) {
-        if (b0 % 2 == 0) revert("Uint1024: mulInverseMod512 denominator must be odd");
-        (uint256 bx3Lo, uint256 bx3Hi) = b0.mul512x256(b1, 3);
+    /**
+     * @dev Calculates the division of a uint768 by a uint256. The result is a uint768.
+     * @notice Used long division
+     * @param a0 A uint256 representing the lower bits of the first factor
+     * @param a1 A uint256 representing the middle bits of the first factor
+     * @param a2 A uint256 representing the higher bits of the first factor
+     * @param b A uint256 representing the divisor
+     * @return r0 The lower bits of the result
+     * @return r1 The middle bits of the result
+     * @return r2 The higher bits of the result
+     */
+    function div768x256(uint256 a0, uint256 a1, uint256 a2, uint256 b) internal pure returns (uint256 r0, uint r1, uint r2) {
+        assembly {
+            let remHi := mod(a2, b)
+            r2 := div(sub(a2, remHi), b)
+            a2 := remHi
+        }
+        uint rem = a1.mod512x256(a2, b);
+        r1 = a1.divRem512x256(a2, b, rem);
+        r0 = a0.safeDiv512x256(rem, b);
+    }
+
+    /**
+     * @dev Calculates the division of a 768-bit unsigned integer by a denominator which is
+     * a power of 2 less than 256.
+     * @param a0 A uint256 representing the low bits of the numerator
+     * @param a1 A uint256 representing the middle bits of the numerator
+     * @param a2 A uint256 representing the high bits of the numerator
+     * @param n the power of 2 that the division will be carried out by (demominator = 2**n).
+     * @return r0 The lower bits of the result
+     * @return r1 The middle bits of the result
+     * @return r2 The higher bits of the result
+     * @return remainder of the division
+     */
+    function div768ByPowerOf2(
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint8 n
+    ) internal pure returns (uint256 r0, uint256 r1, uint r2, uint256 remainder) {
+        if (n == 0) revert("n must be greater than 0");
+        uint _2ToTheNth = 2 ** n;
+        uint mask = _2ToTheNth - 1;
+        uint shiftedBitsA2 = a2 & mask;
+        uint shiftedBitsA1 = a1 & mask;
+        remainder = a0 & mask;
+        r2 = a2 >> n;
+        r1 = (shiftedBitsA2 << (256 - n)) | (a1 >> n);
+        r0 = (shiftedBitsA1 << (256 - n)) | (a0 >> n);
+    }
+
+    /**
+     * @dev Calculates *a* modulo *b* where *a* is a 768-bit unsigned integer and *b* is a uint256.
+     * @param a0 A uint256 representing the low bits of *a*
+     * @param a1 A uint256 representing the middle bits of *a*
+     * @param a2 A uint256 representing the high bits of *a*
+     * @param b A uint256 representing the base of the modulo
+     * @return rem the modulo of a%b
+     */
+    function mod768x256(uint a0, uint a1, uint a2, uint b) internal pure returns (uint rem) {
+        if (b == 0) revert("Uint1024: mod 0 undefined");
+        uint rem_a2x256;
+        uint rem_a2x512;
+        assembly {
+            // (a2*2**256)%b
+            rem_a2x256 := mulmod(a2, not(0), b) // (a2*(2**256 - 1))%b
+            rem_a2x256 := addmod(rem_a2x256, a2, b) // (a2*(2**256 - 1) + a2)%b = (a2*(2**256))%b
+            // (a2*2**512)%b
+            rem_a2x512 := mulmod(rem_a2x256, not(0), b) // (a2*(2**256)*(2**256 - 1))%b = (a2*2**512 - a2*2**256)%b
+            rem_a2x512 := addmod(rem_a2x512, rem_a2x256, b) // (a2*2**512 - a2*2**256 + a2*(2**256))%b = (a2*2**512)%b
+        }
+        // (a1*2**256 + a0)%b
+        rem = a0.mod512x256(a1, b);
+        // (a2*2**512 + a1*2**256 + a0)%b
+        assembly {
+            rem := addmod(rem, rem_a2x512, b)
+        }
+    }
+
+    /**
+     * @dev Calculates the division *a* / *b* where *a* is a 1024-bit unsigned integer and *b* is
+     * a uint512.
+     * @notice it requires to previously know the remainder of the division
+     * @param a0 A uint256 representing the lowest bits of *a*
+     * @param a1 A uint256 representing the mid-lower bits of *a*
+     * @param a2 A uint256 representing the mid-higher bits of *a*
+     * @param a3 A uint256 representing the highest bits of *a*
+     * @param b0 A uint256 representing the lower bits of *b*
+     * @param b1 A uint256 representing the higher bits of *b*
+     * @param rem0 A uint256 representing the lower bits of the remainder of the division
+     * @param rem1 A uint256 representing the higher bits of the remainder of the division
+     * @return r0 The lower bits of the result
+     * @return r1 The high bits of the result
+     */
+    function divRem1024x512In512(
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint256 a3,
+        uint256 b0,
+        uint256 b1,
+        uint256 rem0,
+        uint256 rem1
+    ) internal pure returns (uint256 r0, uint r1) {
+        if (b0 == 0 && b1 == 0) revert("Uint1024: division by zero");
+        (a0, a1, a2, a3) = sub1024x1024(a0, a1, a2, a3, rem0, rem1, 0, 0);
+        assembly {
+            // The integer space mod 2**256 is not an abilian group on the multiplication operation. In fact the
+            // multiplicative inserve only exists for odd numbers. The denominator gets shifted right until the
+            // least significant bit is 1. To do this we find the biggest power of 2 that devides the denominator.
+
+            // if all the lower bits of b are zero, then we simply shift the whole numbers a full word to the right,
+            // and we continue with the regular shifting after this
+            if iszero(b0) {
+                b0 := b1
+                b1 := 0
+                a0 := a1
+                a1 := a2
+                a2 := a3
+                a3 := 0
+            }
+
+            let shiftR := and(sub(0, b0), b0)
+            // slither-disable-start divide-before-multiply
+            b0 := div(b0, shiftR)
+            let shiftL := add(div(sub(0, shiftR), shiftR), 1)
+            b0 := or(b0, mul(b1, shiftL))
+            b1 := div(b1, shiftR)
+
+            // Also shift the nominator. We only shift a0 and the lower bits of a1 which are transfered into a0
+            // by the shift operation. a1 no longer required for the calculation. This might sound odd, but in
+            // fact under the conditions that r < 2**255 and a / b = (r * a) + rem with rem = 0 the value of a1
+            // is uniquely identified. Thus the value is not needed for the calculation.
+            a0 := div(a0, shiftR)
+            a0 := or(a0, mul(a1, shiftL))
+            a1 := div(a1, shiftR)
+            a1 := or(a1, mul(a2, shiftL))
+            a2 := div(a2, shiftR)
+            a2 := or(a2, mul(a3, shiftL))
+        }
+        (uint inv0, uint inv1) = mulInverseMod512(b0, b1);
+
+        (r0, r1) = mul512x512Mod512(a0, a1, inv0, inv1);
+        // slither-disable-end divide-before-multiply
+    }
+
+    /**
+     * @dev Calculates the multiplicative inverse of *b* modulo 2**512 where *b* is a uint512.
+     * @notice this is a 512 implementation of the Helsen's lemma and Montgomery reduction.
+     * @param b0 A uint256 representing the lower bits of *b*
+     * @param b1 A uint256 representing the higher bits of *b*
+     * @return inv0 The lower bits of the inverse
+     * @return inv1 The higher bits of the inverse
+     */
+    function mulInverseMod512(uint b0, uint b1) internal pure returns (uint inv0, uint inv1) {
+        if (b0 % 2 == 0) revert("Uint1024: denominator must be odd");
+        (uint bx3Lo, uint bx3Hi) = b0.mul512x256(b1, 3);
         inv1 = bx3Hi;
         assembly {
             // Calculate the multiplicative inverse mod 2**256 of b. See Montgomery reduction for more details.
@@ -305,7 +488,16 @@ library Uint1024 {
      * @param b3 A uint256 representing the highest bits of the subtrahend
      * @return Returns true if there would be an underflow/negative result
      */
-    function lt1024(uint256 a0, uint256 a1, uint256 a2, uint256 a3, uint256 b0, uint256 b1, uint256 b2, uint256 b3) internal pure returns (bool) {
+    function lt1024(
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint256 a3,
+        uint256 b0,
+        uint256 b1,
+        uint256 b2,
+        uint256 b3
+    ) internal pure returns (bool) {
         return a3 < b3 || (a3 == b3 && (a2 < b2 || (a2 == b2 && (a1 < b1 || (a1 == b1 && a0 < b0)))));
     }
 
@@ -367,7 +559,7 @@ library Uint1024 {
             carryoverB := or(carryoverB, lt(r3, carryoverA))
         }
         // If carryoverB has some value, it indicates an overflow for some or all of the results bits
-        if (carryoverB > 0) revert ("Uint1024: add1024 overflow");
+        if (carryoverB > 0) revert("Uint1024: add1024 overflow");
     }
 
     /**

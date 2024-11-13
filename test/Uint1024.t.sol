@@ -70,6 +70,23 @@ contract Uint1024FuzzTests is Test, PythonUtils {
         if (solR1 != pyR1) revert("R1 bits different");
     }
 
+    function testDiv768x256(uint a0, uint a1, uint a2, uint b) public {
+        b = bound(b, 1, type(uint256).max);
+
+        (solR0, solR1, solR2) = Uint1024.div768x256(a0, a1, a2, b);
+        console2.log("solRes:", solR0, solR1, solR2);
+
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, 0, b, 0, 0, 0, "div");
+        bytes memory res = vm.ffi(inputs);
+        console2.logBytes(res);
+        (pyR0, pyR1, pyR2) = abi.decode(res, (uint, uint, uint));
+        console2.log("pythonRes:", pyR0, pyR1, pyR2);
+
+        if (solR0 != pyR0) revert("R0 bits different");
+        if (solR1 != pyR1) revert("R1 bits different");
+        if (solR2 != pyR2) revert("R2 bits different");
+    }
+
     function testAdd768x768(uint a0, uint a1, uint a2, uint b0, uint b1, uint b2) public {
         string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, 0, b0, b1, b2, 0, "add");
         bytes memory res = vm.ffi(inputs);
@@ -185,7 +202,7 @@ contract Uint1024FuzzTests is Test, PythonUtils {
     function testDivMulInverse512(uint b0, uint b1) public {
         TesterContract testerContract = new TesterContract();
         b1 = bound(b1, 1, type(uint256).max);
-        if (b0 % 2 == 0) vm.expectRevert("Uint1024: mulInverseMod512 denominator must be odd");
+        if (b0 % 2 == 0) vm.expectRevert("Uint1024: denominator must be odd");
         (solR0, solR1) = testerContract.mulInverseMod512(b0, b1);
         console2.log("solRes:", solR0, solR1);
 
@@ -212,5 +229,52 @@ contract Uint1024FuzzTests is Test, PythonUtils {
 
         if (solR0 != pyR0) revert("R0 bits different");
         if (solR1 != pyR1) revert("R1 bits different");
+    }
+
+    function testdivRem1024x512In512(uint b0, uint b1, uint r0, uint r1) public {
+        // we avoid b being zero. We randomize what bits to set to 1
+        if (b0 == 0 && b1 == 0) {
+            if (r0 % 2 == 0) b1 = 1;
+            else b0 = 1;
+        }
+
+        (uint a0, uint a1, uint a2, uint a3) = b0.mul512x512In1024(b1, r0, r1);
+
+        (solR0, solR1) = a0.divRem1024x512In512(a1, a2, a3, b0, b1, 0, 0);
+        console2.log("solRes:", solR0, solR1);
+
+        if (solR0 != r0) revert("lower bits different");
+        if (solR1 != r1) revert("higher bits different");
+    }
+
+    function testMod768x256(uint a0, uint a1, uint a2, uint b) public {
+        if (b == 0) vm.expectRevert("Uint1024: mod 0 undefined");
+        (solR0) = a0.mod768x256(a1, a2, b);
+
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, 0, b, 0, 0, 0, "mod");
+        bytes memory res = vm.ffi(inputs);
+        console2.logBytes(res);
+        pyR0 = abi.decode(res, (uint256));
+        console2.log("solR0: ", solR0);
+        console2.log("pyRes: ", pyR0);
+
+        if (solR0 != pyR0) revert("different results");
+    }
+
+    function testDiv768ByPowerOf2(uint a0, uint a1, uint a2, uint8 n) public {
+        a1 = a1 % (2 ** 254);
+        n = (n % 254) + 1;
+
+        (solR0, solR1, solR2, ) = a0.div768ByPowerOf2(a1, a2, n);
+        console2.log("solRes:", solR0, solR1, solR3);
+
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, 0, 2 ** n, 0, 0, 0, "div");
+        bytes memory res = vm.ffi(inputs);
+        (pyR0, pyR1, pyR2) = abi.decode(res, (uint, uint, uint));
+        console2.log("pyRes:", pyR0, pyR1, pyR2);
+
+        assertEq(pyR0, solR0);
+        assertEq(pyR1, solR1);
+        assertEq(pyR2, solR2);
     }
 }

@@ -1,29 +1,10 @@
 {
   "ignorePatterns": [
     {
-      "pattern": "^https://www.infura.io"
-    },
-    {
-      "pattern": "^http://localhost"
-    },
-    {
       "pattern": "https://www.researchgate.net"
-    },
-    {
-      "pattern": "/Uint512.sol"
-    },
-    {
-      "pattern": "/Uint512Extended.sol"
-    },
-    {
-      "pattern": "/Uint1024.sol"
     }
   ],
   "replacementPatterns": [
-    {
-      "pattern": "https://github.com/thrackle-io/uint1024",
-      "replacement": ""
-    },
     {
       "pattern": "https://github.com/thrackle-io/uint1024",
       "replacement": ""

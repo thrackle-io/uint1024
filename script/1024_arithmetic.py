@@ -19,6 +19,8 @@ def calculate_in_1024(args):
         else: result = int(a) - int(b)
     elif(operator == "lt"):
         result = int(a) < int(b)
+    elif(operator == "mod"):
+        result = int(a) % int(b)
     else: raise ValueError("Incorrect operator passed as argument")
 
     r0, r1, r2, r3, r4 = utils.deconstruct_1024(result)
