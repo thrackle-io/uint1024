@@ -324,12 +324,13 @@ library Uint1024 {
      * @return rem the modulo of a%b
      */
     function mod768x256(uint a0, uint a1, uint a2, uint b) internal pure returns (uint rem) {
+        if (b == 0) revert("Uint1024: division by zero");
         uint rem_a2x256;
         uint rem_a2x512;
         assembly {
             // (a2*2**512)%b
             rem_a2x256 := mulmod(a2, not(0), b) // (a2*(2**256 - 1))%b
-            rem_a2x256 := addmod(rem, a2, b) // (a2*(2**256 - 1) + a2)%b = (a2*(2**256))%b
+            rem_a2x256 := addmod(rem_a2x256, a2, b) // (a2*(2**256 - 1) + a2)%b = (a2*(2**256))%b
             rem_a2x512 := mulmod(rem_a2x256, not(0), b) // (a2*(2**256)*(2**256 - 1))%b = (a2*2**512 - a2*2**256)%b
             rem_a2x512 := addmod(rem_a2x512, sub(0, rem_a2x256), b) // (a2*2**512 - a2*2**256 - a2*(2**256))%b
         }
@@ -366,6 +367,7 @@ library Uint1024 {
         uint256 rem0,
         uint256 rem1
     ) internal pure returns (uint256 r0, uint r1) {
+        if (b0 == 0 && b1 == 0) revert("Uint1024: division by zero");
         (a0, a1, a2, a3) = sub1024x1024(a0, a1, a2, a3, rem0, rem1, 0, 0);
         assembly {
             // The integer space mod 2**256 is not an abilian group on the multiplication operation. In fact the
@@ -407,6 +409,14 @@ library Uint1024 {
         // slither-disable-end divide-before-multiply
     }
 
+    /**
+     * @dev Calculates the multiplicative inverse of *b* modulo 2**512 where *b* is a uint512.
+     * @notice this is a 512 implementation of the Helsen's lemma and Montgomery reduction.
+     * @param b0 A uint256 representing the lower bits of *b*
+     * @param b1 A uint256 representing the higher bits of *b*
+     * @return inv0 The lower bits of the inverse
+     * @return inv1 The higher bits of the inverse
+     */
     function mulInverseMod512(uint b0, uint b1) internal pure returns (uint inv0, uint inv1) {
         if (b0 % 2 == 0) revert("Uint1024: denominator must be odd");
         (uint bx3Lo, uint bx3Hi) = b0.mul512x256(b1, 3);

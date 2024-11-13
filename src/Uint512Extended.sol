@@ -200,6 +200,14 @@ library Uint512Extended {
         }
     }
 
+    /**
+     * @dev Calculates a modulo b where a is a 512-bit number and b is a 256-bit number
+     * @notice EXtracted from Uint512 library
+     * @param a0 A uint256 representing lower bits of the first factor
+     * @param a1 A uint256 representing higher bits of the first factor
+     * @param b A uint256 representing the second factor
+     * @return rem The remainder of a/b
+     */
     function mod512x256(uint256 a0, uint256 a1, uint b) internal pure returns (uint256 rem) {
         assembly {
             rem := mulmod(a1, not(0), b)
@@ -224,6 +232,12 @@ library Uint512Extended {
         r = a0.divRem512x256(a1, b, rem);
     }
 
+    /**
+     * @dev calculates the multiplicative inverse mod 2**256 of b.
+     * @notice extracted from Uint512 library
+     * @param b the number to calculate the multiplicative inverse mod 512
+     * @return inv the multiplicative inverse mod 2**256 of b
+     */
     function mulInverseMod256(uint b) internal pure returns (uint inv) {
         assembly {
             // Calculate the multiplicative inverse mod 2**256 of b. See the paper for details.
@@ -240,6 +254,11 @@ library Uint512Extended {
         }
     }
 
+    /**
+     * @dev calculates the logarithm base 2 of x
+     * @param x the number to calculate the logarithm base 2 of
+     * @return n the result of log2(x)
+     */
     function log2(uint x) internal pure returns (uint n) {
         // 2 ** 128
         if (x >= 340282366920938463463374607431768211456) {

@@ -202,7 +202,7 @@ contract Uint1024FuzzTests is Test, PythonUtils {
     function testDivMulInverse512(uint b0, uint b1) public {
         TesterContract testerContract = new TesterContract();
         b1 = bound(b1, 1, type(uint256).max);
-        if (b0 % 2 == 0) vm.expectRevert("Uint1024: mulInverseMod512 denominator must be odd");
+        if (b0 % 2 == 0) vm.expectRevert("Uint1024: denominator must be odd");
         (solR0, solR1) = testerContract.mulInverseMod512(b0, b1);
         console2.log("solRes:", solR0, solR1);
 
@@ -245,5 +245,18 @@ contract Uint1024FuzzTests is Test, PythonUtils {
 
         if (solR0 != r0) revert("lower bits different");
         if (solR1 != r1) revert("higher bits different");
+    }
+
+    function testMod768x256(uint a0, uint a1, uint a2, uint b) public {
+        if (b == 0) vm.expectRevert("Uint1024: division by zero");
+        (solR0) = a0.mod768x256(a1, a2, b);
+
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, 0, b, 0, 0, 0, "mod");
+        bytes memory res = vm.ffi(inputs);
+        console2.logBytes(res);
+        pyR0 = abi.decode(res, (uint256));
+        console2.log("pyRes: ", pyR0);
+
+        if (solR0 != solR0) revert("different results");
     }
 }
