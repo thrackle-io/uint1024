@@ -1,5 +1,5 @@
 # Uint1024
-[Git Source](https://github.com/thrackle-io/uint1024/blob/0f25fa385561dd2369b02071080b7c10476399c4/src/Uint1024.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/e99132e1de00eee9a8bc352564bc5eee0547517d/src/Uint1024.sol)
 
 
 ## Functions
@@ -133,6 +133,10 @@ r1
 r2
 r3
 
+Used the chinese remainder theoreme
+
+*Calculates the product of two uint512 modulo 512. The result is a uint512.*
+
 
 ```solidity
 function mul512x512Mod512(uint256 a0, uint256 a1, uint256 b0, uint256 b1)
@@ -140,6 +144,22 @@ function mul512x512Mod512(uint256 a0, uint256 a1, uint256 b0, uint256 b1)
     pure
     returns (uint256 r0, uint256 r1);
 ```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a0`|`uint256`|A uint256 representing the lower bits of the first factor|
+|`a1`|`uint256`|A uint256 representing the higher bits of the first factor|
+|`b0`|`uint256`|A uint256 representing the lower bits of the second factor|
+|`b1`|`uint256`|A uint256 representing the higher bits of the second factor|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`r0`|`uint256`|The lower bits of the result|
+|`r1`|`uint256`|The high bits of the result|
+
 
 ### div512x256In512
 
@@ -171,12 +191,157 @@ function div512x256In512(uint256 a0, uint256 a1, uint256 b) internal pure return
 |`r1`|`uint256`|The higher bits of the result|
 
 
+### div768x256
+
+Used long division
+
+*Calculates the division of a uint768 by a uint256. The result is a uint768.*
+
+
+```solidity
+function div768x256(uint256 a0, uint256 a1, uint256 a2, uint256 b)
+    internal
+    pure
+    returns (uint256 r0, uint256 r1, uint256 r2);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a0`|`uint256`|A uint256 representing the lower bits of the first factor|
+|`a1`|`uint256`|A uint256 representing the middle bits of the first factor|
+|`a2`|`uint256`|A uint256 representing the higher bits of the first factor|
+|`b`|`uint256`|A uint256 representing the divisor|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`r0`|`uint256`|The lower bits of the result|
+|`r1`|`uint256`|The middle bits of the result|
+|`r2`|`uint256`|The higher bits of the result|
+
+
+### div768ByPowerOf2
+
+*Calculates the division of a 768-bit unsigned integer by a denominator which is
+a power of 2 less than 256.*
+
+
+```solidity
+function div768ByPowerOf2(uint256 a0, uint256 a1, uint256 a2, uint8 n)
+    internal
+    pure
+    returns (uint256 r0, uint256 r1, uint256 r2, uint256 remainder);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a0`|`uint256`|A uint256 representing the low bits of the numerator|
+|`a1`|`uint256`|A uint256 representing the middle bits of the numerator|
+|`a2`|`uint256`|A uint256 representing the high bits of the numerator|
+|`n`|`uint8`|the power of 2 that the division will be carried out by (demominator = 2**n).|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`r0`|`uint256`|The lower bits of the result|
+|`r1`|`uint256`|The middle bits of the result|
+|`r2`|`uint256`|The higher bits of the result|
+|`remainder`|`uint256`|of the division|
+
+
+### mod768x256
+
+*Calculates *a* modulo *b* where *a* is a 768-bit unsigned integer and *b* is a uint256.*
+
+
+```solidity
+function mod768x256(uint256 a0, uint256 a1, uint256 a2, uint256 b) internal pure returns (uint256 rem);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a0`|`uint256`|A uint256 representing the low bits of *a*|
+|`a1`|`uint256`|A uint256 representing the middle bits of *a*|
+|`a2`|`uint256`|A uint256 representing the high bits of *a*|
+|`b`|`uint256`|A uint256 representing the base of the modulo|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`rem`|`uint256`|the modulo of a%b|
+
+
+### divRem1024x512In512
+
+it requires to previously know the remainder of the division
+
+*Calculates the division *a* / *b* where *a* is a 1024-bit unsigned integer and *b* is
+a uint512.*
+
+
+```solidity
+function divRem1024x512In512(
+    uint256 a0,
+    uint256 a1,
+    uint256 a2,
+    uint256 a3,
+    uint256 b0,
+    uint256 b1,
+    uint256 rem0,
+    uint256 rem1
+) internal pure returns (uint256 r0, uint256 r1);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a0`|`uint256`|A uint256 representing the lowest bits of *a*|
+|`a1`|`uint256`|A uint256 representing the mid-lower bits of *a*|
+|`a2`|`uint256`|A uint256 representing the mid-higher bits of *a*|
+|`a3`|`uint256`|A uint256 representing the highest bits of *a*|
+|`b0`|`uint256`|A uint256 representing the lower bits of *b*|
+|`b1`|`uint256`|A uint256 representing the higher bits of *b*|
+|`rem0`|`uint256`|A uint256 representing the lower bits of the remainder of the division|
+|`rem1`|`uint256`|A uint256 representing the higher bits of the remainder of the division|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`r0`|`uint256`|The lower bits of the result|
+|`r1`|`uint256`|The high bits of the result|
+
+
 ### mulInverseMod512
+
+this is a 512 implementation of the Helsen's lemma and Montgomery reduction.
+
+*Calculates the multiplicative inverse of *b* modulo 2**512 where *b* is a uint512.*
 
 
 ```solidity
 function mulInverseMod512(uint256 b0, uint256 b1) internal pure returns (uint256 inv0, uint256 inv1);
 ```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`b0`|`uint256`|A uint256 representing the lower bits of *b*|
+|`b1`|`uint256`|A uint256 representing the higher bits of *b*|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`inv0`|`uint256`|The lower bits of the inverse|
+|`inv1`|`uint256`|The higher bits of the inverse|
+
 
 ### lt768
 

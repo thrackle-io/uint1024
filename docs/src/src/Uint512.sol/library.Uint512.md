@@ -1,10 +1,11 @@
 # Uint512
-[Git Source](https://github.com/thrackle-io/uint1024/blob/0f25fa385561dd2369b02071080b7c10476399c4/src/Uint512.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/e99132e1de00eee9a8bc352564bc5eee0547517d/src/Uint512.sol)
 
 **Author:**
 @oscarsernarosero @mpetersoCode55 @cirsteve @Palmerg4
 
-*Ported from https://github.com/SimonSuckut/Solidity_Uint512 functions updated to internal for gas optimization*
+*Ported from https://github.com/SimonSuckut/Solidity_Uint512 functions updated to internal for gas optimization and
+added new functions which are excerpts of the original functions for usage in other libraries*
 
 
 ## Functions
@@ -254,5 +255,53 @@ function sqrt512(uint256 a0, uint256 a1) internal pure returns (uint256 s);
 |Name|Type|Description|
 |----|----|-----------|
 |`s`|`uint256`|The square root as an uint256. Result has at most 256 bit|
+
+
+### mod512x256
+
+Excerpt extracted from this same library for more modularity and external usage
+
+*Calculates a modulo b where a is a 512-bit number and b is a 256-bit number*
+
+
+```solidity
+function mod512x256(uint256 a0, uint256 a1, uint256 b) internal pure returns (uint256 rem);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a0`|`uint256`|A uint256 representing lower bits of the first factor|
+|`a1`|`uint256`|A uint256 representing higher bits of the first factor|
+|`b`|`uint256`|A uint256 representing the second factor|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`rem`|`uint256`|The remainder of a/b|
+
+
+### mulInverseMod256
+
+Excerpt extracted from this same library for more modularity and external usage
+
+*calculates the multiplicative inverse mod 2**256 of b.*
+
+
+```solidity
+function mulInverseMod256(uint256 b) internal pure returns (uint256 inv);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`b`|`uint256`|the number to calculate the multiplicative inverse mod 512|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`inv`|`uint256`|the multiplicative inverse mod 2**256 of b|
 
 
