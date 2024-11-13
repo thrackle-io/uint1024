@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import "forge-std/console2.sol";
 import "forge-std/Test.sol";
 import {Uint512Extended} from "src/Uint512Extended.sol";
+import {Uint512} from "src/Uint512.sol";
 import {PythonUtils} from "test/PythonUtils.sol";
 
 /**
@@ -13,6 +14,7 @@ import {PythonUtils} from "test/PythonUtils.sol";
  */
 contract SafeUint512FuzzTests is Test, PythonUtils {
     using Uint512Extended for uint256;
+    using Uint512 for uint256;
 
     function testSafeDiv512x256(uint256 a0, uint256 a1, uint256 b) public {
         string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, 0, 0, b, 0, 0, 0, "div");
@@ -112,7 +114,7 @@ contract SafeUint512FuzzTests is Test, PythonUtils {
     }
 
     function testMod512x256(uint a0, uint a1, uint b) public {
-        if (b == 0) vm.expectRevert("Uint512: division by zero");
+        if (b == 0) vm.expectRevert("Uint512: mod 0 undefined");
         uint solR0 = a0.mod512x256(a1, b);
 
         string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, 0, 0, b, 0, 0, 0, "mod");
@@ -121,6 +123,6 @@ contract SafeUint512FuzzTests is Test, PythonUtils {
         uint pyR0 = abi.decode(res, (uint256));
         console2.log("pyRes: ", pyR0);
 
-        if (solR0 != solR0) revert("different results");
+        if (solR0 != pyR0) revert("different results");
     }
 }

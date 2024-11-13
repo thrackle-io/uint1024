@@ -323,15 +323,16 @@ library Uint1024 {
      * @return rem the modulo of a%b
      */
     function mod768x256(uint a0, uint a1, uint a2, uint b) internal pure returns (uint rem) {
-        if (b == 0) revert("Uint1024: division by zero");
+        if (b == 0) revert("Uint1024: mod 0 undefined");
         uint rem_a2x256;
         uint rem_a2x512;
         assembly {
-            // (a2*2**512)%b
+            // (a2*2**256)%b
             rem_a2x256 := mulmod(a2, not(0), b) // (a2*(2**256 - 1))%b
             rem_a2x256 := addmod(rem_a2x256, a2, b) // (a2*(2**256 - 1) + a2)%b = (a2*(2**256))%b
+            // (a2*2**512)%b
             rem_a2x512 := mulmod(rem_a2x256, not(0), b) // (a2*(2**256)*(2**256 - 1))%b = (a2*2**512 - a2*2**256)%b
-            rem_a2x512 := addmod(rem_a2x512, sub(0, rem_a2x256), b) // (a2*2**512 - a2*2**256 - a2*(2**256))%b
+            rem_a2x512 := addmod(rem_a2x512, rem_a2x256, b) // (a2*2**512 - a2*2**256 + a2*(2**256))%b = (a2*2**512)%b
         }
         // (a1*2**256 + a0)%b
         rem = a0.mod512x256(a1, b);

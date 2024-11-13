@@ -82,12 +82,11 @@ library Uint512Extended {
     }
 
     /**
-     * @dev Calculates the division of a 512-bit unsigned integer by a 256-bit uint where the result
-     * can be a 512 bit unsigned integer.
+     * @dev Calculates the division of a 512-bit unsigned integer by a 512-bit. The result will be a uint256.
      * @param a0 A uint256 representing the low bits of the numerator
      * @param a1 A uint256 representing the high bits of the numerator
-     * @param b0 A uint256 representing the high bits of the denominator
-     * @param b1 A uint256 representing the low bits of the denominator
+     * @param b0 A uint256 representing the low bits of the denominator
+     * @param b1 A uint256 representing the high bits of the denominator
      * @return result
      */
     function div512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pure returns (uint256 result) {
@@ -175,7 +174,6 @@ library Uint512Extended {
             r1 := add(r1, carryoverA)
             // Check for carryover from the recalc of r1, taking into account previous carryoverB value
             carryoverB := or(carryoverB, lt(r1, carryoverA))
-            r1 := add(add(a1, b1), lt(r0, a0))
         }
         // If carryoverB has some value, it indicates an overflow for some or all of the results bits
         if (carryoverB > 0) revert("Uint512: safeAdd512 overflow");
@@ -201,23 +199,6 @@ library Uint512Extended {
     }
 
     /**
-     * @dev Calculates a modulo b where a is a 512-bit number and b is a 256-bit number
-     * @notice EXtracted from Uint512 library
-     * @param a0 A uint256 representing lower bits of the first factor
-     * @param a1 A uint256 representing higher bits of the first factor
-     * @param b A uint256 representing the second factor
-     * @return rem The remainder of a/b
-     */
-    function mod512x256(uint256 a0, uint256 a1, uint b) internal pure returns (uint256 rem) {
-        if (b == 0) revert("Uint512: division by zero");
-        assembly {
-            rem := mulmod(a1, not(0), b)
-            rem := addmod(rem, a1, b)
-            rem := addmod(rem, a0, b)
-        }
-    }
-
-    /**
      * @notice Calculates the division of a 512 bit unsigned integer by a 256 bit integer safely. It
      * requires the result to fit in a 256 bit integer
      * @dev For a detailed explaination see:
@@ -229,30 +210,8 @@ library Uint512Extended {
      */
     function safeDiv512x256(uint256 a0, uint256 a1, uint256 b) internal pure returns (uint256 r) {
         if (a1 >= b) revert("Uint512: a1 >= b div512x256");
-        uint256 rem = mod512x256(a0, a1, b);
+        uint256 rem = a0.mod512x256(a1, b);
         r = a0.divRem512x256(a1, b, rem);
-    }
-
-    /**
-     * @dev calculates the multiplicative inverse mod 2**256 of b.
-     * @notice extracted from Uint512 library
-     * @param b the number to calculate the multiplicative inverse mod 512
-     * @return inv the multiplicative inverse mod 2**256 of b
-     */
-    function mulInverseMod256(uint b) internal pure returns (uint inv) {
-        assembly {
-            // Calculate the multiplicative inverse mod 2**256 of b. See the paper for details.
-            // slither-disable-start divide-before-multiply
-            // slither-disable-next-line incorrect-exp
-            inv := xor(mul(3, b), 2) // 4
-            inv := mul(inv, sub(2, mul(b, inv))) // 8
-            inv := mul(inv, sub(2, mul(b, inv))) // 16
-            inv := mul(inv, sub(2, mul(b, inv))) // 32
-            inv := mul(inv, sub(2, mul(b, inv))) // 64
-            inv := mul(inv, sub(2, mul(b, inv))) // 128
-            inv := mul(inv, sub(2, mul(b, inv))) // 256
-            // slither-disable-end divide-before-multiply
-        }
     }
 
     /**

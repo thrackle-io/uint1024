@@ -3,7 +3,8 @@ pragma solidity ^0.8.24;
 
 /**
  * @title Uint512 Math Library
- * @dev Ported from https://github.com/SimonSuckut/Solidity_Uint512 functions updated to internal for gas optimization
+ * @dev Ported from https://github.com/SimonSuckut/Solidity_Uint512 functions updated to internal for gas optimization and
+ * added new functions which are excerpts of the original functions for usage in other libraries
  * @author  @oscarsernarosero @mpetersoCode55 @cirsteve @Palmerg4
  */
 library Uint512 {
@@ -348,6 +349,45 @@ library Uint512 {
             }
 
             return s >> (shift / 2);
+        }
+    }
+
+    /**
+     * @dev Calculates a modulo b where a is a 512-bit number and b is a 256-bit number
+     * @notice Excerpt extracted from this same library for more modularity and external usage
+     * @param a0 A uint256 representing lower bits of the first factor
+     * @param a1 A uint256 representing higher bits of the first factor
+     * @param b A uint256 representing the second factor
+     * @return rem The remainder of a/b
+     */
+    function mod512x256(uint256 a0, uint256 a1, uint b) internal pure returns (uint256 rem) {
+        if (b == 0) revert("Uint512: mod 0 undefined");
+        assembly {
+            rem := mulmod(a1, not(0), b)
+            rem := addmod(rem, a1, b)
+            rem := addmod(rem, a0, b)
+        }
+    }
+
+    /**
+     * @dev calculates the multiplicative inverse mod 2**256 of b.
+     * @notice Excerpt extracted from this same library for more modularity and external usage
+     * @param b the number to calculate the multiplicative inverse mod 512
+     * @return inv the multiplicative inverse mod 2**256 of b
+     */
+    function mulInverseMod256(uint b) internal pure returns (uint inv) {
+        assembly {
+            // Calculate the multiplicative inverse mod 2**256 of b. See the paper for details.
+            // slither-disable-start divide-before-multiply
+            // slither-disable-next-line incorrect-exp
+            inv := xor(mul(3, b), 2) // 4
+            inv := mul(inv, sub(2, mul(b, inv))) // 8
+            inv := mul(inv, sub(2, mul(b, inv))) // 16
+            inv := mul(inv, sub(2, mul(b, inv))) // 32
+            inv := mul(inv, sub(2, mul(b, inv))) // 64
+            inv := mul(inv, sub(2, mul(b, inv))) // 128
+            inv := mul(inv, sub(2, mul(b, inv))) // 256
+            // slither-disable-end divide-before-multiply
         }
     }
 }

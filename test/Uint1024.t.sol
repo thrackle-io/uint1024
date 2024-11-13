@@ -248,16 +248,17 @@ contract Uint1024FuzzTests is Test, PythonUtils {
     }
 
     function testMod768x256(uint a0, uint a1, uint a2, uint b) public {
-        if (b == 0) vm.expectRevert("Uint1024: division by zero");
+        if (b == 0) vm.expectRevert("Uint1024: mod 0 undefined");
         (solR0) = a0.mod768x256(a1, a2, b);
 
         string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, 0, b, 0, 0, 0, "mod");
         bytes memory res = vm.ffi(inputs);
         console2.logBytes(res);
         pyR0 = abi.decode(res, (uint256));
+        console2.log("solR0: ", solR0);
         console2.log("pyRes: ", pyR0);
 
-        if (solR0 != solR0) revert("different results");
+        if (solR0 != pyR0) revert("different results");
     }
 
     function testDiv768ByPowerOf2(uint a0, uint a1, uint a2, uint8 n) public {
