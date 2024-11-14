@@ -83,11 +83,11 @@ contract MyContractUsing1024BitArithmetic {
 
 ## Math Theory
 
-The mathematical principles used in the Uint1024 library are not dissimilar to those used in the Uint512 library. Sunzi's theorum, also known as the chinese remainder theorum, was used for our multiplication methods. Hensel's lemma, Montgomery reduction, as well as long division were used for different parts of our division methods. As for our addition and subtraction methods, we used classical algorithms which should be fairly familiar.
+The mathematical principles used in the Uint1024 library are not dissimilar to those used in the Uint512 library. Sunzi's theorem, also known as the chinese remainder theorem, was used for our multiplication methods. Hensel's lemma, Montgomery reduction, as well as long division were used for different parts of our division methods. As for our addition and subtraction methods, we used classical algorithms which should be fairly familiar.
 
 ## Contribute
 
-If you'd like to contribute, please check out our [contribution guide](./CONTRIBUTORS.md). Please do reach out if you feel something could be improved or done differently, or if you have any related needs that aren't met by this library.
+If you'd like to contribute, please check out our [contribution guide](CONTRIBUTORS.md). Please do reach out if you feel something could be improved or done differently, or if you have any related needs that aren't met by this library.
 
 ## License
 

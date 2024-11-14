@@ -115,7 +115,7 @@ library Uint1024 {
 
     /**
      * @notice Calculates the product of a uint512 and uint256. The result is a uint768.
-     * @dev Used the chinese remainder theoreme
+     * @dev Used the chinese remainder theorem
      * @param a0 A uint256 representing the lower bits of the first factor
      * @param a1 A uint256 representing the higher bits of the first factor
      * @param b A uint256 representing the second factor
@@ -145,7 +145,7 @@ library Uint1024 {
 
     /**
      * @notice Calculates the product of two uint512. The result is a uint1024.
-     * @dev Used the chinese remainder theoreme
+     * @dev Used the chinese remainder theorem
      * @param a0 A uint256 representing the lower bits of the first factor
      * @param a1 A uint256 representing the higher bits of the first factor
      * @param b0 A uint256 representing the lower bits of the second factor
@@ -190,7 +190,7 @@ library Uint1024 {
 
     /**
      * @dev Calculates the product of two uint512 modulo 512. The result is a uint512.
-     * @notice Used the chinese remainder theoreme
+     * @notice Used the chinese remainder theorem
      * @param a0 A uint256 representing the lower bits of the first factor
      * @param a1 A uint256 representing the higher bits of the first factor
      * @param b0 A uint256 representing the lower bits of the second factor
