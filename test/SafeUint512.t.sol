@@ -3,9 +3,9 @@ pragma solidity ^0.8.24;
 
 import "forge-std/console2.sol";
 import "forge-std/Test.sol";
-import {Uint512Extended} from "src/Uint512Extended.sol";
-import {Uint512} from "src/Uint512.sol";
-import {PythonUtils} from "test/PythonUtils.sol";
+import {Uint512Extended} from "../src/Uint512Extended.sol";
+import {Uint512} from "../src/Uint512.sol";
+import {PythonUtils} from "./PythonUtils.sol";
 
 /**
  * @title Test Math For safe Uint512 library
