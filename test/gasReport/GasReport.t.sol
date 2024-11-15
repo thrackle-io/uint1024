@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-import "test/gasReport/GasHelper.sol";
-import "src/Uint1024.sol";
-import "src/Uint512.sol";
-import "src/Uint512Extended.sol";
+import "../gasReport/GasHelper.sol";
+import "../../src/Uint1024.sol";
+import "../../src/Uint512.sol";
+import "../../src/Uint512Extended.sol";
 import "forge-std/Test.sol";
 import "forge-std/console2.sol";
 

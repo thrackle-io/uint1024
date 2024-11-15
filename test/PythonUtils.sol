@@ -3,8 +3,8 @@ pragma solidity ^0.8.24;
 
 import "forge-std/console2.sol";
 import "forge-std/Test.sol";
-import {Uint1024} from "src/Uint1024.sol";
-import {Uint512} from "src/Uint512.sol";
+import {Uint1024} from "../src/Uint1024.sol";
+import {Uint512} from "../src/Uint512.sol";
 import {Uint512Extended} from "src/Uint512Extended.sol";
 
 /**
