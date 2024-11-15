@@ -1,5 +1,5 @@
 # Uint1024
-[Git Source](https://github.com/thrackle-io/uint1024/blob/e99132e1de00eee9a8bc352564bc5eee0547517d/src/Uint1024.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/377e148391b79ffc4705b7aaf7c0510c4ac6024f/src/Uint1024.sol)
 
 
 ## Functions
