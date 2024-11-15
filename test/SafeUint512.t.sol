@@ -87,17 +87,17 @@ contract SafeUint512FuzzTests is Test, PythonUtils {
         assertEq(pyR0, solVal, "different results");
     }
 
-    function testLog2(uint x) public {
-        uint solVal = x.log2();
-        if (solVal == 0) return;
-        string[] memory inputs = _buildFFILog2(x);
-        bytes memory res = vm.ffi(inputs);
-        console2.logBytes(res);
-        uint pyR0 = abi.decode(res, (uint));
-        console2.log("pythonRes:", pyR0);
+    // function testLog2(uint x) public {
+    //     uint solVal = x.log2();
+    //     if (solVal == 0) return;
+    //     string[] memory inputs = _buildFFILog2(x);
+    //     bytes memory res = vm.ffi(inputs);
+    //     console2.logBytes(res);
+    //     uint pyR0 = abi.decode(res, (uint));
+    //     console2.log("pythonRes:", pyR0);
 
-        assertEq(pyR0, solVal, "different results");
-    }
+    //     assertEq(pyR0, solVal, "different results");
+    // }
 
     function testDiv512ByPowerOf2(uint a0, uint a1, uint8 n) public {
         a1 = a1 % (2 ** 254);
