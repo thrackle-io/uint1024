@@ -91,7 +91,7 @@ library Uint512Extended {
      */
     function div512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pure returns (uint256 result) {
         if (b1 == 0) revert("Uint512Extended: div512x512 b1 can't be zero");
-        if (lt512(a0,a1, b0 b1)) return 0;
+        if (lt512(a0, a1, b0, b1)) return 0;
         {
             /// block to avoid stack too deep
             /// we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
