@@ -77,7 +77,12 @@ contract SafeUint512FuzzTests is Test, PythonUtils {
 
     function testDiv512x512(uint a0, uint a1, uint b0, uint b1) public {
         b1 = bound(b1, 1, type(uint256).max / 2);
+        console2.log("b0:", b0);
+        console2.log("b1:", b1);
+        console2.log("a0:", a0);
+        console2.log("a1:", a1);
         uint solVal = a0.div512x512(a1, b0, b1);
+        console2.log("solVal:", solVal);
 
         string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, 0, 0, b0, b1, 0, 0, "div");
         bytes memory res = vm.ffi(inputs);
