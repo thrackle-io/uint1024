@@ -62,9 +62,12 @@ This library is intended to be used as an import, similar to how you would impor
 // SPDX-License-Identifier: UNLICENSED
 pragma solidity ^0.8.24;
 
-import {Uint1024} from "src/Uint1024.sol";
-import {Uint512Extended} from "src/Uint512Extended.sol";
-import {Uint512} from "src/Uint512.sol";
+/**
+* @note import the library here using your remappings. For example:
+    import {Uint1024} from "uint1024/Uint1024.sol";
+    import {Uint512Extended} from "uint1024/Uint512Extended.sol";
+    import {Uint512} from "uint1024/Uint512.sol";
+*/
 
 contract MyContractUsing1024BitArithmetic {
     using Uint1024 for uint256;
