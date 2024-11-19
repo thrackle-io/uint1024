@@ -1,5 +1,5 @@
 # Uint512Extended
-[Git Source](https://github.com/thrackle-io/uint1024/blob/53cd0f812af6aaed225950dd338a2bdc18465c12/src/Uint512Extended.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/7f1b2983db5cd4009fb9cde47bb1c03c2091eb20/src/Uint512Extended.sol)
 
 **Author:**
 @oscarsernarosero @mpetersoCode55 @cirsteve @Palmerg4
@@ -182,7 +182,7 @@ our approximation can only be off by +1, which means that if theresult is incorr
 
 Calculates the product of two uint512 and uint256 safely
 
-*Used the chinese remainder theoreme*
+*Used the chinese remainder theorem*
 
 
 ```solidity

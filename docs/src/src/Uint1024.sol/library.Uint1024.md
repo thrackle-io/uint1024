@@ -1,5 +1,5 @@
 # Uint1024
-[Git Source](https://github.com/thrackle-io/uint1024/blob/53cd0f812af6aaed225950dd338a2bdc18465c12/src/Uint1024.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/7f1b2983db5cd4009fb9cde47bb1c03c2091eb20/src/Uint1024.sol)
 
 
 ## Functions
@@ -69,7 +69,7 @@ function sub768x768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, 
 
 Calculates the product of a uint512 and uint256. The result is a uint768.
 
-*Used the chinese remainder theoreme*
+*Used the chinese remainder theorem*
 
 
 ```solidity
@@ -99,7 +99,7 @@ function mul512x256In768(uint256 a0, uint256 a1, uint256 b)
 
 Calculates the product of two uint512. The result is a uint1024.
 
-*Used the chinese remainder theoreme*
+*Used the chinese remainder theorem*
 
 
 ```solidity
@@ -133,7 +133,7 @@ r1
 r2
 r3
 
-Used the chinese remainder theoreme
+Used the chinese remainder theorem
 
 *Calculates the product of two uint512 modulo 512. The result is a uint512.*
 
