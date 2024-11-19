@@ -120,7 +120,7 @@ library Uint512Extended {
 
     /**
      * @notice Calculates the product of two uint512 and uint256 safely
-     * @dev Used the chinese remainder theoreme
+     * @dev Used the chinese remainder theorem
      * @param a0 A uint256 representing lower bits of the first factor
      * @param a1 A uint256 representing higher bits of the first factor
      * @param b A uint256 representing the second factor

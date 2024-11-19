@@ -90,7 +90,7 @@ The mathematical principles used in the Uint1024 library are not dissimilar to t
 
 ## Contribute
 
-If you'd like to contribute, please check out our [contribution guide](./CONTRIBUTORS.md). Please do reach out if you feel something could be improved or done differently, or if you have any related needs that aren't met by this library.
+If you'd like to contribute, please check out our [contribution guide](/CONTRIBUTORS.md). Please do reach out if you feel something could be improved or done differently, or if you have any related needs that aren't met by this library.
 
 ## License
 
