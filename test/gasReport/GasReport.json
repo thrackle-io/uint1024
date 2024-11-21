@@ -1,46 +1,46 @@
 {
   "Add": {
-    "add1024x1024": 381,
-    "add768x768": 302,
-    "safeAdd512x512": 222,
-    "add512x512": 146
+    "add1024x1024": 289,
+    "add768x768": 232,
+    "safeAdd512x512": 175,
+    "add512x512": 58
   },
   "Sub": {
-    "sub1024x1024": 690,
-    "sub768x768": 513,
-    "safeSub512x512": 288,
-    "sub512x512": 146
+    "sub1024x1024": 667,
+    "sub768x768": 497,
+    "safeSub512x512": 269,
+    "sub512x512": 57
   },
   "Mul": {
-    "mulInverseMod512": 8858,
-    "mul512x512In1024": 863,
-    "mul512x512Mod512": 555,
-    "mul512x256In768": 460,
-    "safeMul512x256": 450,
-    "mulMod256x256": 194,
-    "mul512x256": 186,
-    "mul256x256": 159,
-    "mulInverseMod256": 285
+    "mulInverseMod512": 6976,
+    "mul512x512In1024": 796,
+    "mul512x512Mod512": 488,
+    "mul512x256In768": 423,
+    "safeMul512x256": 416,
+    "mulMod256x256": 186,
+    "mul512x256": 177,
+    "mul256x256": 151,
+    "mulInverseMod256": 42
   },
   "Div": {
-    "div512ByPowerOf2": 1243,
-    "safeDiv512x256": 728,
-    "div512x256In512": 604,
-    "div512x256": 527,
-    "divRem512x256": 467,
-    "div768x256": 1435,
-    "div768ByPowerOf2": 1347,
-    "divRem1024x512In512": 10358,
-    "div512x512": 5224
+    "div512ByPowerOf2": 694,
+    "safeDiv512x256": 616,
+    "div512x256In512": 482,
+    "div512x256": 461,
+    "divRem512x256": 401,
+    "div768x256": 1056,
+    "div768ByPowerOf2": 796,
+    "divRem1024x512In512": 8358,
+    "div512x512": 3191
   },
   "Sqrt": {
-    "sqrt512": 2337,
-    "sqrt256": 985
+    "sqrt512": 1944,
+    "sqrt256": 990
   },
   "Log": {
-    "log2": 1300
+    "log2": 731
   },
   "Mod": {
-    "mod768x256": 405
+    "mod768x256": 371
   }
 }
