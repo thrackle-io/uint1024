@@ -125,4 +125,34 @@ contract SafeUint512FuzzTests is Test, PythonUtils {
 
         if (solR0 != pyR0) revert("different results");
     }
+
+    function testEq512Positive(uint256 x0, uint256 x1) public pure {
+        uint256 y0 = x0;
+        uint256 y1 = x1;
+        assertTrue(x0.eq512(x1, y0, y1));
+    }
+    function testEq512Negative(uint256 x0, uint256 x1) public pure {
+        x0 = bound(x0, 0, type(uint256).max - 1);
+        x1 = bound(x1, 0, type(uint256).max - 1);
+        uint256 y0 = x0 + 1;
+        uint256 y1 = x1 + 1;
+        assertFalse(x0.eq512(x1, y0, y1));
+    }
+    function testGe512Positive(uint256 x0, uint256 x1) public pure {
+        x0 = bound(x0, 0, type(uint256).max - 1);
+        x1 = bound(x1, 0, type(uint256).max - 1);
+        uint256 y0 = x0;
+        uint256 y1 = x1;
+        assertTrue(x0.ge512(x1, y0, y1));
+        x0 += 1;
+        x1 += 1;
+        assertTrue(x0.ge512(x1, y0, y1));
+    }
+    function testGe512Negative(uint256 x0, uint256 x1) public pure {
+        x0 = bound(x0, 1, type(uint256).max - 1);
+        x1 = bound(x1, 1, type(uint256).max - 1);
+        uint256 y0 = x0 + 1;
+        uint256 y1 = x1 + 1;
+        assertFalse(x0.ge512(x1, y0, y1));
+    }
 }
