@@ -337,7 +337,7 @@ library Uint1024 {
     }
 
     /**
-     * @dev Calculates the division of a uint1024 by a uint256. The result is a uint768.
+     * @dev Calculates the division of a uint1024 by a uint256. The result is a uint1024.
      * @notice Used long division
      * @param a0 A uint256 representing the lowest bits of the first factor
      * @param a1 A uint256 representing the middle-lower bits of the first factor
