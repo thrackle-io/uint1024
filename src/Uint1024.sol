@@ -150,9 +150,10 @@ library Uint1024 {
      * @param a1 A uint256 representing the middle bits of the first factor
      * @param a2 A uint256 representing the higher bits of the first factor
      * @param b A uint256 representing the second factor
-     * @return r0 The lower bits of the result
-     * @return r1 The higher bits of the result
-     * @return r2 The highest bits of the result
+     * @return r0 The lowest bits of the result
+     * @return r1 The middle-lower bits of the result
+     * @return r2 The middle-higher bits of the result
+     * @return r3 The highest bits of the result
      */
     function mul768x256In1024(
         uint256 a0,
