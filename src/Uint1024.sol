@@ -144,6 +144,56 @@ library Uint1024 {
     }
 
     /**
+     * @notice Calculates the product of a uint768 and uint256. The result is a uint1024.
+     * @dev Used the chinese remainder theorem
+     * @param a0 A uint256 representing the lower bits of the first factor
+     * @param a1 A uint256 representing the middle bits of the first factor
+     * @param a2 A uint256 representing the higher bits of the first factor
+     * @param b A uint256 representing the second factor
+     * @return r0 The lower bits of the result
+     * @return r1 The higher bits of the result
+     * @return r2 The highest bits of the result
+     */
+    function mul768x256In1024(
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint256 b
+    ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint r3) {
+        // Get the low and high bits of r0
+        (uint256 r0Lo, uint256 r0Hi) = a0.mul256x256(b);
+        // Get the low and high bits of r1
+        (uint256 r1Lo, uint256 r1Hi) = a1.mul256x256(b);
+        // Get the low and high bits of r2
+        (uint256 r2Lo, uint256 r2Hi) = a2.mul256x256(b);
+        // r0 is equal to the lowest bits of a0 * b
+        r0 = r0Lo;
+        assembly {
+            // r1 is equal to the sum of the higher bits of a0 * b and the lower bits of a1 * b
+            r1 := add(r0Hi, r1Lo)
+            // If r1 < r0Hi, there was a phantom overflow
+            if lt(r1, r0Hi) {
+                // Account for the overflow
+                r2 := 1
+            }
+            // we first add the higher bits of a1 * b plus the overflow to get initial r2
+            r2 := add(r2, r1Hi)
+            if lt(r2, r1Hi) {
+                // Account for the overflow
+                r3 := 1
+            }
+            // now, r2 would be equal to higher bits of a1 * b plus the overflow and the lower bits of a2 * b
+            r2 := add(r2, r2Lo)
+            if lt(r2, r2Lo) {
+                // Account for the overflow
+                r3 := 1
+            }
+            // r3 is equal to the higher bits of a2 * b plus the overflow
+            r3 := add(r3, r2Hi)
+        }
+    }
+
+    /**
      * @notice Calculates the product of two uint512. The result is a uint1024.
      * @dev Used the chinese remainder theorem
      * @param a0 A uint256 representing the lower bits of the first factor
@@ -283,6 +333,38 @@ library Uint1024 {
         uint rem = a1.mod512x256(a2, b);
         r1 = a1.divRem512x256(a2, b, rem);
         r0 = a0.safeDiv512x256(rem, b);
+    }
+
+    /**
+     * @dev Calculates the division of a uint1024 by a uint256. The result is a uint768.
+     * @notice Used long division
+     * @param a0 A uint256 representing the lowest bits of the first factor
+     * @param a1 A uint256 representing the middle-lower bits of the first factor
+     * @param a2 A uint256 representing the middle-higher bits of the first factor
+     * @param a3 A uint256 representing the highest bits of the first factor
+     * @param b A uint256 representing the divisor
+     * @return r0 The lowest bits of the result
+     * @return r1 The middle-lower bits of the result
+     * @return r2 The middle-higher bits of the result
+     * @return r3 The highest bits of the result
+     */
+    function div1024x256(
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint256 a3,
+        uint256 b
+    ) internal pure returns (uint256 r0, uint r1, uint r2, uint r3) {
+        uint rem3;
+        assembly {
+            rem3 := mod(a3, b)
+            r3 := div(sub(a3, rem3), b)
+        }
+        uint rem2 = a2.mod512x256(rem3, b);
+        r2 = a2.divRem512x256(rem3, b, rem2);
+        uint rem1 = a1.mod512x256(rem2, b);
+        r1 = a1.divRem512x256(rem2, b, rem1);
+        r0 = a0.safeDiv512x256(rem1, b);
     }
 
     /**
