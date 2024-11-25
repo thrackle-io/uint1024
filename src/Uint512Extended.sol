@@ -257,7 +257,7 @@ library Uint512Extended {
         }
         // 2 ** 1
         if (x >= 2) {
-            /* x >>= 1; */ n += 1;
+            n += 1;
         }
     }
 }
