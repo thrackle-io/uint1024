@@ -337,6 +337,141 @@ library Uint1024 {
     }
 
     /**
+     * @dev Calculates the division of a 512-bit unsigned integer by a 512-bit. The result will be a uint256.
+     * @param a0 A uint256 representing the low bits of the numerator
+     * @param a1 A uint256 representing the middle bits of the numerator
+     * @param a2 A uint256 representing the high bits of the numerator
+     * @param b0 A uint256 representing the low bits of the denominator
+     * @param b1 A uint256 representing the high bits of the denominator
+     * @return resultLo
+     * @return resultHi
+     * @return bMod2M
+     * @return left0
+     * @return left1
+     */
+    function _div768x512(
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint256 b0,
+        uint256 b1
+    ) private pure returns (uint256 resultLo, uint256 resultHi, uint bMod2M, uint left0, uint left1) {
+        if (isResultZero(a0, a1, a2, b0, b1)) return (0, 0, 0, 0, 0);
+        (uint n, uint c, uint e, uint result0, uint result1, uint result2, uint remainder) = getShiftedBitsDiv768x512(a0, a1, a2, b0, b1);
+        uint rem = result1.mod512x256(result2, c);
+        resultHi = result1.divRem512x256(result2, c, rem);
+        resultLo = result0.safeDiv512x256(rem, c);
+        bMod2M = e;
+        (left0, left1) = (mod768x256(result0, result1, result2, c)).mul256x256(2 ** n);
+        (left0, left1) = left0.add512x512(left1, remainder, 0);
+    }
+
+    function div768x512(
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint256 b0,
+        uint256 b1
+    ) internal pure returns (uint256 resultLo, uint256 resultHi) {
+        uint bMod2M;
+        uint left0;
+        uint left1;
+        (resultLo, resultHi, bMod2M, left0, left1) = _div768x512(a0, a1, a2, b0, b1);
+        (uint right0, uint right1) = resultLo.mul512x256(resultHi, bMod2M);
+        if (left0.lt512(left1, right0, right1)) {
+            (uint newa0, uint newa1, uint newa2, uint newa3) = mul512x512In1024(resultLo, resultHi, b0, b1);
+            (newa0, newa1, newa2, ) = sub1024x1024(newa0, newa1, newa2, newa3, a0, a1, a2, 0);
+            (uint rec0, uint rec1) = div768x512(newa0, newa1, newa2, b0, b1);
+            (resultLo, resultHi) = resultLo.sub512x512(resultHi, rec0, rec1);
+            (resultLo, resultHi) = resultLo.sub512x512(resultHi, 1, 0);
+        }
+    }
+
+    function isResultZero(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1) internal pure returns (bool zero) {
+        if (b1 == 0) revert("Uint512Extended: div512x512 b1 can't be zero");
+        if (b1 >> 255 == 1) revert("b1 too large");
+        if (a2 == 0 && a0.lt512(a1, b0, b1)) zero = true;
+    }
+
+    function getShiftedBitsDiv768x512(
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint256 b0,
+        uint256 b1
+    ) private pure returns (uint n, uint c, uint e, uint result0, uint result1, uint result2, uint remainder) {
+        /// block to avoid stack too deep
+        /// we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
+        n = b1.log2() + 1;
+        console2.log("n, b1", n, b1);
+        /// d = 2**n;
+        /// if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
+        uint c1;
+        (c, c1, e) = b0.div512ByPowerOf2(b1, uint8(n));
+        if (c1 > 0) revert("div512x512: unsuccessful division by 2**n");
+        /// if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
+        /// making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
+        /// a / d
+        (result0, result1, result2, remainder) = div768ByPowerOf2(a0, a1, a2, uint8(n));
+    }
+
+    function proofResultDiv768x512(
+        uint n,
+        uint c,
+        uint e,
+        uint result0,
+        uint result1,
+        uint result2,
+        uint remainder
+    ) private pure returns (uint resultLo, uint resultHi, bool add) {
+        uint rem;
+        (resultHi, rem) = getResultHi(c, result1, result2);
+        // addHi = proofLo.lt512(proofHi, eLo, eHi);
+        (resultLo, add) = getProof(n, c, e, result0, result1, result2, rem, remainder, resultHi);
+    }
+
+    function getResultHi(uint c, uint result1, uint result2) private pure returns (uint resultHi, uint rem) {
+        rem = result1.mod512x256(result2, c);
+        resultHi = result1.divRem512x256(result2, c, rem);
+    }
+
+    function getProof(
+        uint n,
+        uint c,
+        uint e,
+        uint result0,
+        uint result1,
+        uint result2,
+        uint rem,
+        uint remainder,
+        uint resultHi
+    ) private pure returns (uint resultLo, bool add) {
+        uint proofLo;
+        uint proofHi;
+        (proofLo, proofHi, resultLo) = getProofAndResultLo(n, c, result0, result1, result2, rem, remainder);
+        add = getAdd(e, resultLo, resultHi, proofLo, proofHi);
+    }
+
+    function getProofAndResultLo(
+        uint n,
+        uint c,
+        uint result0,
+        uint result1,
+        uint result2,
+        uint rem,
+        uint remainder
+    ) private pure returns (uint proofLo, uint proofHi, uint resultLo) {
+        (proofLo, proofHi) = (mod768x256(result0, result1, result2, c)).mul256x256(2 ** n);
+        (proofLo, proofHi) = proofLo.add512x512(proofHi, remainder, 0);
+        resultLo = result0.safeDiv512x256(rem, c);
+    }
+
+    function getAdd(uint e, uint resultLo, uint resultHi, uint proofLo, uint proofHi) private pure returns (bool add) {
+        (uint eLo, uint eHi, uint eOv) = mul512x256In768(resultLo, resultHi, e);
+        add = lt768(proofLo, proofHi, 0, eLo, eHi, eOv);
+    }
+
+    /**
      * @dev Calculates the division of a uint1024 by a uint256. The result is a uint1024.
      * @notice Used long division
      * @param a0 A uint256 representing the lowest bits of the first factor
@@ -422,6 +557,39 @@ library Uint1024 {
         // (a2*2**512 + a1*2**256 + a0)%b
         assembly {
             rem := addmod(rem, rem_a2x512, b)
+        }
+    }
+
+    /**
+     * @dev Calculates *a* modulo *b* where *a* is a 768-bit unsigned integer and *b* is a uint256.
+     * @param a0 A uint256 representing the low bits of *a*
+     * @param a1 A uint256 representing the middle bits of *a*
+     * @param a2 A uint256 representing the high bits of *a*
+     * @param a3 A uint256 representing the high bits of *a*
+     * @param b A uint256 representing the base of the modulo
+     * @return rem the modulo of a%b
+     */
+    function mod1024x256(uint a0, uint a1, uint a2, uint256 a3, uint b) internal pure returns (uint rem) {
+        if (b == 0) revert("Uint1024: mod 0 undefined");
+        uint rem_a3x256;
+        uint rem_a3x512;
+        uint rem_a3x768;
+        assembly {
+            // (a2*2**256)%b
+            rem_a3x256 := mulmod(a3, not(0), b) // (a3*(2**256 - 1))%b
+            rem_a3x256 := addmod(rem_a3x256, a3, b) // (a3*(2**256 - 1) + a3)%b = (a3*(2**256))%b
+            // (a2*2**512)%b
+            rem_a3x512 := mulmod(rem_a3x256, not(0), b) // (a3*(2**256)*(2**256 - 1))%b = (a3*2**512 - a3*2**256)%b
+            rem_a3x512 := addmod(rem_a3x512, rem_a3x256, b) // (a3*2**512 - a3*2**256 + a3*(2**256))%b = (a3*2**512)%b
+            // (a2*2**768)%b
+            rem_a3x768 := mulmod(rem_a3x512, not(0), b) // (a3*(2**512)*(2**256 - 1))%b = (a3*2**768 - a3*2**512)%b
+            rem_a3x768 := addmod(rem_a3x768, rem_a3x512, b) // (a3*2**768 - a3*2**512 + a3*(2**512))%b = (a3*2**768)%b
+        }
+        // (a2*2**512 + a1*2**256 + a0)%b
+        rem = mod768x256(a0, a1, a2, b);
+
+        assembly {
+            rem := addmod(rem, rem_a3x768, b)
         }
     }
 
