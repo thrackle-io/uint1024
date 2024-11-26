@@ -72,11 +72,11 @@ contract PythonUtils is Test {
      * @param x A uint256 which will be applied log2
      * @return The input argument array to pass to the log_2 python script
      */
-   /*function _buildFFILog2(uint256 x) internal pure returns (string[] memory) {
+   function _buildFFILog2(uint256 x) internal pure returns (string[] memory) {
         string[] memory inputs = new string[](3);
         inputs[0] = "python3";
         inputs[1] = "script/log_2.py";
         inputs[2] = vm.toString(x);
         return inputs;
-    }*/
+    }
 }
