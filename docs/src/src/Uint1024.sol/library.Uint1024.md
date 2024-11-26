@@ -1,5 +1,5 @@
 # Uint1024
-[Git Source](https://github.com/thrackle-io/uint1024/blob/7f1b2983db5cd4009fb9cde47bb1c03c2091eb20/src/Uint1024.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/e5c9bb6e87f25ef73bf152b2545f7cbe81569af1/src/Uint1024.sol)
 
 
 ## Functions
@@ -93,6 +93,38 @@ function mul512x256In768(uint256 a0, uint256 a1, uint256 b)
 |`r0`|`uint256`|The lower bits of the result|
 |`r1`|`uint256`|The higher bits of the result|
 |`r2`|`uint256`|The highest bits of the result|
+
+
+### mul768x256In1024
+
+Calculates the product of a uint768 and uint256. The result is a uint1024.
+
+*Used the chinese remainder theorem*
+
+
+```solidity
+function mul768x256In1024(uint256 a0, uint256 a1, uint256 a2, uint256 b)
+    internal
+    pure
+    returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a0`|`uint256`|A uint256 representing the lower bits of the first factor|
+|`a1`|`uint256`|A uint256 representing the middle bits of the first factor|
+|`a2`|`uint256`|A uint256 representing the higher bits of the first factor|
+|`b`|`uint256`|A uint256 representing the second factor|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`r0`|`uint256`|The lowest bits of the result|
+|`r1`|`uint256`|The middle-lower bits of the result|
+|`r2`|`uint256`|The middle-higher bits of the result|
+|`r3`|`uint256`|The highest bits of the result|
 
 
 ### mul512x512In1024
@@ -220,6 +252,39 @@ function div768x256(uint256 a0, uint256 a1, uint256 a2, uint256 b)
 |`r0`|`uint256`|The lower bits of the result|
 |`r1`|`uint256`|The middle bits of the result|
 |`r2`|`uint256`|The higher bits of the result|
+
+
+### div1024x256
+
+Used long division
+
+*Calculates the division of a uint1024 by a uint256. The result is a uint1024.*
+
+
+```solidity
+function div1024x256(uint256 a0, uint256 a1, uint256 a2, uint256 a3, uint256 b)
+    internal
+    pure
+    returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a0`|`uint256`|A uint256 representing the lowest bits of the first factor|
+|`a1`|`uint256`|A uint256 representing the middle-lower bits of the first factor|
+|`a2`|`uint256`|A uint256 representing the middle-higher bits of the first factor|
+|`a3`|`uint256`|A uint256 representing the highest bits of the first factor|
+|`b`|`uint256`|A uint256 representing the divisor|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`r0`|`uint256`|The lowest bits of the result|
+|`r1`|`uint256`|The middle-lower bits of the result|
+|`r2`|`uint256`|The middle-higher bits of the result|
+|`r3`|`uint256`|The highest bits of the result|
 
 
 ### div768ByPowerOf2

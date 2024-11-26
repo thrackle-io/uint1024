@@ -4,10 +4,8 @@ from decimal import *
 from eth_abi import encode
 
 def calculate_ln(args):
-
-    result = int(log2(args.x))
-    if (result == 256): result = 255 # this is a fix for a rounding error from Python
-    enc = encode(["int256"], [result])
+    result = log2(Decimal(args.x))
+    enc = encode(["int256"], [round(result)])
     print("0x" + enc.hex(), end="")
 
 def parse_args():

@@ -87,6 +87,26 @@ contract Uint1024FuzzTests is Test, PythonUtils {
         if (solR2 != pyR2) revert("R2 bits different");
     }
 
+    function testDiv1024x256(uint a0, uint a1, uint a2, uint a3, uint b) public {
+        b = bound(b, 1, type(uint256).max);
+
+        (solR0, solR1, solR2, solR3) = Uint1024.div1024x256(a0, a1, a2, a3, b);
+        console2.log("solRes:", solR0, solR1, solR2);
+        console2.log("highest bits solRes:", solR3);
+
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, a3, b, 0, 0, 0, "div");
+        bytes memory res = vm.ffi(inputs);
+        console2.logBytes(res);
+        (pyR0, pyR1, pyR2, pyR3) = abi.decode(res, (uint, uint, uint, uint));
+        console2.log("pythonRes:", pyR0, pyR1, pyR2);
+        console2.log("highest bits pythonRes:", pyR3);
+
+        if (solR0 != pyR0) revert("R0 bits different");
+        if (solR1 != pyR1) revert("R1 bits different");
+        if (solR2 != pyR2) revert("R2 bits different");
+        if (solR3 != pyR3) revert("R3 bits different");
+    }
+
     function testAdd768x768(uint a0, uint a1, uint a2, uint b0, uint b1, uint b2) public {
         string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, 0, b0, b1, b2, 0, "add");
         bytes memory res = vm.ffi(inputs);
@@ -177,6 +197,24 @@ contract Uint1024FuzzTests is Test, PythonUtils {
         if (solR0 != pyR0) revert("R0 bits different");
         if (solR1 != pyR1) revert("R1 bits different");
         if (solR2 != pyR2) revert("R2 bits different");
+    }
+
+    function testMul768x256In1024(uint a0, uint a1, uint a2, uint b) public {
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, 0, b, 0, 0, 0, "mul");
+        bytes memory res = vm.ffi(inputs);
+        console2.logBytes(res);
+        (pyR0, pyR1, pyR2, pyR3) = abi.decode(res, (uint256, uint256, uint256, uint256));
+        console2.log("pyRes: ", pyR0, pyR1, pyR2);
+        console2.log("Python highest Bits: ", pyR3);
+
+        (solR0, solR1, solR2, solR3) = Uint1024.mul768x256In1024(a0, a1, a2, b);
+        console2.log("solRes:", solR0, solR1, solR2);
+        console2.log("highest:", solR3);
+
+        if (solR0 != pyR0) revert("R0 bits different");
+        if (solR1 != pyR1) revert("R1 bits different");
+        if (solR2 != pyR2) revert("R2 bits different");
+        if (solR3 != pyR3) revert("R3 bits different");
     }
 
     function testMul512x512In1024(uint256 a0, uint256 a1, uint256 b0, uint256 b1) public {
