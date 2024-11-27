@@ -5,6 +5,7 @@ import "forge-std/Test.sol";
 import {Uint1024} from "src/Uint1024.sol";
 import {PythonUtils} from "test/PythonUtils.sol";
 import {TesterContract} from "test/TesterContract.sol";
+import "src/UintTypes.sol";
 
 /**
  * @title Test Math For library Uint1024
@@ -89,19 +90,22 @@ contract Uint1024FuzzTests is Test, PythonUtils {
 
     function testDiv768x512(uint a0, uint a1, uint a2, uint b0, uint b1) public {
         b1 = bound(b1, 1, type(uint256).max / 2 - 1);
-        console2.log("a:", a0, a1, a2);
-        console2.log("b:", b0, b1);
-        (solR0, solR1) = Uint1024.div768x512(a0, a1, a2, b0, b1);
-        console2.log("solRes:", solR0, solR1);
+        uint768 memory a = uint768(a0, a1, a2);
+        uint512 memory b = uint512(b0, b1);
+        console2.log("a:", a._0, a._1, a._2);
+        console2.log("b:", b._0, b._1);
+        uint512 memory solR;
+        solR = Uint1024.div768x512(a, b);
+        console2.log("solRes:", solR._0, solR._1);
 
-        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, 0, b0, b1, 0, 0, "div");
+        string[] memory inputs = _buildFFI1024Arithmetic(a._0, a._1, a._2, 0, b._0, b._1, 0, 0, "div");
         bytes memory res = vm.ffi(inputs);
         console2.logBytes(res);
         (pyR0, pyR1, pyR2) = abi.decode(res, (uint, uint, uint));
         console2.log("pythonRes:", pyR0, pyR1, pyR2);
 
-        if (solR0 != pyR0) revert("R0 bits different");
-        if (solR1 != pyR1) revert("R1 bits different");
+        if (solR._0 != pyR0) revert("R0 bits different");
+        if (solR._1 != pyR1) revert("R1 bits different");
     }
 
     function testDiv1024x256(uint a0, uint a1, uint a2, uint a3, uint b) public {

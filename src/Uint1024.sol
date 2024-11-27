@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import "./Uint512.sol";
 import "./Uint512Extended.sol";
+import "./UintTypes.sol";
 
 library Uint1024 {
     using Uint512 for uint256;
@@ -338,137 +339,64 @@ library Uint1024 {
 
     /**
      * @dev Calculates the division of a 512-bit unsigned integer by a 512-bit. The result will be a uint256.
-     * @param a0 A uint256 representing the low bits of the numerator
-     * @param a1 A uint256 representing the middle bits of the numerator
-     * @param a2 A uint256 representing the high bits of the numerator
-     * @param b0 A uint256 representing the low bits of the denominator
-     * @param b1 A uint256 representing the high bits of the denominator
-     * @return resultLo
-     * @return resultHi
+     * @param a A uint768 representing the numerator
+     * @param b A uint512 representing the denominator
+     * @return result
      * @return bMod2M
-     * @return left0
-     * @return left1
+     * @return left
      */
     function _div768x512(
-        uint256 a0,
-        uint256 a1,
-        uint256 a2,
-        uint256 b0,
-        uint256 b1
-    ) private pure returns (uint256 resultLo, uint256 resultHi, uint bMod2M, uint left0, uint left1) {
-        if (isResultZero(a0, a1, a2, b0, b1)) return (0, 0, 0, 0, 0);
-        (uint n, uint c, uint e, uint result0, uint result1, uint result2, uint remainder) = getShiftedBitsDiv768x512(a0, a1, a2, b0, b1);
-        uint rem = result1.mod512x256(result2, c);
-        resultHi = result1.divRem512x256(result2, c, rem);
-        resultLo = result0.safeDiv512x256(rem, c);
+        uint768 memory a,
+        uint512 memory b
+    ) private pure returns (uint512 memory result, uint bMod2M, uint512 memory left) {
+        if (isResultZero(a, b)) return (uint512(0, 0), 0, uint512(0, 0));
+        (uint n, uint c, uint e, uint768 memory tempResult, uint remainder) = getShiftedBitsDiv768x512(a, b);
+        uint rem = tempResult._1.mod512x256(tempResult._2, c);
+        result._1 = tempResult._1.divRem512x256(tempResult._2, c, rem);
+        result._0 = tempResult._0.safeDiv512x256(rem, c);
         bMod2M = e;
-        (left0, left1) = (mod768x256(result0, result1, result2, c)).mul256x256(2 ** n);
-        (left0, left1) = left0.add512x512(left1, remainder, 0);
+        (left._0, left._1) = (mod768x256(tempResult._0, tempResult._1, tempResult._2, c)).mul256x256(2 ** n);
+        (left._0, left._1) = left._0.add512x512(left._1, remainder, 0);
     }
 
-    function div768x512(
-        uint256 a0,
-        uint256 a1,
-        uint256 a2,
-        uint256 b0,
-        uint256 b1
-    ) internal pure returns (uint256 resultLo, uint256 resultHi) {
+    function div768x512(uint768 memory a, uint512 memory b) internal pure returns (uint512 memory result) {
         uint bMod2M;
-        uint left0;
-        uint left1;
-        (resultLo, resultHi, bMod2M, left0, left1) = _div768x512(a0, a1, a2, b0, b1);
-        (uint right0, uint right1) = resultLo.mul512x256(resultHi, bMod2M);
-        if (left0.lt512(left1, right0, right1)) {
-            (uint newa0, uint newa1, uint newa2, uint newa3) = mul512x512In1024(resultLo, resultHi, b0, b1);
-            (newa0, newa1, newa2, ) = sub1024x1024(newa0, newa1, newa2, newa3, a0, a1, a2, 0);
-            (uint rec0, uint rec1) = div768x512(newa0, newa1, newa2, b0, b1);
-            (resultLo, resultHi) = resultLo.sub512x512(resultHi, rec0, rec1);
-            (resultLo, resultHi) = resultLo.sub512x512(resultHi, 1, 0);
+        uint512 memory left;
+        (result, bMod2M, left) = _div768x512(a, b);
+        (uint right0, uint right1) = result._0.mul512x256(result._1, bMod2M);
+        if (left._0.lt512(left._1, right0, right1)) {
+            (uint newa0, uint newa1, uint newa2, uint newa3) = mul512x512In1024(result._0, result._1, b._0, b._1);
+            // uint1024 memory aNew1024 = uint1024(newa0, newa1, newa2, newa3);
+            (newa0, newa1, newa2, ) = sub1024x1024(newa0, newa1, newa2, newa3, a._0, a._1, a._2, 0);
+            uint768 memory aNew = uint768(newa0, newa1, newa2);
+            uint512 memory rec = div768x512(aNew, b);
+            (result._0, result._1) = result._0.sub512x512(result._1, rec._0, rec._1);
+            (result._0, result._1) = result._0.sub512x512(result._1, 1, 0);
         }
     }
 
-    function isResultZero(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1) internal pure returns (bool zero) {
-        if (b1 == 0) revert("Uint512Extended: div512x512 b1 can't be zero");
-        if (b1 >> 255 == 1) revert("b1 too large");
-        if (a2 == 0 && a0.lt512(a1, b0, b1)) zero = true;
+    function isResultZero(uint768 memory a, uint512 memory b) internal pure returns (bool zero) {
+        if (b._1 == 0) revert("Uint512Extended: div512x512 b1 can't be zero");
+        if (b._1 >> 255 == 1) revert("b1 too large");
+        if (a._2 == 0 && a._0.lt512(a._1, b._0, b._1)) zero = true;
     }
 
     function getShiftedBitsDiv768x512(
-        uint256 a0,
-        uint256 a1,
-        uint256 a2,
-        uint256 b0,
-        uint256 b1
-    ) private pure returns (uint n, uint c, uint e, uint result0, uint result1, uint result2, uint remainder) {
+        uint768 memory a,
+        uint512 memory b
+    ) private pure returns (uint n, uint c, uint e, uint768 memory result, uint remainder) {
         /// block to avoid stack too deep
         /// we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
-        n = b1.log2() + 1;
-        console2.log("n, b1", n, b1);
+        n = b._1.log2() + 1;
         /// d = 2**n;
         /// if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
         uint c1;
-        (c, c1, e) = b0.div512ByPowerOf2(b1, uint8(n));
+        (c, c1, e) = b._0.div512ByPowerOf2(b._1, uint8(n));
         if (c1 > 0) revert("div512x512: unsuccessful division by 2**n");
         /// if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
         /// making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
         /// a / d
-        (result0, result1, result2, remainder) = div768ByPowerOf2(a0, a1, a2, uint8(n));
-    }
-
-    function proofResultDiv768x512(
-        uint n,
-        uint c,
-        uint e,
-        uint result0,
-        uint result1,
-        uint result2,
-        uint remainder
-    ) private pure returns (uint resultLo, uint resultHi, bool add) {
-        uint rem;
-        (resultHi, rem) = getResultHi(c, result1, result2);
-        // addHi = proofLo.lt512(proofHi, eLo, eHi);
-        (resultLo, add) = getProof(n, c, e, result0, result1, result2, rem, remainder, resultHi);
-    }
-
-    function getResultHi(uint c, uint result1, uint result2) private pure returns (uint resultHi, uint rem) {
-        rem = result1.mod512x256(result2, c);
-        resultHi = result1.divRem512x256(result2, c, rem);
-    }
-
-    function getProof(
-        uint n,
-        uint c,
-        uint e,
-        uint result0,
-        uint result1,
-        uint result2,
-        uint rem,
-        uint remainder,
-        uint resultHi
-    ) private pure returns (uint resultLo, bool add) {
-        uint proofLo;
-        uint proofHi;
-        (proofLo, proofHi, resultLo) = getProofAndResultLo(n, c, result0, result1, result2, rem, remainder);
-        add = getAdd(e, resultLo, resultHi, proofLo, proofHi);
-    }
-
-    function getProofAndResultLo(
-        uint n,
-        uint c,
-        uint result0,
-        uint result1,
-        uint result2,
-        uint rem,
-        uint remainder
-    ) private pure returns (uint proofLo, uint proofHi, uint resultLo) {
-        (proofLo, proofHi) = (mod768x256(result0, result1, result2, c)).mul256x256(2 ** n);
-        (proofLo, proofHi) = proofLo.add512x512(proofHi, remainder, 0);
-        resultLo = result0.safeDiv512x256(rem, c);
-    }
-
-    function getAdd(uint e, uint resultLo, uint resultHi, uint proofLo, uint proofHi) private pure returns (bool add) {
-        (uint eLo, uint eHi, uint eOv) = mul512x256In768(resultLo, resultHi, e);
-        add = lt768(proofLo, proofHi, 0, eLo, eHi, eOv);
+        (result._0, result._1, result._2, remainder) = div768ByPowerOf2(a._0, a._1, a._2, uint8(n));
     }
 
     /**
