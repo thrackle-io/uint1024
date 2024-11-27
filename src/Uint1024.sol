@@ -366,9 +366,9 @@ library Uint1024 {
         (uint right0, uint right1) = result._0.mul512x256(result._1, bMod2M);
         if (left._0.lt512(left._1, right0, right1)) {
             (uint newa0, uint newa1, uint newa2, uint newa3) = mul512x512In1024(result._0, result._1, b._0, b._1);
-            // uint1024 memory aNew1024 = uint1024(newa0, newa1, newa2, newa3);
-            (newa0, newa1, newa2, ) = sub1024x1024(newa0, newa1, newa2, newa3, a._0, a._1, a._2, 0);
-            uint768 memory aNew = uint768(newa0, newa1, newa2);
+            uint1024 memory aNew1024 = uint1024(newa0, newa1, newa2, newa3);
+            aNew1024 = sub1024x1024(aNew1024, uint1024(a._0, a._1, a._2, 0));
+            uint768 memory aNew = uint768(aNew1024._0, aNew1024._1, aNew1024._2);
             uint512 memory rec = div768x512(aNew, b);
             (result._0, result._1) = result._0.sub512x512(result._1, rec._0, rec._1);
             (result._0, result._1) = result._0.sub512x512(result._1, 1, 0);
@@ -739,6 +739,19 @@ library Uint1024 {
         }
         // If carryoverB has some value, it indicates an overflow for some or all of the results bits
         if (carryoverB > 0) revert("Uint1024: add1024 overflow");
+    }
+
+    /**
+     * @notice Calculates the difference of two Uint1024. The result is a Uint1024.
+     * @param a A uint1024 representing the minuend
+     * @param b A uint1024 representing the subtrahend
+     * @return r The 1024 result
+     */
+    function sub1024x1024(uint1024 memory a, uint1024 memory b) internal pure returns (uint1024 memory) {
+        (uint a0, uint a1, uint a2, uint a3) = (a._0, a._1, a._2, a._3);
+        (uint b0, uint b1, uint b2, uint b3) = (b._0, b._1, b._2, b._3);
+        (uint r0, uint r1, uint r2, uint r3) = sub1024x1024(a0, a1, a2, a3, b0, b1, b2, b3);
+        return uint1024(r0, r1, r2, r3);
     }
 
     /**
