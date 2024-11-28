@@ -6,10 +6,11 @@
     "add512x512": 58
   },
   "Sub": {
-    "sub1024x1024": 667,
-    "sub768x768": 497,
-    "safeSub512x512": 269,
-    "sub512x512": 57
+    "sub1024x1024": 671,
+    "sub1024x1024Uses1024": 1141,
+    "sub768x768": 501,
+    "safeSub512x512": 272,
+    "sub512x512": 59
   },
   "Mul": {
     "mulInverseMod512": 6976,
@@ -23,19 +24,21 @@
     "mulInverseMod256": 42
   },
   "Div": {
-    "div512ByPowerOf2": 694,
-    "safeDiv512x256": 616,
-    "div512x256In512": 482,
-    "div512x256": 461,
-    "divRem512x256": 401,
-    "div768x256": 1056,
-    "div768ByPowerOf2": 796,
-    "divRem1024x512In512": 8358,
-    "div512x512": 3191
+    "div512ByPowerOf2": 702,
+    "safeDiv512x256": 623,
+    "div512x256In512": 486,
+    "div512x256": 465,
+    "divRem512x256": 403,
+    "div768x256": 1070,
+    "div768x512": 9290,
+    "div768ByPowerOf2": 804,
+    "divRem1024x512In512": 8515,
+    "div512x512": 3562,
+    "div1024x256": 1775
   },
   "Sqrt": {
-    "sqrt512": 1944,
-    "sqrt256": 990
+    "sqrt512": 1952,
+    "sqrt256": 994
   },
   "Log": {
     "log2": 731

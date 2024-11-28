@@ -107,7 +107,7 @@ contract Uint1024FuzzTests is Test, PythonUtils {
         if (solR._1 != pyR1) revert("R1 bits different");
         // NOTE we can be off by 2 units if the quotient is greater than 2**256
         if (pyR1 > 0) {
-            if (solR._0 > pyR0 ? solR._0 - pyR0 > 2 : pyR0 - solR._0 > 2) revert("R0 bits different");
+            if (solR._0 > pyR0 ? solR._0 - pyR0 > 1 : pyR0 - solR._0 > 1) revert("R0 bits different");
         } else {
             if (solR._0 != pyR0) revert("R0 bits different");
         }

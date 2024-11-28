@@ -346,13 +346,8 @@ library Uint1024 {
     function div768x512(uint768 memory a, uint512 memory b) internal pure returns (uint512 memory result) {
         uint bMod2N;
         (result, bMod2N) = _aproxDiv768x512(a, b);
-        (uint conditionTermB0, uint conditionTermB1, uint conditionTermB2, uint conditionTermB3) = mul512x512In1024(
-            result._0,
-            result._1,
-            b._0,
-            b._1
-        );
-        if (conditionTermB3 > 0 || gt768(conditionTermB0, conditionTermB1, conditionTermB2, a._0, a._1, a._2)) {
+        (uint condition0, uint condition1, uint condition2, uint condition3) = mul512x512In1024(result._0, result._1, b._0, b._1);
+        if (condition3 > 0 || gt768(condition0, condition1, condition2, a._0, a._1, a._2)) {
             uint1024 memory aNew1024;
             (aNew1024._0, aNew1024._1, aNew1024._2, aNew1024._3) = mul512x512In1024(result._0, result._1, b._0, b._1);
             aNew1024 = sub1024x1024(aNew1024, uint1024(a._0, a._1, a._2, 0));

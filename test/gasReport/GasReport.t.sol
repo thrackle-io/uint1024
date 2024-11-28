@@ -7,6 +7,7 @@ import "../../src/Uint512.sol";
 import "../../src/Uint512Extended.sol";
 import "forge-std/Test.sol";
 import "forge-std/console2.sol";
+import "src/UintTypes.sol";
 
 contract GasReports is Test, GasHelpers {
     uint256 gasUsed = 0;
@@ -34,6 +35,10 @@ contract GasReports is Test, GasHelpers {
         _resetGasUsed();
         _sub1024x1024GasUsed();
         _writeJson(".Sub.sub1024x1024");
+
+        _resetGasUsed();
+        _sub1024x1024Uses1024GasUsed();
+        _writeJson(".Sub.sub1024x1024Uses1024");
 
         _resetGasUsed();
         _sub768x768GasUsed();
@@ -124,6 +129,10 @@ contract GasReports is Test, GasHelpers {
         _writeJson(".Div.div768x256");
 
         _resetGasUsed();
+        _div768x512GasUsed();
+        _writeJson(".Div.div768x512");
+
+        _resetGasUsed();
         _div768ByPowerOf2GasUsed();
         _writeJson(".Div.div768ByPowerOf2");
 
@@ -180,6 +189,21 @@ contract GasReports is Test, GasHelpers {
             10000000000000000000000000000, // a2
             10000000000000000000000000000 // b
         );
+        gasUsed = stopMeasuringGas();
+    }
+
+    function _div768x512GasUsed() internal {
+        startMeasuringGas("div768x512 - returns uint512");
+        uint768 memory a = uint768(
+            10000000000000000000000000000, // a0
+            10000000000000000000000000000, // a1
+            10000000000000000000000000000 // a2
+        );
+        uint512 memory b = uint512(
+            10000000000000000000000000000, // b0
+            10000000000000000000000000000 // b1
+        );
+        Uint1024.div768x512(a, b);
         gasUsed = stopMeasuringGas();
     }
 
@@ -273,6 +297,18 @@ contract GasReports is Test, GasHelpers {
             10000000000000000000000000000, // b2
             10000000000000000000000000000 // b3
         );
+        gasUsed = stopMeasuringGas();
+    }
+
+    function _sub1024x1024Uses1024GasUsed() internal {
+        startMeasuringGas("sub1024x1024Uses1024 - returns uint1024");
+        uint1024 memory operand = uint1024(
+            10000000000000000000000000000,
+            10000000000000000000000000000,
+            10000000000000000000000000000,
+            10000000000000000000000000000
+        );
+        Uint1024.sub1024x1024(operand, operand);
         gasUsed = stopMeasuringGas();
     }
 
