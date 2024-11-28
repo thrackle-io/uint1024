@@ -345,10 +345,14 @@ library Uint1024 {
      */
     function div768x512(uint768 memory a, uint512 memory b) internal pure returns (uint512 memory result) {
         uint bMod2N;
-        uint512 memory conditionTermA;
-        (result, bMod2N, conditionTermA) = _aproxDiv768x512(a, b);
-        (uint conditionTermB0, uint conditionTermB1) = result._0.mul512x256(result._1, bMod2N);
-        if (conditionTermA._0.lt512(conditionTermA._1, conditionTermB0, conditionTermB1)) {
+        (result, bMod2N) = _aproxDiv768x512(a, b);
+        (uint conditionTermB0, uint conditionTermB1, uint conditionTermB2, uint conditionTermB3) = mul512x512In1024(
+            result._0,
+            result._1,
+            b._0,
+            b._1
+        );
+        if (conditionTermB3 > 0 || gt768(conditionTermB0, conditionTermB1, conditionTermB2, a._0, a._1, a._2)) {
             uint1024 memory aNew1024;
             (aNew1024._0, aNew1024._1, aNew1024._2, aNew1024._3) = mul512x512In1024(result._0, result._1, b._0, b._1);
             aNew1024 = sub1024x1024(aNew1024, uint1024(a._0, a._1, a._2, 0));
@@ -366,20 +370,14 @@ library Uint1024 {
      * @param b A uint512 representing the denominator
      * @return aproxResult
      * @return bMod2N
-     * @return conditionTermA
      */
-    function _aproxDiv768x512(
-        uint768 memory a,
-        uint512 memory b
-    ) private pure returns (uint512 memory aproxResult, uint bMod2N, uint512 memory conditionTermA) {
-        if (isResultZeroAndBoundCheck(a, b)) return (uint512(0, 0), 0, uint512(0, 0));
-        (uint n, uint bShidted, uint _bMod2N, uint768 memory aShifted, uint aMod2N) = getShiftedBitsDiv768x512(a, b);
+    function _aproxDiv768x512(uint768 memory a, uint512 memory b) private pure returns (uint512 memory aproxResult, uint bMod2N) {
+        if (isResultZeroAndBoundCheck(a, b)) return (uint512(0, 0), 0);
+        (uint bShidted, uint _bMod2N, uint768 memory aShifted) = getShiftedBitsDiv768x512(a, b);
         uint rem = aShifted._1.mod512x256(aShifted._2, bShidted);
         aproxResult._1 = aShifted._1.divRem512x256(aShifted._2, bShidted, rem);
         aproxResult._0 = aShifted._0.safeDiv512x256(rem, bShidted);
         bMod2N = _bMod2N;
-        (conditionTermA._0, conditionTermA._1) = (mod768x256(aShifted._0, aShifted._1, aShifted._2, bShidted)).mul256x256(2 ** n);
-        (conditionTermA._0, conditionTermA._1) = conditionTermA._0.add512x512(conditionTermA._1, aMod2N, 0);
     }
 
     /**
@@ -400,18 +398,16 @@ library Uint1024 {
      * @notice this is a private helper function.
      * @param a A uint768 representing the numerator
      * @param b A uint512 representing the denominator
-     * @return n the amount of bits shifted on both dividend and divisor
      * @return bShifted the denominator shifted to the right by n bits
      * @return bMod2N the remainder of b / 2**n
      * @return aShifted the numerator shifted to the right by n bits
-     * @return aMod2N the remainder of a / 2**n
      */
     function getShiftedBitsDiv768x512(
         uint768 memory a,
         uint512 memory b
-    ) private pure returns (uint n, uint bShifted, uint bMod2N, uint768 memory aShifted, uint aMod2N) {
+    ) private pure returns (uint bShifted, uint bMod2N, uint768 memory aShifted) {
         /// we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
-        n = b._1.log2() + 1;
+        uint n = b._1.log2() + 1;
         /// d = 2**n;
         /// if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
         uint overflowVal;
@@ -420,7 +416,7 @@ library Uint1024 {
         /// if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
         /// making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
         /// a / d
-        (aShifted._0, aShifted._1, aShifted._2, aMod2N) = div768ByPowerOf2(a._0, a._1, a._2, uint8(n));
+        (aShifted._0, aShifted._1, aShifted._2, ) = div768ByPowerOf2(a._0, a._1, a._2, uint8(n));
     }
 
     /**
