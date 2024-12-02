@@ -364,8 +364,8 @@ library Uint1024 {
      * @notice this is a private helper function. It also returns some helper values to make the division exact.
      * @param a A uint768 representing the numerator
      * @param b A uint512 representing the denominator
-     * @return aproxResult
-     * @return bMod2N
+     * @return aproxResult the approximation of a/b
+     * @return bMod2N the remainder of b/2^n where n is the number of bits of the most significant b's word
      */
     function _aproxDiv768x512(uint768 memory a, uint512 memory b) private pure returns (uint512 memory aproxResult, uint bMod2N) {
         if (isResultZeroAndBoundCheck(a, b)) return (uint512(0, 0), 0);
@@ -384,13 +384,13 @@ library Uint1024 {
      * @return zero true if the result will be zero
      */
     function isResultZeroAndBoundCheck(uint768 memory a, uint512 memory b) internal pure returns (bool zero) {
-        if (b._1 == 0) revert("Uint512Extended: div512x512 b1 can't be zero");
+        if (b._1 == 0) revert("Uint512Extended: div768x512 b1 can't be zero");
         if (b._1 >> 255 == 1) revert("b1 too large");
         if (a._2 == 0 && a._0.lt512(a._1, b._0, b._1)) zero = true;
     }
 
     /**
-     * @dev returns a and b shifted to the right by the amount of bits necessary to make b a uint256
+     * @dev returns a and b shifted to the right by the amount of bits necessary to make b a uint256 value
      * @notice this is a private helper function.
      * @param a A uint768 representing the numerator
      * @param b A uint512 representing the denominator
