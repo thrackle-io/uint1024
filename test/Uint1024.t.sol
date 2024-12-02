@@ -92,25 +92,15 @@ contract Uint1024FuzzTests is Test, PythonUtils {
         b1 = bound(b1, 1, type(uint256).max / 2 - 1);
         uint768 memory a = uint768(a0, a1, a2);
         uint512 memory b = uint512(b0, b1);
-        console2.log("a:", a._0, a._1, a._2);
-        console2.log("b:", b._0, b._1);
         uint512 memory solR;
         solR = Uint1024.div768x512(a, b);
-        console2.log("solRes:", solR._0, solR._1);
 
         string[] memory inputs = _buildFFI1024Arithmetic(a._0, a._1, a._2, 0, b._0, b._1, 0, 0, "div");
         bytes memory res = vm.ffi(inputs);
-        console2.logBytes(res);
         (pyR0, pyR1, pyR2) = abi.decode(res, (uint, uint, uint));
-        console2.log("pythonRes:", pyR0, pyR1, pyR2);
 
         if (solR._1 != pyR1) revert("R1 bits different");
-        // NOTE we can be off by 2 units if the quotient is greater than 2**256
-        if (pyR1 > 0) {
-            if (solR._0 > pyR0 ? solR._0 - pyR0 > 1 : pyR0 - solR._0 > 1) revert("R0 bits different");
-        } else {
-            if (solR._0 != pyR0) revert("R0 bits different");
-        }
+        if (solR._0 != pyR0) revert("R0 bits different");
     }
 
     function testDiv1024x256(uint a0, uint a1, uint a2, uint a3, uint b) public {

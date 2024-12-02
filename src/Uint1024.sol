@@ -348,6 +348,7 @@ library Uint1024 {
         (result, bMod2N) = _aproxDiv768x512(a, b);
         (uint condition0, uint condition1, uint condition2, uint condition3) = mul512x512In1024(result._0, result._1, b._0, b._1);
         if (condition3 > 0 || gt768(condition0, condition1, condition2, a._0, a._1, a._2)) {
+            // slither-disable-next-line uninitialized-local // aNew1024 is initialized in the next line
             uint1024 memory aNew1024;
             (aNew1024._0, aNew1024._1, aNew1024._2, aNew1024._3) = mul512x512In1024(result._0, result._1, b._0, b._1);
             aNew1024 = sub1024x1024(aNew1024, uint1024(a._0, a._1, a._2, 0));
