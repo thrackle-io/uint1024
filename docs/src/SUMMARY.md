@@ -4,3 +4,6 @@
   - [Uint1024](src/Uint1024.sol/library.Uint1024.md)
   - [Uint512](src/Uint512.sol/library.Uint512.md)
   - [Uint512Extended](src/Uint512Extended.sol/library.Uint512Extended.md)
+  - [uint512](src/UintTypes.sol/struct.uint512.md)
+  - [uint768](src/UintTypes.sol/struct.uint768.md)
+  - [uint1024](src/UintTypes.sol/struct.uint1024.md)

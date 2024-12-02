@@ -1,5 +1,5 @@
 # Uint512Extended
-[Git Source](https://github.com/thrackle-io/uint1024/blob/5185b4c954db76ab96dec39f84b691da66ca81c4/src/Uint512Extended.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/d9d62f9d623e2349774cf1d3bfc226e696d8e571/src/Uint512Extended.sol)
 
 **Author:**
 @oscarsernarosero @mpetersoCode55 @cirsteve @Palmerg4
@@ -167,7 +167,6 @@ function div512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pur
 
 ### safeMul512x256
 
-block to avoid stack too deep
 we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
 d = 2**n;
 if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
@@ -175,10 +174,6 @@ if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)
 making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
 a / d
 (a / d) / c
-However, ignoring e can cause the result to be off by +1 which makes this whole division an approximation.
-to make this exact, we need to check if the result is accurate. For this, we simply compute back *a*, and
-a correct result must be in the range (a - b) < r*b <= a
-our approximation can only be off by +1, which means that if theresult is incorrect, we just need to subtract 1
 
 Calculates the product of two uint512 and uint256 safely
 
