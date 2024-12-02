@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 
 import "./Uint512.sol";
 import "./Uint512Extended.sol";
+import "./UintTypes.sol";
 
 library Uint1024 {
     using Uint512 for uint256;
@@ -337,6 +338,84 @@ library Uint1024 {
     }
 
     /**
+     * @dev Calculates the division of a 768-bit dividend by a 512-bit divisor. The result will be a uint512.
+     * @param a A uint768 representing the numerator
+     * @param b A uint512 representing the denominator
+     * @return result uint512 value
+     */
+    function div768x512(uint768 memory a, uint512 memory b) internal pure returns (uint512 memory result) {
+        uint bMod2N;
+        (result, bMod2N) = _aproxDiv768x512(a, b);
+        (uint condition0, uint condition1, uint condition2, uint condition3) = mul512x512In1024(result._0, result._1, b._0, b._1);
+        if (condition3 > 0 || gt768(condition0, condition1, condition2, a._0, a._1, a._2)) {
+            // slither-disable-next-line uninitialized-local // aNew1024 is initialized in the next line
+            uint1024 memory aNew1024;
+            (aNew1024._0, aNew1024._1, aNew1024._2, aNew1024._3) = mul512x512In1024(result._0, result._1, b._0, b._1);
+            aNew1024 = sub1024x1024(aNew1024, uint1024(a._0, a._1, a._2, 0));
+            uint768 memory aNew = uint768(aNew1024._0, aNew1024._1, aNew1024._2);
+            uint512 memory rec = div768x512(aNew, b);
+            (result._0, result._1) = result._0.sub512x512(result._1, rec._0, rec._1);
+            (result._0, result._1) = result._0.sub512x512(result._1, 1, 0);
+        }
+    }
+
+    /**
+     * @dev Calculates the aproximation of the division of a 768-bit dividend by a 512-bit divisor. The result will be a uint512.
+     * @notice this is a private helper function. It also returns some helper values to make the division exact.
+     * @param a A uint768 representing the numerator
+     * @param b A uint512 representing the denominator
+     * @return aproxResult the approximation of a/b
+     * @return bMod2N the remainder of b/2^n where n is the number of bits of the most significant b's word
+     */
+    function _aproxDiv768x512(uint768 memory a, uint512 memory b) private pure returns (uint512 memory aproxResult, uint bMod2N) {
+        if (isResultZeroAndBoundCheck(a, b)) return (uint512(0, 0), 0);
+        (uint bShidted, uint _bMod2N, uint768 memory aShifted) = getShiftedBitsDiv768x512(a, b);
+        uint rem = aShifted._1.mod512x256(aShifted._2, bShidted);
+        aproxResult._1 = aShifted._1.divRem512x256(aShifted._2, bShidted, rem);
+        aproxResult._0 = aShifted._0.safeDiv512x256(rem, bShidted);
+        bMod2N = _bMod2N;
+    }
+
+    /**
+     * @dev checks if the division will result in a zero value, and checks the bounds of the inputs
+     * @notice this is a private helper function.
+     * @param a A uint768 representing the numerator
+     * @param b A uint512 representing the denominator
+     * @return zero true if the result will be zero
+     */
+    function isResultZeroAndBoundCheck(uint768 memory a, uint512 memory b) internal pure returns (bool zero) {
+        if (b._1 == 0) revert("Uint512Extended: div768x512 b1 can't be zero");
+        if (b._1 >> 255 == 1) revert("b1 too large");
+        if (a._2 == 0 && a._0.lt512(a._1, b._0, b._1)) zero = true;
+    }
+
+    /**
+     * @dev returns a and b shifted to the right by the amount of bits necessary to make b a uint256 value
+     * @notice this is a private helper function.
+     * @param a A uint768 representing the numerator
+     * @param b A uint512 representing the denominator
+     * @return bShifted the denominator shifted to the right by n bits
+     * @return bMod2N the remainder of b / 2**n
+     * @return aShifted the numerator shifted to the right by n bits
+     */
+    function getShiftedBitsDiv768x512(
+        uint768 memory a,
+        uint512 memory b
+    ) private pure returns (uint bShifted, uint bMod2N, uint768 memory aShifted) {
+        /// we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
+        uint n = b._1.log2() + 1;
+        /// d = 2**n;
+        /// if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
+        uint overflowVal;
+        (bShifted, overflowVal, bMod2N) = b._0.div512ByPowerOf2(b._1, uint8(n));
+        if (overflowVal > 0) revert("div512x512: unsuccessful division by 2**n");
+        /// if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
+        /// making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
+        /// a / d
+        (aShifted._0, aShifted._1, aShifted._2, ) = div768ByPowerOf2(a._0, a._1, a._2, uint8(n));
+    }
+
+    /**
      * @dev Calculates the division of a uint1024 by a uint256. The result is a uint1024.
      * @notice Used long division
      * @param a0 A uint256 representing the lowest bits of the first factor
@@ -422,6 +501,39 @@ library Uint1024 {
         // (a2*2**512 + a1*2**256 + a0)%b
         assembly {
             rem := addmod(rem, rem_a2x512, b)
+        }
+    }
+
+    /**
+     * @dev Calculates *a* modulo *b* where *a* is a 768-bit unsigned integer and *b* is a uint256.
+     * @param a0 A uint256 representing the low bits of *a*
+     * @param a1 A uint256 representing the middle bits of *a*
+     * @param a2 A uint256 representing the high bits of *a*
+     * @param a3 A uint256 representing the high bits of *a*
+     * @param b A uint256 representing the base of the modulo
+     * @return rem the modulo of a%b
+     */
+    function mod1024x256(uint a0, uint a1, uint a2, uint256 a3, uint b) internal pure returns (uint rem) {
+        if (b == 0) revert("Uint1024: mod 0 undefined");
+        uint rem_a3x256;
+        uint rem_a3x512;
+        uint rem_a3x768;
+        assembly {
+            // (a2*2**256)%b
+            rem_a3x256 := mulmod(a3, not(0), b) // (a3*(2**256 - 1))%b
+            rem_a3x256 := addmod(rem_a3x256, a3, b) // (a3*(2**256 - 1) + a3)%b = (a3*(2**256))%b
+            // (a2*2**512)%b
+            rem_a3x512 := mulmod(rem_a3x256, not(0), b) // (a3*(2**256)*(2**256 - 1))%b = (a3*2**512 - a3*2**256)%b
+            rem_a3x512 := addmod(rem_a3x512, rem_a3x256, b) // (a3*2**512 - a3*2**256 + a3*(2**256))%b = (a3*2**512)%b
+            // (a2*2**768)%b
+            rem_a3x768 := mulmod(rem_a3x512, not(0), b) // (a3*(2**512)*(2**256 - 1))%b = (a3*2**768 - a3*2**512)%b
+            rem_a3x768 := addmod(rem_a3x768, rem_a3x512, b) // (a3*2**768 - a3*2**512 + a3*(2**512))%b = (a3*2**768)%b
+        }
+        // (a2*2**512 + a1*2**256 + a0)%b
+        rem = mod768x256(a0, a1, a2, b);
+
+        assembly {
+            rem := addmod(rem, rem_a3x768, b)
         }
     }
 
@@ -544,18 +656,31 @@ library Uint1024 {
     }
 
     /**
-     * @notice Checks the minuend(a0-a2) is greater than the right operand(b0-b2)
-     * @dev Used as an underflow/negative result indicator for subtraction methods
-     * @param a0 A uint256 representing the lower bits of the minuend
-     * @param a1 A uint256 representing the high bits of the minuend
-     * @param a2 A uint256 representing the higher bits of the minuend
-     * @param b0 A uint256 representing the lower bits of the subtrahend
-     * @param b1 A uint256 representing the high bits of the subtrahend
-     * @param b2 A uint256 representing the higher bits of the subtrahend
-     * @return Returns true if there would be an underflow/negative result
+     * @dev Checks if a < b where a and b are uint768
+     * @param a0 A uint256 representing the lower bits of a
+     * @param a1 A uint256 representing the high bits of a
+     * @param a2 A uint256 representing the higher bits of a
+     * @param b0 A uint256 representing the lower bits of b
+     * @param b1 A uint256 representing the high bits of b
+     * @param b2 A uint256 representing the higher bits of b
+     * @return Returns true if a < b
      */
     function lt768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2) internal pure returns (bool) {
         return a2 < b2 || (a2 == b2 && (a1 < b1 || (a1 == b1 && a0 < b0)));
+    }
+
+    /**
+     * @dev Checks if a > b where a and b are uint768
+     * @param a0 A uint256 representing the lower bits of a
+     * @param a1 A uint256 representing the high bits of a
+     * @param a2 A uint256 representing the higher bits of a
+     * @param b0 A uint256 representing the lower bits of b
+     * @param b1 A uint256 representing the high bits of b
+     * @param b2 A uint256 representing the higher bits of b
+     * @return Returns true if a > b
+     */
+    function gt768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2) internal pure returns (bool) {
+        return a2 > b2 || (a2 == b2 && (a1 > b1 || (a1 == b1 && a0 > b0)));
     }
 
     /**
@@ -643,6 +768,19 @@ library Uint1024 {
         }
         // If carryoverB has some value, it indicates an overflow for some or all of the results bits
         if (carryoverB > 0) revert("Uint1024: add1024 overflow");
+    }
+
+    /**
+     * @notice Calculates the difference of two Uint1024. The result is a Uint1024.
+     * @param a A uint1024 representing the minuend
+     * @param b A uint1024 representing the subtrahend
+     * @return r The 1024 result
+     */
+    function sub1024x1024(uint1024 memory a, uint1024 memory b) internal pure returns (uint1024 memory) {
+        (uint a0, uint a1, uint a2, uint a3) = (a._0, a._1, a._2, a._3);
+        (uint b0, uint b1, uint b2, uint b3) = (b._0, b._1, b._2, b._3);
+        (uint r0, uint r1, uint r2, uint r3) = sub1024x1024(a0, a1, a2, a3, b0, b1, b2, b3);
+        return uint1024(r0, r1, r2, r3);
     }
 
     /**

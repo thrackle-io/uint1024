@@ -92,30 +92,24 @@ library Uint512Extended {
     function div512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pure returns (uint256 result) {
         if (b1 == 0) revert("Uint512Extended: div512x512 b1 can't be zero");
         if (lt512(a0, a1, b0, b1)) return 0;
-        {
-            /// block to avoid stack too deep
-            /// we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
-            uint n = log2(b1) + 1;
-            /// d = 2**n;
-            /// if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
-            (uint c, uint c1, uint e) = div512ByPowerOf2(b0, b1, uint8(n));
-            e;
-            if (c1 > 0) revert("div512x512: unsuccessful division by 2**n");
-            /// if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
-            /// making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
-            /// a / d
-            (uint resultLo, uint resultHi, uint remainder) = div512ByPowerOf2(a0, a1, uint8(n));
-            remainder;
-            /// (a / d) / c
-            result = resultLo.div512x256(resultHi, c);
-        }
-        /// However, ignoring e can cause the result to be off by +1 which makes this whole division an approximation.
-        /// to make this exact, we need to check if the result is accurate. For this, we simply compute back *a*, and
-        /// a correct result must be in the range (a - b) < r*b <= a
-        (uint computed_a0, uint computed_a1) = b0.mul512x256(b1, result);
-        (uint minLo, uint minHi) = a0.sub512x512(a1, b0, b1);
-        /// our approximation can only be off by +1, which means that if theresult is incorrect, we just need to subtract 1
-        if (gt512(computed_a0, computed_a1, a0, a1) || !gt512(computed_a0, computed_a1, minLo, minHi)) --result;
+        /// we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
+        uint n = log2(b1) + 1;
+        /// d = 2**n;
+        /// if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
+        (uint c, uint c1, uint e) = div512ByPowerOf2(b0, b1, uint8(n));
+        e;
+        if (c1 > 0) revert("div512x512: unsuccessful division by 2**n");
+        /// if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
+        /// making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
+        /// a / d
+        (uint resultLo, uint resultHi, uint remainder) = div512ByPowerOf2(a0, a1, uint8(n));
+        (uint proofLo, uint proofHi) = (resultLo.mod512x256(resultHi, c)).mul256x256(2 ** n);
+        (proofLo, proofHi) = proofLo.add512x512(proofHi, remainder, 0);
+        /// (a / d) / c
+        result = resultLo.div512x256(resultHi, c);
+        (uint eLo, uint eHi) = e.mul256x256(result);
+        bool add = lt512(proofLo, proofHi, eLo, eHi);
+        if (add) --result;
     }
 
     /**
