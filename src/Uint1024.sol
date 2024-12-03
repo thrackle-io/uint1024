@@ -57,6 +57,10 @@ library Uint1024 {
         if (carryoverA > 0) revert("Uint1024: add768 overflow");
     }
 
+    function add768x768(uint768 memory a, uint768 memory b) internal pure returns (uint768 memory r) {
+        (r._0, r._1, r._2) = add768x768(a._0, a._1, a._2, b._0, b._1, b._2);
+    }
+
     /**
      * @notice Calculates the difference of two uint768. The result is a uint768.
      * @param a0 A uint256 representing the lower bits of the minuend
@@ -115,6 +119,16 @@ library Uint1024 {
     }
 
     /**
+     * @notice Calculates the difference of two Uint768. The result is a Uint768.
+     * @param a A uint768 representing the minuend
+     * @param b A uint768 representing the subtrahend
+     * @return r The 768 result
+     */
+    function sub768x768(uint768 memory a, uint768 memory b) internal pure returns (uint768 memory r) {
+        (r._0, r._1, r._2) = sub768x768(a._0, a._1, a._2, b._0, b._1, b._2);
+    }
+
+    /**
      * @notice Calculates the product of a uint512 and uint256. The result is a uint768.
      * @dev Used the chinese remainder theorem
      * @param a0 A uint256 representing the lower bits of the first factor
@@ -142,6 +156,10 @@ library Uint1024 {
             // r2 is equal to the higher bits of a1 * b
             r2 := add(r2, r1Hi)
         }
+    }
+
+    function mul512x256In768(uint512 memory a, uint256 b) internal pure returns (uint768 memory r) {
+        (r._0, r._1, r._2) = mul512x256In768(a._0, a._1, b);
     }
 
     /**
@@ -195,6 +213,10 @@ library Uint1024 {
         }
     }
 
+    function mul768x256In1024(uint768 memory a, uint256 b) internal pure returns (uint1024 memory r) {
+        (r._0, r._1, r._2, r._3) = mul768x256In1024(a._0, a._1, a._2, b);
+    }
+
     /**
      * @notice Calculates the product of two uint512. The result is a uint1024.
      * @dev Used the chinese remainder theorem
@@ -240,6 +262,10 @@ library Uint1024 {
         }
     }
 
+    function mul512x512In1024(uint512 memory a, uint512 memory b) internal pure returns (uint1024 memory r) {
+        (r._0, r._1, r._2, r._3) = mul512x512In1024(a._0, a._1, b._0, b._1);
+    }
+
     /**
      * @dev Calculates the product of two uint512 modulo 512. The result is a uint512.
      * @notice Used the chinese remainder theorem
@@ -265,6 +291,10 @@ library Uint1024 {
             let overflowB := lt(r1, sumA)
         }
     }
+
+    function mul512x512Mod512(uint512 memory a, uint512 memory b) internal pure returns (uint512 memory r) {
+        (r._0, r._1) = mul512x512Mod512(a._0, a._1, b._0, b._1);
+    }   
 
     /**
      * @notice Calculates the division of a uint512 by a uint256.
@@ -315,6 +345,10 @@ library Uint1024 {
         // slither-disable-end divide-before-multiply
     }
 
+    function div512x256In512(uint512 memory a, uint256 b) internal pure returns (uint512 memory r) {
+        (r._0, r._1) = div512x256In512(a._0, a._1, b);
+    } 
+
     /**
      * @dev Calculates the division of a uint768 by a uint256. The result is a uint768.
      * @notice Used long division
@@ -335,6 +369,10 @@ library Uint1024 {
         uint rem = a1.mod512x256(a2, b);
         r1 = a1.divRem512x256(a2, b, rem);
         r0 = a0.safeDiv512x256(rem, b);
+    }
+
+    function div768x256(uint768 memory a, uint256 b) internal pure returns (uint768 memory r) {
+        (r._0, r._1, r._2) = div768x256(a._0, a._1, a._2, b);
     }
 
     /**
@@ -447,6 +485,10 @@ library Uint1024 {
         r0 = a0.safeDiv512x256(rem1, b);
     }
 
+    function div1024x256(uint1024 memory a, uint256 b) internal pure returns (uint1024 memory r) {
+        (r._0, r._1, r._2, r._3) = div1024x256(a._0, a._1, a._2, a._3, b);
+    }
+
     /**
      * @dev Calculates the division of a 768-bit unsigned integer by a denominator which is
      * a power of 2 less than 256.
@@ -464,7 +506,7 @@ library Uint1024 {
         uint256 a1,
         uint256 a2,
         uint8 n
-    ) internal pure returns (uint256 r0, uint256 r1, uint r2, uint256 remainder) {
+    ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 remainder) {
         if (n == 0) revert("n must be greater than 0");
         uint _2ToTheNth = 2 ** n;
         uint mask = _2ToTheNth - 1;
@@ -474,6 +516,10 @@ library Uint1024 {
         r2 = a2 >> n;
         r1 = (shiftedBitsA2 << (256 - n)) | (a1 >> n);
         r0 = (shiftedBitsA1 << (256 - n)) | (a0 >> n);
+    }
+
+    function div768ByPowerOf2(uint768 memory a, uint8 n) internal pure returns (uint768 memory r, uint256 rem) {
+        (r._0, r._1, r._2, rem) = div768ByPowerOf2(a._0, a._1, a._2, n);
     }
 
     /**
@@ -502,6 +548,10 @@ library Uint1024 {
         assembly {
             rem := addmod(rem, rem_a2x512, b)
         }
+    }
+
+    function mod768x256(uint768 memory a, uint256 b) internal pure returns (uint256 rem) {
+        rem = mod768x256(a._0, a._1, a._2, b);
     }
 
     /**
@@ -535,6 +585,10 @@ library Uint1024 {
         assembly {
             rem := addmod(rem, rem_a3x768, b)
         }
+    }
+
+    function mod1024x256(uint1024 memory a, uint256 b) internal pure returns (uint256 rem) {
+        rem = mod1024x256(a._0, a._1, a._2, a._3, b);
     }
 
     /**
@@ -604,6 +658,10 @@ library Uint1024 {
         // slither-disable-end divide-before-multiply
     }
 
+    function divRem1024x512In512(uint1024 memory a, uint512 memory b, uint512 memory rem) internal pure returns (uint512 memory r) {
+        (r._0, r._1) = divRem1024x512In512(a._0, a._1, a._2, a._3, b._0, b._1, rem._0, rem._1);
+    }
+
     /**
      * @dev Calculates the multiplicative inverse of *b* modulo 2**512 where *b* is a uint512.
      * @notice this is a 512 implementation of the Helsen's lemma and Montgomery reduction.
@@ -655,6 +713,10 @@ library Uint1024 {
         (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 512
     }
 
+    function mulInverseMod512(uint512 memory b) internal pure returns (uint512 memory r) {
+        (r._0, r._1) = mulInverseMod512(b._0, b._1);
+    }
+
     /**
      * @dev Checks if a < b where a and b are uint768
      * @param a0 A uint256 representing the lower bits of a
@@ -669,6 +731,10 @@ library Uint1024 {
         return a2 < b2 || (a2 == b2 && (a1 < b1 || (a1 == b1 && a0 < b0)));
     }
 
+    function lt768(uint768 memory a, uint768 memory b) internal pure returns (bool) {
+        return lt768(a._0, a._1, a._2, b._0, b._1, b._2);
+    }
+
     /**
      * @dev Checks if a > b where a and b are uint768
      * @param a0 A uint256 representing the lower bits of a
@@ -681,6 +747,10 @@ library Uint1024 {
      */
     function gt768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2) internal pure returns (bool) {
         return a2 > b2 || (a2 == b2 && (a1 > b1 || (a1 == b1 && a0 > b0)));
+    }
+
+    function gt768(uint768 memory a, uint768 memory b) internal pure returns (bool) {
+        return gt768(a._0, a._1, a._2, b._0, b._1, b._2);
     }
 
     /**
@@ -707,6 +777,10 @@ library Uint1024 {
         uint256 b3
     ) internal pure returns (bool) {
         return a3 < b3 || (a3 == b3 && (a2 < b2 || (a2 == b2 && (a1 < b1 || (a1 == b1 && a0 < b0)))));
+    }
+
+    function lt1024(uint1024 memory a, uint1024 memory b) internal pure returns (bool) {
+        return lt1024(a._0, a._1, a._2, a._3, b._0, b._1, b._2, b._3);
     }
 
     /**
@@ -770,17 +844,8 @@ library Uint1024 {
         if (carryoverB > 0) revert("Uint1024: add1024 overflow");
     }
 
-    /**
-     * @notice Calculates the difference of two Uint1024. The result is a Uint1024.
-     * @param a A uint1024 representing the minuend
-     * @param b A uint1024 representing the subtrahend
-     * @return r The 1024 result
-     */
-    function sub1024x1024(uint1024 memory a, uint1024 memory b) internal pure returns (uint1024 memory) {
-        (uint a0, uint a1, uint a2, uint a3) = (a._0, a._1, a._2, a._3);
-        (uint b0, uint b1, uint b2, uint b3) = (b._0, b._1, b._2, b._3);
-        (uint r0, uint r1, uint r2, uint r3) = sub1024x1024(a0, a1, a2, a3, b0, b1, b2, b3);
-        return uint1024(r0, r1, r2, r3);
+    function add1024x1024(uint1024 memory a, uint1024 memory b) internal pure returns (uint1024 memory r) {
+        (r._0, r._1, r._2, r._3) = add1024x1024(a._0, a._1, a._2, a._3, b._0, b._1, b._2, b._3);
     }
 
     /**
@@ -865,5 +930,15 @@ library Uint1024 {
             // r3 is the difference of a3 and b3
             r3 := sub(a3, b3)
         }
+    }
+
+    /**
+     * @notice Calculates the difference of two Uint1024. The result is a Uint1024.
+     * @param a A uint1024 representing the minuend
+     * @param b A uint1024 representing the subtrahend
+     * @return r The 1024 result
+     */
+    function sub1024x1024(uint1024 memory a, uint1024 memory b) internal pure returns (uint1024 memory r) {
+        (r._0, r._1, r._2, r._3) = sub1024x1024(a._0, a._1, a._2, a._3, b._0, b._1, b._2, b._3);
     }
 }

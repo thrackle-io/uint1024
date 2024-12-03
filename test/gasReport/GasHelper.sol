@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
-contract GasHelpers {
+import "../UintUtils.sol";
+
+contract GasHelpers is UintUtils {
     string private checkpointLabel;
     uint256 private checkpointGasLeft = 1; // Start the slot warm.
 
@@ -27,5 +29,23 @@ contract GasHelpers {
     function _primer() internal {
         startMeasuringGas("Gas Report Primer");
         stopMeasuringGas();
+
+        solR1024 = uint1024(
+            10000000000000000000000000000,
+            10000000000000000000000000000,
+            10000000000000000000000000000,
+            10000000000000000000000000000
+        );
+
+        solR768 = uint768(
+            10000000000000000000000000000,
+            10000000000000000000000000000,
+            10000000000000000000000000000
+        );
+
+        solR512 = uint512(
+            10000000000000000000000000000,
+            10000000000000000000000000000
+        );
     }
 }
