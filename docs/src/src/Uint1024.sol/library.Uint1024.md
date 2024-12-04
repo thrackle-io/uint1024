@@ -1,5 +1,5 @@
 # Uint1024
-[Git Source](https://github.com/thrackle-io/uint1024/blob/56b62e1f24eb8a68446e9c102092b31260993822/src/Uint1024.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/5ec9a8cdfa4ef96923b56ce06c1bc81798a1ebf5/src/Uint1024.sol)
 
 
 ## Functions
@@ -489,30 +489,6 @@ function _aproxDiv768x512(uint768 memory a, uint512 memory b)
 |----|----|-----------|
 |`aproxResult`|`uint512`|the approximation of a/b|
 |`bMod2N`|`uint256`|the remainder of b/2^n where n is the number of bits of the most significant b's word|
-
-
-### isResultZeroAndBoundCheck
-
-this is a private helper function.
-
-*checks if the division will result in a zero value, and checks the bounds of the inputs*
-
-
-```solidity
-function isResultZeroAndBoundCheck(uint768 memory a, uint512 memory b) internal pure returns (bool zero);
-```
-**Parameters**
-
-|Name|Type|Description|
-|----|----|-----------|
-|`a`|`uint768`|A uint768 representing the numerator|
-|`b`|`uint512`|A uint512 representing the denominator|
-
-**Returns**
-
-|Name|Type|Description|
-|----|----|-----------|
-|`zero`|`bool`|true if the result will be zero|
 
 
 ### getShiftedBitsDiv768x512
