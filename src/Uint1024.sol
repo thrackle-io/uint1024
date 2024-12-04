@@ -370,14 +370,14 @@ library Uint1024 {
     function _aproxDiv768x512(uint768 memory a, uint512 memory b) private pure returns (uint512 memory aproxResult, uint bMod2N) {
         if (b._1 == 0) revert("Uint512Extended: div768x512 b1 can't be zero");
         if (a._2 == 0 && a._0.lt512(a._1, b._0, b._1)) return (uint512(0, 0), 0);
-        uint bShidted;
+        uint bShifted;
         uint _bMod2N;
         uint768 memory aShifted;
-        if (b._1 >> 255 == 1) (bShidted, _bMod2N,  aShifted) = (b._1, b._0, uint768(a._1, a._2, 0));
-        else (bShidted, _bMod2N,  aShifted) = getShiftedBitsDiv768x512(a, b);
-        uint rem = aShifted._1.mod512x256(aShifted._2, bShidted);
-        aproxResult._1 = aShifted._1.divRem512x256(aShifted._2, bShidted, rem);
-        aproxResult._0 = aShifted._0.safeDiv512x256(rem, bShidted);
+        if (b._1 >> 255 == 1) (bShifted, _bMod2N,  aShifted) = (b._1, b._0, uint768(a._1, a._2, 0));
+        else (bShifted, _bMod2N,  aShifted) = getShiftedBitsDiv768x512(a, b);
+        uint rem = aShifted._1.mod512x256(aShifted._2, bShifted);
+        aproxResult._1 = aShifted._1.divRem512x256(aShifted._2, bShifted, rem);
+        aproxResult._0 = aShifted._0.safeDiv512x256(rem, bShifted);
         bMod2N = _bMod2N;
     }
 
