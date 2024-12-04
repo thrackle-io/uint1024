@@ -2,7 +2,7 @@ from util_1024 import utils
 
 def calculate_in_1024(args):
 
-    a, b,  operator = utils.reconstruct_a_b_1024(args)
+    a, b, operator = utils.reconstruct_a_b_1024(args)
 
     if(operator == "div"):
         # This step is needed to ensure correct reversion on the solidity implementation
@@ -19,8 +19,14 @@ def calculate_in_1024(args):
         else: result = int(a) - int(b)
     elif(operator == "lt"):
         result = int(a) < int(b)
+    elif(operator == "gt"):
+        result = int(a) > int(b)
     elif(operator == "mod"):
         result = int(a) % int(b)
+    elif(operator == "eq"):
+        result = int(a) == int(b)
+    elif(operator == "ge"):
+        result = int(a) == int(b) or int(a) > int(b)
     else: raise ValueError("Incorrect operator passed as argument")
 
     r0, r1, r2, r3, r4 = utils.deconstruct_1024(result)
