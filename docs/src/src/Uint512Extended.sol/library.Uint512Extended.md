@@ -1,5 +1,5 @@
 # Uint512Extended
-[Git Source](https://github.com/thrackle-io/uint1024/blob/d9d62f9d623e2349774cf1d3bfc226e696d8e571/src/Uint512Extended.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/56b62e1f24eb8a68446e9c102092b31260993822/src/Uint512Extended.sol)
 
 **Author:**
 @oscarsernarosero @mpetersoCode55 @cirsteve @Palmerg4
@@ -32,6 +32,13 @@ function gt512(uint256 x0, uint256 x1, uint256 y0, uint256 y1) internal pure ret
 |`<none>`|`bool`|boolean. True if x > y|
 
 
+### gt512
+
+
+```solidity
+function gt512(uint512 memory a, uint512 memory b) internal pure returns (bool);
+```
+
 ### eq512
 
 x == y
@@ -57,6 +64,13 @@ function eq512(uint256 x0, uint256 x1, uint256 y0, uint256 y1) internal pure ret
 |----|----|-----------|
 |`<none>`|`bool`|boolean. True if x = y|
 
+
+### eq512
+
+
+```solidity
+function eq512(uint512 memory a, uint512 memory b) internal pure returns (bool);
+```
 
 ### ge512
 
@@ -84,6 +98,13 @@ function ge512(uint256 x0, uint256 x1, uint256 y0, uint256 y1) internal pure ret
 |`<none>`|`bool`|boolean. True if x >= y|
 
 
+### ge512
+
+
+```solidity
+function ge512(uint512 memory a, uint512 memory b) internal pure returns (bool);
+```
+
 ### lt512
 
 x < y
@@ -109,6 +130,13 @@ function lt512(uint256 x0, uint256 x1, uint256 y0, uint256 y1) internal pure ret
 |----|----|-----------|
 |`<none>`|`bool`|boolean. True if x < y|
 
+
+### lt512
+
+
+```solidity
+function lt512(uint512 memory a, uint512 memory b) internal pure returns (bool);
+```
 
 ### div512ByPowerOf2
 
@@ -141,6 +169,13 @@ function div512ByPowerOf2(uint256 a0, uint256 a1, uint8 n)
 |`remainder`|`uint256`|of the division|
 
 
+### div512ByPowerOf2
+
+
+```solidity
+function div512ByPowerOf2(uint512 memory a, uint8 n) internal pure returns (uint512 memory r, uint256 rem);
+```
+
 ### div512x512
 
 *Calculates the division of a 512-bit unsigned integer by a 512-bit. The result will be a uint256.*
@@ -165,7 +200,7 @@ function div512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1) internal pur
 |`result`|`uint256`|result|
 
 
-### safeMul512x256
+### div512x512
 
 we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
 d = 2**n;
@@ -174,6 +209,13 @@ if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)
 making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
 a / d
 (a / d) / c
+
+
+```solidity
+function div512x512(uint512 memory a, uint512 memory b) internal pure returns (uint256 result);
+```
+
+### safeMul512x256
 
 Calculates the product of two uint512 and uint256 safely
 
@@ -198,6 +240,13 @@ function safeMul512x256(uint256 a0, uint256 a1, uint256 b) internal pure returns
 |`r0`|`uint256`|The result as a uint512. r0 contains the lower bits|
 |`r1`|`uint256`|The higher bits of the result|
 
+
+### safeMul512x256
+
+
+```solidity
+function safeMul512x256(uint512 memory a, uint256 b) internal pure returns (uint512 memory r);
+```
 
 ### safeAdd512x512
 
@@ -227,6 +276,13 @@ function safeAdd512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1)
 |`r1`|`uint256`|The higher bits of the result|
 
 
+### safeAdd512x512
+
+
+```solidity
+function safeAdd512x512(uint512 memory a, uint512 memory b) internal pure returns (uint512 memory r);
+```
+
 ### safeSub512x512
 
 Calculates the difference of two uint512 safely
@@ -255,6 +311,13 @@ function safeSub512x512(uint256 a0, uint256 a1, uint256 b0, uint256 b1)
 |`r1`|`uint256`|The higher bits of the result|
 
 
+### safeSub512x512
+
+
+```solidity
+function safeSub512x512(uint512 memory a, uint512 memory b) internal pure returns (uint512 memory r);
+```
+
 ### safeDiv512x256
 
 Calculates the division of a 512 bit unsigned integer by a 256 bit integer safely. It
@@ -281,6 +344,13 @@ function safeDiv512x256(uint256 a0, uint256 a1, uint256 b) internal pure returns
 |----|----|-----------|
 |`r`|`uint256`|The result as an uint256. Result must have at most 256 bit|
 
+
+### safeDiv512x256
+
+
+```solidity
+function safeDiv512x256(uint512 memory a, uint256 b) internal pure returns (uint256 r);
+```
 
 ### log2
 
