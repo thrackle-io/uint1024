@@ -89,7 +89,7 @@ contract Uint1024FuzzTests is Test, PythonUtils {
     }
 
     function testDiv768x512(uint a0, uint a1, uint a2, uint b0, uint b1) public {
-        b1 = bound(b1, 1, type(uint256).max / 2 - 1);
+        b1 = bound(b1, 1, type(uint256).max );
         uint768 memory a = uint768(a0, a1, a2);
         uint512 memory b = uint512(b0, b1);
         uint512 memory solR;
