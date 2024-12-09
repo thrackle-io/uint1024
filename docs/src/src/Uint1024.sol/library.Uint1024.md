@@ -1,5 +1,5 @@
 # Uint1024
-[Git Source](https://github.com/thrackle-io/uint1024/blob/5ec9a8cdfa4ef96923b56ce06c1bc81798a1ebf5/src/Uint1024.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/a6be4431c693a4eff9b6260f711b4c0df3882d4b/src/Uint1024.sol)
 
 
 ## Functions
@@ -858,7 +858,10 @@ function mulInverseMod512(uint512 memory b) internal pure returns (uint512 memor
 
 
 ```solidity
-function lt768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2) internal pure returns (bool);
+function lt768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2)
+    internal
+    pure
+    returns (bool res);
 ```
 **Parameters**
 
@@ -875,7 +878,7 @@ function lt768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint2
 
 |Name|Type|Description|
 |----|----|-----------|
-|`<none>`|`bool`|Returns true if a < b|
+|`res`|`bool`|Returns true if a < b|
 
 
 ### lt768
@@ -906,7 +909,10 @@ function lt768(uint768 memory a, uint768 memory b) internal pure returns (bool);
 
 
 ```solidity
-function gt768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2) internal pure returns (bool);
+function gt768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2)
+    internal
+    pure
+    returns (bool res);
 ```
 **Parameters**
 
@@ -923,7 +929,7 @@ function gt768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint2
 
 |Name|Type|Description|
 |----|----|-----------|
-|`<none>`|`bool`|Returns true if a > b|
+|`res`|`bool`|Returns true if a > b|
 
 
 ### gt768
@@ -959,7 +965,7 @@ Checks the minuend(a0-a3) is greater than the right operand(b0-b3)
 function lt1024(uint256 a0, uint256 a1, uint256 a2, uint256 a3, uint256 b0, uint256 b1, uint256 b2, uint256 b3)
     internal
     pure
-    returns (bool);
+    returns (bool res);
 ```
 **Parameters**
 
@@ -978,7 +984,7 @@ function lt1024(uint256 a0, uint256 a1, uint256 a2, uint256 a3, uint256 b0, uint
 
 |Name|Type|Description|
 |----|----|-----------|
-|`<none>`|`bool`|Returns true if there would be an underflow/negative result|
+|`res`|`bool`|Returns true if there would be an underflow/negative result|
 
 
 ### lt1024

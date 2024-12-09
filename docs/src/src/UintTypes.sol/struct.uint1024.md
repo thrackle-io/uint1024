@@ -1,5 +1,5 @@
 # uint1024
-[Git Source](https://github.com/thrackle-io/uint1024/blob/5ec9a8cdfa4ef96923b56ce06c1bc81798a1ebf5/src/UintTypes.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/a6be4431c693a4eff9b6260f711b4c0df3882d4b/src/UintTypes.sol)
 
 
 ```solidity
