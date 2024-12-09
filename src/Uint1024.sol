@@ -447,8 +447,8 @@ library Uint1024 {
             aNew1024 = sub1024x1024(aNew1024, uint1024(a._0, a._1, a._2, 0));
             uint768 memory aNew = uint768(aNew1024._0, aNew1024._1, aNew1024._2);
             uint512 memory rec = div768x512(aNew, b);
-            (result._0, result._1) = Uint512.sub512x512(result._0, result._1, rec._0, rec._1);
-            (result._0, result._1) = Uint512.sub512x512(result._0, result._1, 1, 0);
+            (result._0, result._1) = result._0.sub512x512(result._1, rec._0, rec._1);
+            (result._0, result._1) = result._0.sub512x512(result._1, 1, 0);
         }
     }
 
@@ -461,25 +461,17 @@ library Uint1024 {
      * @return bMod2N the remainder of b/2^n where n is the number of bits of the most significant b's word
      */
     function _aproxDiv768x512(uint768 memory a, uint512 memory b) private pure returns (uint512 memory aproxResult, uint bMod2N) {
-        if (isResultZeroAndBoundCheck(a, b)) return (uint512(0, 0), 0);
-        (uint bShidted, uint _bMod2N, uint768 memory aShifted) = getShiftedBitsDiv768x512(a, b);
-        uint rem = Uint512.mod512x256(aShifted._1, aShifted._2, bShidted);
-        aproxResult._1 = Uint512.divRem512x256(aShifted._1, aShifted._2, bShidted, rem);
-        aproxResult._0 = Uint512Extended.safeDiv512x256(aShifted._0, rem, bShidted);
-        bMod2N = _bMod2N;
-    }
-
-    /**
-     * @dev checks if the division will result in a zero value, and checks the bounds of the inputs
-     * @notice this is a private helper function.
-     * @param a A uint768 representing the numerator
-     * @param b A uint512 representing the denominator
-     * @return zero true if the result will be zero
-     */
-    function isResultZeroAndBoundCheck(uint768 memory a, uint512 memory b) internal pure returns (bool zero) {
         if (b._1 == 0) revert("Uint512Extended: div768x512 b1 can't be zero");
-        if (b._1 >> 255 == 1) revert("b1 too large");
-        if (a._2 == 0 && a._0.lt512(a._1, b._0, b._1)) zero = true;
+        if (a._2 == 0 && a._0.lt512(a._1, b._0, b._1)) return (uint512(0, 0), 0);
+        uint bShifted;
+        uint _bMod2N;
+        uint768 memory aShifted;
+        if (b._1 >> 255 == 1) (bShifted, _bMod2N,  aShifted) = (b._1, b._0, uint768(a._1, a._2, 0));
+        else (bShifted, _bMod2N,  aShifted) = getShiftedBitsDiv768x512(a, b);
+        uint rem = aShifted._1.mod512x256(aShifted._2, bShifted);
+        aproxResult._1 = aShifted._1.divRem512x256(aShifted._2, bShifted, rem);
+        aproxResult._0 = aShifted._0.safeDiv512x256(rem, bShifted);
+        bMod2N = _bMod2N;
     }
 
     /**
