@@ -193,7 +193,24 @@ library Uint512Extended {
      * @return result The result of the division of a and b
      */
     function div512x512(uint512 memory a, uint512 memory b) internal pure returns (uint256 result) {
-        result = div512x512(a._0, a._1, b._0, b._1);
+        (uint256 a0, uint256 a1, uint256 b0, uint256 b1) = (a._0, a._1, b._0, b._1);
+        if (b1 == 0) revert("Uint512Extended: div512x512 b1 can't be zero");
+        if (lt512(a0, a1, b0, b1)) return 0;
+        /// we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
+        uint n = log2(b1) + 1;
+        /// d = 2**n;
+        /// if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
+        (uint c, , ) = div512ByPowerOf2(b0, b1, uint8(n));
+        /// if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
+        /// making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
+        (uint resultLo, uint resultHi, ) = div512ByPowerOf2(a0, a1, uint8(n));
+        /// (a / d) / c
+        result = resultLo.div512x256(resultHi, c);
+        (uint eLo, uint eHi) = Uint512.mul512x256(b0, b1, result);
+        //bool add = lt512(proofLo, proofHi, eLo, eHi);
+        if (lt512(a0, a1, eLo, eHi)){
+            --result;
+        }
     }
 
     /**
