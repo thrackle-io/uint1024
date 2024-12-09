@@ -138,10 +138,13 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
     }
 
     function testDiv768x512(uint a0, uint a1, uint a2, uint b0, uint b1) public {
-        b1 = bound(b1, 1, type(uint256).max );
+        b1 = bound(b1, 1, type(uint256).max);
         uint768 memory a = uint768(a0, a1, a2);
         uint512 memory b = uint512(b0, b1);
         uint512 memory solR;
+        if(b1 >> 255 == 1){
+            vm.expectRevert("b1 too large");
+        }
         solR = Uint1024.div768x512(a, b);
 
         string[] memory inputs = _buildFFI1024Arithmetic(a._0, a._1, a._2, 0, b._0, b._1, 0, 0, "div");
