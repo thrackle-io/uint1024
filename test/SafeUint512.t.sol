@@ -111,10 +111,13 @@ contract SafeUint512FuzzTests is Test, PythonUtils, UintUtils {
         console2.logBytes(res);
         (pyR0, , , ) = abi.decode(res, (uint, uint, uint, uint));
 
+        console2.log("solidity res:", solR0, "python result:", pyR0);
+
         if (solR0 != pyR0) revert ("different results");
 
         solR0 = Uint512Extended.div512x512(solStA512, solStB512);
         if (solR0 != pyR0) revert ("different results");
+        
     }
 
     function testLog2(uint x) public {

@@ -12,6 +12,13 @@ contract GasReports is Test, GasHelpers {
     uint256 gasUsed = 0;
     string path = "test/gasReport/GasReport.json";
 
+    // When compiling via ir, yul is highly optimized. Because of this, the gas report will be different when compiling via-ir.
+    // Note: Compiling via-ir will increase compile times and could create some inefficiencies in solidity code. 
+    // The gas savings from the highly optimized yul may negate the solidity inefficiencies.
+
+    // To run the gas report when compiling via-ir, comment out the previous setting of the path variable and use the path below:
+    //string path = "test/gasReport/GasReportViaIr.json";
+
     function testMeasureGas() public {
         _primer();
 
@@ -74,6 +81,8 @@ contract GasReports is Test, GasHelpers {
         _div768ByPowerOf2GasUsed();
 
         _mod768x256GasUsed();
+
+        _mod1024x256GasUsed();
 
         _divRem1024x512In512GasUsed();
 
@@ -218,6 +227,30 @@ contract GasReports is Test, GasHelpers {
         );
         gasUsed = stopMeasuringGas();
         _writeJson(".Mod.mod768x256");
+    }
+
+    function _mod1024x256GasUsed() internal {
+        _resetGasUsed();
+
+        uint1024 memory a = solR1024;
+        uint256 b = 10000000000000000000000000000;
+
+        startMeasuringGas("mod1024x256 using structs - returns uint256");
+        Uint1024.mod1024x256(a, b);
+        gasUsed = stopMeasuringGas();
+        _writeJson(".Mod.mod1024x256Structs");
+        _resetGasUsed();
+
+        startMeasuringGas("mod1024x256 - returns uint256");
+        Uint1024.mod1024x256(
+            10000000000000000000000000000, // a0
+            10000000000000000000000000000, // a1
+            10000000000000000000000000000, // a2
+            10000000000000000000000000000, // a3
+            10000000000000000000000000000 // b0
+        );
+        gasUsed = stopMeasuringGas();
+        _writeJson(".Mod.mod1024x256");
     }
 
     function _divRem1024x512In512GasUsed() internal {
