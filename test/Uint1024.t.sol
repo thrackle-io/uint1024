@@ -138,7 +138,7 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
     }
 
     function testDiv768x512(uint a0, uint a1, uint a2, uint b0, uint b1) public {
-        b1 = bound(b1, 1, type(uint256).max );
+        b1 = bound(b1, 1, type(uint256).max);
         uint768 memory a = uint768(a0, a1, a2);
         uint512 memory b = uint512(b0, b1);
         uint512 memory solR;
@@ -272,7 +272,7 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
         solStA1024 = uint1024(a0, a1, a2, a3);
         solStB1024 = uint1024(b0, b1, b2, b3);
 
-        if (pyR4 > 0) vm.expectRevert("Uint1024: negative result sub1024x1024");
+        if (pyR4 > 0) vm.expectRevert("Uint1024: sub1024 underflow");
         (solR0, solR1, solR2, solR3) = Uint1024.sub1024x1024(a0, a1, a2, a3, b0, b1, b2, b3);
         console2.log("solRes:", solR0, solR1, solR2);
         console2.log("solRes cont:", solR3);
@@ -371,7 +371,7 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
     function testDivMulInverse512(uint b0, uint b1) public {
         TesterContract testerContract = new TesterContract();
         b1 = bound(b1, 1, type(uint256).max);
-        if (b0 % 2 == 0) vm.expectRevert("Uint1024: denominator must be odd");
+        if (b0 % 2 == 0) vm.expectRevert("Uint1024: MulnvMod512 denom even");
         (solR0, solR1) = testerContract.mulInverseMod512(b0, b1);
         console2.log("solRes:", solR0, solR1);
 

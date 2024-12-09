@@ -110,7 +110,6 @@ contract SafeUint512FuzzTests is Test, PythonUtils, UintUtils {
         bytes memory res = vm.ffi(inputs);
         console2.logBytes(res);
         (pyR0, , , ) = abi.decode(res, (uint, uint, uint, uint));
-
         if (solR0 != pyR0) revert ("different results");
 
         solR0 = Uint512Extended.div512x512(solStA512, solStB512);

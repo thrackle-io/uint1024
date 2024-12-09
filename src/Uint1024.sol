@@ -52,9 +52,16 @@ library Uint1024 {
             r2 := add(r2, carryoverB)
             // Check for carryover from the recalc of r2, taking into account previous carryoverA value
             carryoverA := or(carryoverA, lt(r2, carryoverB))
+            // If carryoverA has some value, it indicates an overflow for some or all of the results bits
+            if gt(carryoverA, 0){
+                let ptr := mload(0x40) // Get free memory pointer
+                mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
+                mstore(add(ptr, 0x04), 0x20) // String offset
+                mstore(add(ptr, 0x24), 25) // Revert reason length
+                mstore(add(ptr, 0x44), "Uint1024: add768 overflow")
+                revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
+            }
         }
-        // If carryoverA has some value, it indicates an overflow for some or all of the results bits
-        if (carryoverA > 0) revert("Uint1024: add768 overflow");
     }
 
     /**
@@ -146,9 +153,9 @@ library Uint1024 {
      */
     function mul512x256In768(uint256 a0, uint256 a1, uint256 b) internal pure returns (uint256 r0, uint256 r1, uint256 r2) {
         // Get the low and high bits of r0
-        (uint256 r0Lo, uint256 r0Hi) = a0.mul256x256(b);
+        (uint256 r0Lo, uint256 r0Hi) = Uint512.mul256x256(a0, b);
         // Get the low and high bits of r1
-        (uint256 r1Lo, uint256 r1Hi) = a1.mul256x256(b);
+        (uint256 r1Lo, uint256 r1Hi) = Uint512.mul256x256(a1, b);
         // r0 is equal to the lowest bits of a0 * b
         r0 = r0Lo;
         assembly {
@@ -194,11 +201,11 @@ library Uint1024 {
         uint256 b
     ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint r3) {
         // Get the low and high bits of r0
-        (uint256 r0Lo, uint256 r0Hi) = a0.mul256x256(b);
+        (uint256 r0Lo, uint256 r0Hi) = Uint512.mul256x256(a0, b);
         // Get the low and high bits of r1
-        (uint256 r1Lo, uint256 r1Hi) = a1.mul256x256(b);
+        (uint256 r1Lo, uint256 r1Hi) = Uint512.mul256x256(a1, b);
         // Get the low and high bits of r2
-        (uint256 r2Lo, uint256 r2Hi) = a2.mul256x256(b);
+        (uint256 r2Lo, uint256 r2Hi) = Uint512.mul256x256(a2, b);
         // r0 is equal to the lowest bits of a0 * b
         r0 = r0Lo;
         assembly {
@@ -257,13 +264,13 @@ library Uint1024 {
     ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3) {
         uint256 r0Hi;
         // Get the low and high bits of r0
-        (r0, r0Hi) = a0.mul256x256(b0);
+        (r0, r0Hi) = Uint512.mul256x256(a0, b0);
         // Get the low and high bits of r1
-        (uint256 r1Lo, uint256 r1Hi) = a1.mul256x256(b0);
+        (uint256 r1Lo, uint256 r1Hi) = Uint512.mul256x256(a1, b0);
         // Get the low and high bits of r2
-        (uint256 r2Lo, uint256 r2Hi) = a0.mul256x256(b1);
+        (uint256 r2Lo, uint256 r2Hi) = Uint512.mul256x256(a0, b1);
         // Get the low and high bits of r3
-        (uint256 r3Lo, uint256 r3Hi) = a1.mul256x256(b1);
+        (uint256 r3Lo, uint256 r3Hi) = Uint512.mul256x256(a1, b1);
         assembly {
             /// r1
             let sumA := add(r0Hi, r1Lo)
@@ -305,10 +312,10 @@ library Uint1024 {
      */
     function mul512x512Mod512(uint a0, uint a1, uint b0, uint b1) internal pure returns (uint r0, uint r1) {
         uint r0Hi;
-        (r0, r0Hi) = a0.mul256x256(b0);
+        (r0, r0Hi) = Uint512.mul256x256(a0, b0);
         // slither-disable-start unused-return --> the modulo 512 doesn't care of the upper bits because they are not part of the result
-        (uint256 r1Lo, ) = a1.mul256x256(b0);
-        (uint256 r2Lo, ) = a0.mul256x256(b1);
+        (uint256 r1Lo, ) = Uint512.mul256x256(a1, b0);
+        (uint256 r2Lo, ) = Uint512.mul256x256(a0, b1);
         // slither-disable-end unused-return
         assembly {
             /// r1
@@ -371,7 +378,7 @@ library Uint1024 {
             pow := add(div(sub(0, pow), pow), 1)
             a0 := or(a0, mul(a1, pow))
         }
-        uint256 inv = b.mulInverseMod256();
+        uint256 inv = Uint512.mulInverseMod256(b);
 
         assembly {
             r0 := mul(a0, inv)
@@ -407,9 +414,9 @@ library Uint1024 {
             r2 := div(sub(a2, remHi), b)
             a2 := remHi
         }
-        uint rem = a1.mod512x256(a2, b);
-        r1 = a1.divRem512x256(a2, b, rem);
-        r0 = a0.safeDiv512x256(rem, b);
+        uint rem = Uint512.mod512x256(a1, a2, b);
+        r1 = Uint512.divRem512x256(a1, a2, b, rem);
+        r0 = Uint512Extended.safeDiv512x256(a0, rem, b);
     }
 
     /**
@@ -481,11 +488,11 @@ library Uint1024 {
         uint512 memory b
     ) private pure returns (uint bShifted, uint bMod2N, uint768 memory aShifted) {
         /// we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
-        uint n = b._1.log2() + 1;
+        uint n = Uint512Extended.log2(b._1) + 1;
         /// d = 2**n;
         /// if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
         uint overflowVal;
-        (bShifted, overflowVal, bMod2N) = b._0.div512ByPowerOf2(b._1, uint8(n));
+        (bShifted, overflowVal, bMod2N) = Uint512Extended.div512ByPowerOf2(b._0, b._1, uint8(n));
         if (overflowVal > 0) revert("div512x512: unsuccessful division by 2**n");
         /// if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
         /// making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
@@ -518,11 +525,11 @@ library Uint1024 {
             rem3 := mod(a3, b)
             r3 := div(sub(a3, rem3), b)
         }
-        uint rem2 = a2.mod512x256(rem3, b);
-        r2 = a2.divRem512x256(rem3, b, rem2);
-        uint rem1 = a1.mod512x256(rem2, b);
-        r1 = a1.divRem512x256(rem2, b, rem1);
-        r0 = a0.safeDiv512x256(rem1, b);
+        uint rem2 = Uint512.mod512x256(a2, rem3, b);
+        r2 = Uint512.divRem512x256(a2, rem3, b, rem2);
+        uint rem1 = Uint512.mod512x256(a1, rem2, b);
+        r1 = Uint512.divRem512x256(a1, rem2, b, rem1);
+        r0 = Uint512Extended.safeDiv512x256(a0, rem1, b);
     }
 
     /**
@@ -554,7 +561,16 @@ library Uint1024 {
         uint256 a2,
         uint8 n
     ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 remainder) {
-        if (n == 0) revert("n must be greater than 0");
+        assembly{
+            if eq(n, 0){
+                let ptr := mload(0x40) // Get free memory pointer
+                mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
+                mstore(add(ptr, 0x04), 0x20) // String offset
+                mstore(add(ptr, 0x24), 30) // Revert reason length
+                mstore(add(ptr, 0x44), "Uint1024: div768 Pow 2 n is 0")
+                revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
+            }
+        }
         uint _2ToTheNth = 2 ** n;
         uint mask = _2ToTheNth - 1;
         uint shiftedBitsA2 = a2 & mask;
@@ -586,7 +602,16 @@ library Uint1024 {
      * @return rem the modulo of a%b
      */
     function mod768x256(uint a0, uint a1, uint a2, uint b) internal pure returns (uint rem) {
-        if (b == 0) revert("Uint1024: mod 0 undefined");
+        assembly{
+            if eq(b, 0){
+                let ptr := mload(0x40) // Get free memory pointer
+                mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
+                mstore(add(ptr, 0x04), 0x20) // String offset
+                mstore(add(ptr, 0x24), 25) // Revert reason length
+                mstore(add(ptr, 0x44), "Uint1024: mod 0 undefined")
+                revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
+            }
+        }
         uint rem_a2x256;
         uint rem_a2x512;
         assembly {
@@ -598,7 +623,7 @@ library Uint1024 {
             rem_a2x512 := addmod(rem_a2x512, rem_a2x256, b) // (a2*2**512 - a2*2**256 + a2*(2**256))%b = (a2*2**512)%b
         }
         // (a1*2**256 + a0)%b
-        rem = a0.mod512x256(a1, b);
+        rem = Uint512.mod512x256(a0, a1, b);
         // (a2*2**512 + a1*2**256 + a0)%b
         assembly {
             rem := addmod(rem, rem_a2x512, b)
@@ -624,11 +649,20 @@ library Uint1024 {
      * @param b A uint256 representing the base of the modulo
      * @return rem the modulo of a%b
      */
-    function mod1024x256(uint a0, uint a1, uint a2, uint256 a3, uint b) internal pure returns (uint rem) {
-        if (b == 0) revert("Uint1024: mod 0 undefined");
-        uint rem_a3x256;
-        uint rem_a3x512;
-        uint rem_a3x768;
+    function mod1024x256(uint256 a0, uint256 a1, uint256 a2, uint256 a3, uint256 b) internal pure returns (uint rem) {
+        assembly{
+            if eq(b, 0){
+                let ptr := mload(0x40) // Get free memory pointer
+                mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
+                mstore(add(ptr, 0x04), 0x20) // String offset
+                mstore(add(ptr, 0x24), 25) // Revert reason length
+                mstore(add(ptr, 0x44), "Uint1024: mod 0 undefined")
+                revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
+            }
+        }
+        uint256 rem_a3x256;
+        uint256 rem_a3x512;
+        uint256 rem_a3x768;
         assembly {
             // (a2*2**256)%b
             rem_a3x256 := mulmod(a3, not(0), b) // (a3*(2**256 - 1))%b
@@ -683,7 +717,16 @@ library Uint1024 {
         uint256 rem0,
         uint256 rem1
     ) internal pure returns (uint256 r0, uint r1) {
-        if (b0 == 0 && b1 == 0) revert("Uint1024: division by zero");
+        assembly{
+            if and(eq(b0, 0), eq(b1, 0)){
+                let ptr := mload(0x40) // Get free memory pointer
+                mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
+                mstore(add(ptr, 0x04), 0x20) // String offset
+                mstore(add(ptr, 0x24), 26) // Revert reason length
+                mstore(add(ptr, 0x44), "Uint1024: division by zero")
+                revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
+            }
+        }
         (a0, a1, a2, a3) = sub1024x1024(a0, a1, a2, a3, rem0, rem1, 0, 0);
         assembly {
             // The integer space mod 2**256 is not an abilian group on the multiplication operation. In fact the
@@ -746,9 +789,19 @@ library Uint1024 {
      * @return inv0 The lower bits of the inverse
      * @return inv1 The higher bits of the inverse
      */
-    function mulInverseMod512(uint b0, uint b1) internal pure returns (uint inv0, uint inv1) {
-        if (b0 % 2 == 0) revert("Uint1024: denominator must be odd");
-        (uint bx3Lo, uint bx3Hi) = b0.mul512x256(b1, 3);
+    function mulInverseMod512(uint256 b0, uint256 b1) internal pure returns (uint inv0, uint inv1) {
+        assembly{
+            if eq(mod(b0, 2), 0){
+                let ptr := mload(0x40) // Get free memory pointer
+                mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
+                mstore(add(ptr, 0x04), 0x20) // String offset
+                mstore(add(ptr, 0x24), 32) // Revert reason length
+                mstore(add(ptr, 0x44), "Uint1024: MulnvMod512 denom even")
+                revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
+            }
+        }
+        //if (b0 % 2 == 0) revert("Uint1024: denominator must be odd");
+        (uint256 bx3Lo, uint256 bx3Hi) = Uint512.mul512x256(b0, b1, 3);
         inv1 = bx3Hi;
         assembly {
             // Calculate the multiplicative inverse mod 2**256 of b. See Montgomery reduction for more details.
@@ -761,31 +814,31 @@ library Uint1024 {
 
         /// expansion of the inverse with Hensel's lemma
         (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
-        (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
+        (interimLo, interimHi) = Uint512.sub512x512(two, 0, interimLo, interimHi);
         (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 8
 
         (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
-        (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
+        (interimLo, interimHi) = Uint512.sub512x512(two, 0, interimLo, interimHi);
         (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 16
 
         (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
-        (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
+        (interimLo, interimHi) = Uint512.sub512x512(two, 0, interimLo, interimHi);
         (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 32
 
         (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
-        (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
+        (interimLo, interimHi) = Uint512.sub512x512(two, 0, interimLo, interimHi);
         (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 64
 
         (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
-        (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
+        (interimLo, interimHi) = Uint512.sub512x512(two, 0, interimLo, interimHi);
         (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 128
 
         (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
-        (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
+        (interimLo, interimHi) = Uint512.sub512x512(two, 0, interimLo, interimHi);
         (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 256
 
         (interimLo, interimHi) = mul512x512Mod512(b0, b1, inv0, inv1);
-        (interimLo, interimHi) = two.sub512x512(0, interimLo, interimHi);
+        (interimLo, interimHi) = Uint512.sub512x512(two, 0, interimLo, interimHi);
         (inv0, inv1) = mul512x512Mod512(inv0, inv1, interimLo, interimHi); // 512
     }
 
@@ -807,10 +860,13 @@ library Uint1024 {
      * @param b0 A uint256 representing the lower bits of b
      * @param b1 A uint256 representing the high bits of b
      * @param b2 A uint256 representing the higher bits of b
-     * @return Returns true if a < b
+     * @return res Returns true if a < b
      */
-    function lt768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2) internal pure returns (bool) {
-        return a2 < b2 || (a2 == b2 && (a1 < b1 || (a1 == b1 && a0 < b0)));
+    function lt768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2) internal pure returns (bool res) {
+        //return a2 < b2 || (a2 == b2 && (a1 < b1 || (a1 == b1 && a0 < b0)));
+        assembly{
+            res := or(lt(a2, b2), and(eq(a2, b2), or(lt(a1, b1), and(eq(a1, b1), lt(a0, b0)))))
+        }
     }
 
     /**
@@ -831,10 +887,13 @@ library Uint1024 {
      * @param b0 A uint256 representing the lower bits of b
      * @param b1 A uint256 representing the high bits of b
      * @param b2 A uint256 representing the higher bits of b
-     * @return Returns true if a > b
+     * @return res Returns true if a > b
      */
-    function gt768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2) internal pure returns (bool) {
-        return a2 > b2 || (a2 == b2 && (a1 > b1 || (a1 == b1 && a0 > b0)));
+    function gt768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2) internal pure returns (bool res) {
+        //return a2 > b2 || (a2 == b2 && (a1 > b1 || (a1 == b1 && a0 > b0)));
+        assembly{
+            res := or(gt(a2, b2), and(eq(a2, b2), or(gt(a1, b1), and(eq(a1, b1), gt(a0, b0)))))
+        }
     }
 
     /**
@@ -858,7 +917,7 @@ library Uint1024 {
      * @param b1 A uint256 representing the high bits of the subtrahend
      * @param b2 A uint256 representing the higher bits of the subtrahend
      * @param b3 A uint256 representing the highest bits of the subtrahend
-     * @return Returns true if there would be an underflow/negative result
+     * @return res Returns true if there would be an underflow/negative result
      */
     function lt1024(
         uint256 a0,
@@ -869,8 +928,11 @@ library Uint1024 {
         uint256 b1,
         uint256 b2,
         uint256 b3
-    ) internal pure returns (bool) {
-        return a3 < b3 || (a3 == b3 && (a2 < b2 || (a2 == b2 && (a1 < b1 || (a1 == b1 && a0 < b0)))));
+    ) internal pure returns (bool res) {
+        //return a3 < b3 || (a3 == b3 && (a2 < b2 || (a2 == b2 && (a1 < b1 || (a1 == b1 && a0 < b0)))));
+        assembly{
+            res := or(lt(a3, b3), and(eq(a3, b3), or(lt(a2, b2), and(eq(a2, b2), or(lt(a1, b1), and(eq(a1, b1), lt(a0, b0)))))))
+        }
     }
 
     /**
@@ -939,9 +1001,16 @@ library Uint1024 {
             r3 := add(r3, carryoverA)
             // Check for carryover from the recalc of r3, taking into account previous carryoverB value
             carryoverB := or(carryoverB, lt(r3, carryoverA))
+            // If carryoverB has some value, it indicates an overflow for some or all of the results bits
+            if gt(carryoverB, 0){
+                let ptr := mload(0x40) // Get free memory pointer
+                mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
+                mstore(add(ptr, 0x04), 0x20) // String offset
+                mstore(add(ptr, 0x24), 26) // Revert reason length
+                mstore(add(ptr, 0x44), "Uint1024: add1024 overflow")
+                revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
+            }
         }
-        // If carryoverB has some value, it indicates an overflow for some or all of the results bits
-        if (carryoverB > 0) revert("Uint1024: add1024 overflow");
     }
 
     /**
@@ -979,9 +1048,15 @@ library Uint1024 {
         uint256 b2,
         uint256 b3
     ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3) {
-        if (lt1024(a0, a1, a2, a3, b0, b1, b2, b3)) revert("Uint1024: negative result sub1024x1024");
-
         assembly {
+            if or(lt(a3, b3), and(eq(a3, b3), or(lt(a2, b2), and(eq(a2, b2), or(lt(a1, b1), and(eq(a1, b1), lt(a0, b0))))))){
+                let ptr := mload(0x40) // Get free memory pointer
+                mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
+                mstore(add(ptr, 0x04), 0x20) // String offset
+                mstore(add(ptr, 0x24), 27) // Revert reason length
+                mstore(add(ptr, 0x44), "Uint1024: sub1024 underflow")
+                revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
+            }
             // If b0 <= a0, find the difference of the lowest set of bits
             if or(lt(b0, a0), eq(b0, a0)) {
                 r0 := sub(a0, b0)
