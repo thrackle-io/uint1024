@@ -37,6 +37,10 @@ library Uint512Extended {
         return gt512(x._0, x._1, y._0, y._1);
     }
 
+    function gt512(uint512 memory a, uint512 memory b) internal pure returns (bool) {
+        return gt512(a._0, a._1, b._0, b._1);
+    }
+
     /**
      * @notice x == y
      * @dev tells if x is equal to y where x and y are 512 bit numbers
@@ -52,6 +56,11 @@ library Uint512Extended {
             res := and(eq(x1, y1), eq(x0, y0))
         }
     }
+
+    function eq512(uint512 memory a, uint512 memory b) internal pure returns (bool) {
+        return eq512(a._0, a._1, b._0, b._1);
+    }
+
 
     /**
      * @notice x > y
@@ -76,6 +85,10 @@ library Uint512Extended {
      */
     function ge512(uint256 x0, uint256 x1, uint256 y0, uint256 y1) internal pure returns (bool) {
         return eq512(x0, x1, y0, y1) || gt512(x0, x1, y0, y1);
+    }
+
+    function ge512(uint512 memory a, uint512 memory b) internal pure returns (bool) {
+        return ge512(a._0, a._1, b._0, b._1);
     }
 
     /**
@@ -116,6 +129,10 @@ library Uint512Extended {
         return lt512(x._0, x._1, y._0, y._1);
     }
 
+    function lt512(uint512 memory a, uint512 memory b) internal pure returns (bool) {
+        return lt512(a._0, a._1, b._0, b._1);
+    }
+
     /**
      * @dev Calculates the division of a 512-bit unsigned integer by a denominator which is
      * a power of 2. It doesn't require the result to be a uint256.
@@ -143,6 +160,10 @@ library Uint512Extended {
         remainder = a0 & (_2ToTheNth - 1);
         r1 = a1 >> n;
         r0 = (shiftedBits << (256 - n)) | (a0 >> n);
+    }
+
+    function div512ByPowerOf2(uint512 memory a, uint8 n) internal pure returns (uint512 memory r, uint256 rem) {
+        (r._0, r._1, rem) = div512ByPowerOf2(a._0, a._1, n);
     }
 
     /**
@@ -196,6 +217,10 @@ library Uint512Extended {
         result = div512x512(a._0, a._1, b._0, b._1);
     }
 
+    function div512x512(uint512 memory a, uint512 memory b) internal pure returns (uint256 result) {
+        result = div512x512(a._0, a._1, b._0, b._1);
+    }
+
     /**
      * @notice Calculates the product of two uint512 and uint256 safely
      * @dev Used the chinese remainder theorem
@@ -225,6 +250,10 @@ library Uint512Extended {
                 revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
             }
         }
+    }
+
+    function safeMul512x256(uint512 memory a, uint256 b) internal pure returns (uint512 memory r) {
+        (r._0, r._1) = safeMul512x256(a._0, a._1, b);
     }
 
     /**
@@ -285,6 +314,10 @@ library Uint512Extended {
         (r._0, r._1) = safeAdd512x512(a._0, a._1, b._0, b._1);
     }
 
+    function safeAdd512x512(uint512 memory a, uint512 memory b) internal pure returns (uint512 memory r) {
+        (r._0, r._1) = safeAdd512x512(a._0, a._1, b._0, b._1);
+    }
+
     /**
      * @notice Calculates the difference of two uint512 safely
      * @param a0 A uint256 representing the lower bits of the minuend
@@ -302,6 +335,10 @@ library Uint512Extended {
             // r1 is the difference of a1 and b1. If a0 < b0, subtract 1
             r1 := sub(sub(a1, b1), lt(a0, b0))
         }
+    }
+
+    function safeSub512x512(uint512 memory a, uint512 memory b) internal pure returns (uint512 memory r) {
+        (r._0, r._1) = safeSub512x512(a._0, a._1, b._0, b._1);
     }
 
     /**
@@ -339,6 +376,10 @@ library Uint512Extended {
      * @param b A uint256 representing the denominator
      * @return r The result as an uint256. Result must have at most 256 bits
      */
+    function safeDiv512x256(uint512 memory a, uint256 b) internal pure returns (uint256 r) {
+        r = safeDiv512x256(a._0, a._1, b);
+    }
+
     function safeDiv512x256(uint512 memory a, uint256 b) internal pure returns (uint256 r) {
         r = safeDiv512x256(a._0, a._1, b);
     }
