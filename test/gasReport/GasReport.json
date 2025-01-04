@@ -1,72 +1,72 @@
 {
   "Add": {
-    "add1024x1024Structs": 539,
-    "add1024x1024": 289,
-    "add768x768Structs": 434,
-    "add768x768": 232,
-    "safeAdd512x512Structs": 315,
-    "safeAdd512x512": 175,
-    "add512x512": 36
+    "add1024x1024Structs": 546,
+    "add1024x1024": 290,
+    "add768x768Structs": 440,
+    "add768x768": 233,
+    "safeAdd512x512Structs": 319,
+    "safeAdd512x512": 176,
+    "add512x512": 37
   },
   "Sub": {
-    "sub1024x1024Structs": 733,
-    "sub1024x1024": 493,
-    "sub768x768Structs": 559,
-    "sub768x768": 367,
-    "safeSub512x512Structs": 315,
-    "safeSub512x512": 186,
-    "sub512x512": 36
+    "sub1024x1024Structs": 742,
+    "sub1024x1024": 496,
+    "sub768x768Structs": 566,
+    "sub768x768": 369,
+    "safeSub512x512Structs": 320,
+    "safeSub512x512": 188,
+    "sub512x512": 37
   },
   "Mul": {
-    "mulInverseMod512Structs": 6939,
-    "mulInverseMod512": 6821,
-    "mul512x512In1024Structs": 974,
-    "mul512x512In1024": 780,
-    "mul512x512Mod512Structs": 610,
-    "mul512x512Mod512": 481,
-    "mul512x256In768Structs": 563,
-    "mul512x256In768": 414,
-    "safeMul512x256Structs": 520,
-    "safeMul512x256": 408,
-    "mulMod256x256": 184,
-    "mul768x256Structs": 817,
-    "mul768x256In1024": 635,
-    "mul512x256": 175,
-    "mul256x256": 149,
-    "mulInverseMod256": 36
+    "mulInverseMod512Structs": 7051,
+    "mulInverseMod512": 6931,
+    "mul512x512In1024Structs": 991,
+    "mul512x512In1024": 791,
+    "mul512x512Mod512Structs": 621,
+    "mul512x512Mod512": 489,
+    "mul512x256In768Structs": 574,
+    "mul512x256In768": 421,
+    "safeMul512x256Structs": 529,
+    "safeMul512x256": 415,
+    "mulMod256x256": 186,
+    "mul768x256Structs": 831,
+    "mul768x256In1024": 644,
+    "mul512x256": 177,
+    "mul256x256": 151,
+    "mulInverseMod256": 37
   },
   "Div": {
-    "div512ByPowerOf2Structs": 835,
-    "div512ByPowerOf2": 684,
-    "safeDiv512x256Structs": 675,
-    "safeDiv512x256": 614,
-    "div512x256In512Structs": 592,
-    "div512x256In512": 480,
-    "div512x256": 458,
-    "divRem512x256": 401,
-    "div768x256Structs": 1210,
-    "div768x256": 1052,
-    "div768x512": 8124,
-    "div768ByPowerOf2Structs": 992,
-    "div768ByPowerOf2": 786,
-    "divRem1024x512In512Structs": 8269,
-    "divRem1024x512In512": 8079,
-    "div512x512Structs": 2595,
-    "div512x512": 2528,
-    "div1024x256": 1479,
-    "div1024x256Structs": 1681
+    "div512ByPowerOf2Structs": 844,
+    "div512ByPowerOf2": 690,
+    "safeDiv512x256Structs": 683,
+    "safeDiv512x256": 620,
+    "div512x256In512Structs": 597,
+    "div512x256In512": 483,
+    "div512x256": 461,
+    "divRem512x256": 403,
+    "div768x256Structs": 1226,
+    "div768x256": 1064,
+    "div768x512": 8177,
+    "div768ByPowerOf2Structs": 1003,
+    "div768ByPowerOf2": 792,
+    "divRem1024x512In512Structs": 8393,
+    "divRem1024x512In512": 8202,
+    "div512x512Structs": 2596,
+    "div512x512": 2550,
+    "div1024x256": 1496,
+    "div1024x256Structs": 1703
   },
   "Sqrt": {
-    "sqrt512": 1878,
-    "sqrt256": 966
+    "sqrt512": 1887,
+    "sqrt256": 970
   },
   "Log": {
-    "log2": 457
+    "log2": 459
   },
   "Mod": {
-    "mod768x256Structs": 419,
-    "mod768x256": 360,
-    "mod1024x256Structs": 672,
-    "mod1024x256": 604
+    "mod768x256Structs": 426,
+    "mod768x256": 365,
+    "mod1024x256Structs": 681,
+    "mod1024x256": 611
   }
 }

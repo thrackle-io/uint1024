@@ -320,8 +320,8 @@ library Uint512 {
         uint256 q;
 
         assembly {
-            nom := or(shl(128, rp), shr(128, a0))
-            denom := shl(1, sp)
+            nom := or(shl(128, rp), shr(128, a0)) // rp << 128 + a0 >> 128
+            denom := shl(1, sp) // sp * 2
             // slither-disable-start divide-before-multiply
             q := div(nom, denom)
             u := mod(nom, denom)
