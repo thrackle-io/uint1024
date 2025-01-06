@@ -339,41 +339,43 @@ library Uint1024 {
         uint w3;
         uint w4;
         uint w5;
-        uint u;
-        uint v;
         {
-            u = a0.mod512x256(a1, M1);
-            v = b0.mod512x256(b1, M1);
-            assembly {
-                w1 := mulmod(u, v, M1)
+            uint u;
+            uint v;
+            {
+                u = Uint512.mod512x256(a0, a1, M1);
+                v = Uint512.mod512x256(b0, b1, M1);
+                assembly {
+                    w1 := mulmod(u, v, M1)
+                }
             }
-        }
-        {
-            u = a0.mod512x256(a1, M2);
-            v = b0.mod512x256(b1, M2);
-            assembly {
-                w2 := mulmod(u, v, M2)
+            {
+                u = Uint512.mod512x256(a0, a1, M2);
+                v = Uint512.mod512x256(b0, b1, M2);
+                assembly {
+                    w2 := mulmod(u, v, M2)
+                }
             }
-        }
-        {
-            u = a0.mod512x256(a1, M3);
-            v = b0.mod512x256(b1, M3);
-            assembly {
-                w3 := mulmod(u, v, M3)
+            {
+                u = Uint512.mod512x256(a0, a1, M3);
+                v = Uint512.mod512x256(b0, b1, M3);
+                assembly {
+                    w3 := mulmod(u, v, M3)
+                }
             }
-        }
-        {
-            u = a0.mod512x256(a1, M4);
-            v = b0.mod512x256(b1, M4);
-            assembly {
-                w4 := mulmod(u, v, M4)
+            {
+                u = Uint512.mod512x256(a0, a1, M4);
+                v = Uint512.mod512x256(b0, b1, M4);
+                assembly {
+                    w4 := mulmod(u, v, M4)
+                }
             }
-        }
-        {
-            u = a0.mod512x256(a1, M5);
-            v = b0.mod512x256(b1, M5);
-            assembly {
-                w5 := mulmod(u, v, M5)
+            {
+                u = Uint512.mod512x256(a0, a1, M5);
+                v = Uint512.mod512x256(b0, b1, M5);
+                assembly {
+                    w5 := mulmod(u, v, M5)
+                }
             }
         }
         uint _r0;
@@ -412,9 +414,6 @@ library Uint1024 {
             }
             _r0 := r0
             _r1 := r1
-        }
-        console2.log("r", r0, r1, r2); /// TODO REMOVE THIS LINE AND KEEP ALL UNDER ONE SINGLE ASSEMBLY BLOCK
-        assembly {
             /// (m3 + 1)*(w4*m4 + w4) + w3
             r2 := shr(8, r1)
             r1 := or(shl(248, r1), shr(8, r0))
