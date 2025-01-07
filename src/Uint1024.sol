@@ -53,7 +53,7 @@ library Uint1024 {
             // Check for carryover from the recalc of r2, taking into account previous carryoverA value
             carryoverA := or(carryoverA, lt(r2, carryoverB))
             // If carryoverA has some value, it indicates an overflow for some or all of the results bits
-            if gt(carryoverA, 0){
+            if gt(carryoverA, 0) {
                 let ptr := mload(0x40) // Get free memory pointer
                 mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
                 mstore(add(ptr, 0x04), 0x20) // String offset
@@ -335,7 +335,7 @@ library Uint1024 {
      */
     function mul512x512Mod512(uint512 memory a, uint512 memory b) internal pure returns (uint512 memory r) {
         (r._0, r._1) = mul512x512Mod512(a._0, a._1, b._0, b._1);
-    }   
+    }
 
     /**
      * @notice Calculates the division of a uint512 by a uint256.
@@ -395,7 +395,7 @@ library Uint1024 {
      */
     function div512x256In512(uint512 memory a, uint256 b) internal pure returns (uint512 memory r) {
         (r._0, r._1) = div512x256In512(a._0, a._1, b);
-    } 
+    }
 
     /**
      * @dev Calculates the division of a uint768 by a uint256. The result is a uint768.
@@ -466,8 +466,8 @@ library Uint1024 {
         uint bShifted;
         uint _bMod2N;
         uint768 memory aShifted;
-        if (b._1 >> 255 == 1) (bShifted, _bMod2N,  aShifted) = (b._1, b._0, uint768(a._1, a._2, 0));
-        else (bShifted, _bMod2N,  aShifted) = getShiftedBitsDiv768x512(a, b);
+        if (b._1 >> 255 == 1) (bShifted, _bMod2N, aShifted) = (b._1, b._0, uint768(a._1, a._2, 0));
+        else (bShifted, _bMod2N, aShifted) = getShiftedBitsDiv768x512(a, b);
         uint rem = aShifted._1.mod512x256(aShifted._2, bShifted);
         aproxResult._1 = aShifted._1.divRem512x256(aShifted._2, bShifted, rem);
         aproxResult._0 = aShifted._0.safeDiv512x256(rem, bShifted);
@@ -561,8 +561,8 @@ library Uint1024 {
         uint256 a2,
         uint8 n
     ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 remainder) {
-        assembly{
-            if eq(n, 0){
+        assembly {
+            if eq(n, 0) {
                 let ptr := mload(0x40) // Get free memory pointer
                 mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
                 mstore(add(ptr, 0x04), 0x20) // String offset
@@ -602,8 +602,8 @@ library Uint1024 {
      * @return rem the modulo of a%b
      */
     function mod768x256(uint a0, uint a1, uint a2, uint b) internal pure returns (uint rem) {
-        assembly{
-            if eq(b, 0){
+        assembly {
+            if eq(b, 0) {
                 let ptr := mload(0x40) // Get free memory pointer
                 mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
                 mstore(add(ptr, 0x04), 0x20) // String offset
@@ -650,8 +650,8 @@ library Uint1024 {
      * @return rem the modulo of a%b
      */
     function mod1024x256(uint256 a0, uint256 a1, uint256 a2, uint256 a3, uint256 b) internal pure returns (uint rem) {
-        assembly{
-            if eq(b, 0){
+        assembly {
+            if eq(b, 0) {
                 let ptr := mload(0x40) // Get free memory pointer
                 mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
                 mstore(add(ptr, 0x04), 0x20) // String offset
@@ -717,8 +717,8 @@ library Uint1024 {
         uint256 rem0,
         uint256 rem1
     ) internal pure returns (uint256 r0, uint r1) {
-        assembly{
-            if and(eq(b0, 0), eq(b1, 0)){
+        assembly {
+            if and(eq(b0, 0), eq(b1, 0)) {
                 let ptr := mload(0x40) // Get free memory pointer
                 mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
                 mstore(add(ptr, 0x04), 0x20) // String offset
@@ -790,8 +790,8 @@ library Uint1024 {
      * @return inv1 The higher bits of the inverse
      */
     function mulInverseMod512(uint256 b0, uint256 b1) internal pure returns (uint inv0, uint inv1) {
-        assembly{
-            if eq(mod(b0, 2), 0){
+        assembly {
+            if eq(mod(b0, 2), 0) {
                 let ptr := mload(0x40) // Get free memory pointer
                 mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
                 mstore(add(ptr, 0x04), 0x20) // String offset
@@ -864,7 +864,7 @@ library Uint1024 {
      */
     function lt768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2) internal pure returns (bool res) {
         //return a2 < b2 || (a2 == b2 && (a1 < b1 || (a1 == b1 && a0 < b0)));
-        assembly{
+        assembly {
             res := or(lt(a2, b2), and(eq(a2, b2), or(lt(a1, b1), and(eq(a1, b1), lt(a0, b0)))))
         }
     }
@@ -872,7 +872,7 @@ library Uint1024 {
     /**
      * @notice Checks if the left opperand is less than the right opperand
      * @param a A uint768 representing the left operand
-     * @param b A uint768 representing the right operand 
+     * @param b A uint768 representing the right operand
      * @return Returns true if there would be an underflow/negative result
      */
     function lt768(uint768 memory a, uint768 memory b) internal pure returns (bool) {
@@ -891,7 +891,7 @@ library Uint1024 {
      */
     function gt768(uint256 a0, uint256 a1, uint256 a2, uint256 b0, uint256 b1, uint256 b2) internal pure returns (bool res) {
         //return a2 > b2 || (a2 == b2 && (a1 > b1 || (a1 == b1 && a0 > b0)));
-        assembly{
+        assembly {
             res := or(gt(a2, b2), and(eq(a2, b2), or(gt(a1, b1), and(eq(a1, b1), gt(a0, b0)))))
         }
     }
@@ -899,7 +899,7 @@ library Uint1024 {
     /**
      * @notice Checks if the left opperand is greater than the right opperand
      * @param a A uint768 representing the left operand
-     * @param b A uint768 representing the right operand 
+     * @param b A uint768 representing the right operand
      * @return Returns true if there would be an overflow result
      */
     function gt768(uint768 memory a, uint768 memory b) internal pure returns (bool) {
@@ -930,7 +930,7 @@ library Uint1024 {
         uint256 b3
     ) internal pure returns (bool res) {
         //return a3 < b3 || (a3 == b3 && (a2 < b2 || (a2 == b2 && (a1 < b1 || (a1 == b1 && a0 < b0)))));
-        assembly{
+        assembly {
             res := or(lt(a3, b3), and(eq(a3, b3), or(lt(a2, b2), and(eq(a2, b2), or(lt(a1, b1), and(eq(a1, b1), lt(a0, b0)))))))
         }
     }
@@ -938,7 +938,7 @@ library Uint1024 {
     /**
      * @notice Checks if the left opperand is less than the right opperand
      * @param a A uint1024 representing the left operand
-     * @param b A uint1024 representing the right operand 
+     * @param b A uint1024 representing the right operand
      * @return Returns true if there would be an underflow/negative result
      */
     function lt1024(uint1024 memory a, uint1024 memory b) internal pure returns (bool) {
@@ -1002,7 +1002,7 @@ library Uint1024 {
             // Check for carryover from the recalc of r3, taking into account previous carryoverB value
             carryoverB := or(carryoverB, lt(r3, carryoverA))
             // If carryoverB has some value, it indicates an overflow for some or all of the results bits
-            if gt(carryoverB, 0){
+            if gt(carryoverB, 0) {
                 let ptr := mload(0x40) // Get free memory pointer
                 mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
                 mstore(add(ptr, 0x04), 0x20) // String offset
@@ -1049,7 +1049,7 @@ library Uint1024 {
         uint256 b3
     ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3) {
         assembly {
-            if or(lt(a3, b3), and(eq(a3, b3), or(lt(a2, b2), and(eq(a2, b2), or(lt(a1, b1), and(eq(a1, b1), lt(a0, b0))))))){
+            if or(lt(a3, b3), and(eq(a3, b3), or(lt(a2, b2), and(eq(a2, b2), or(lt(a1, b1), and(eq(a1, b1), lt(a0, b0))))))) {
                 let ptr := mload(0x40) // Get free memory pointer
                 mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
                 mstore(add(ptr, 0x04), 0x20) // String offset
@@ -1121,5 +1121,73 @@ library Uint1024 {
      */
     function sub1024x1024(uint1024 memory a, uint1024 memory b) internal pure returns (uint1024 memory r) {
         (r._0, r._1, r._2, r._3) = sub1024x1024(a._0, a._1, a._2, a._3, b._0, b._1, b._2, b._3);
+    }
+
+    function sqrt1024(uint256 a0, uint256 a1, uint256 a2, uint256 a3) internal pure returns (uint256 s0, uint256 s1) {
+        // A simple 256 bit square root is sufficient
+        if (a2 == 0 && a3 == 0) return (sqrt512(a0, a1), 0);
+        // if(a3 >> 254 > 0) revert("sqrt1024: number with more than 1022 bits");
+
+        // The used algorithm has the pre-condition a1 >= 2**254
+        uint256 shift;
+
+        assembly {
+            let digits := mul(lt(a3, 0x100000000000000000000000000000000), 128)
+            a3 := shl(digits, a3)
+            shift := add(shift, digits)
+
+            digits := mul(lt(a3, 0x1000000000000000000000000000000000000000000000000), 64)
+            a3 := shl(digits, a3)
+            shift := add(shift, digits)
+
+            digits := mul(lt(a3, 0x100000000000000000000000000000000000000000000000000000000), 32)
+            a3 := shl(digits, a3)
+            shift := add(shift, digits)
+
+            digits := mul(lt(a3, 0x1000000000000000000000000000000000000000000000000000000000000), 16)
+            a3 := shl(digits, a3)
+            shift := add(shift, digits)
+
+            digits := mul(lt(a3, 0x100000000000000000000000000000000000000000000000000000000000000), 8)
+            a3 := shl(digits, a3)
+            shift := add(shift, digits)
+
+            digits := mul(lt(a3, 0x1000000000000000000000000000000000000000000000000000000000000000), 4)
+            a3 := shl(digits, a3)
+            shift := add(shift, digits)
+
+            digits := mul(lt(a3, 0x4000000000000000000000000000000000000000000000000000000000000000), 2)
+            a3 := shl(digits, a3)
+            shift := add(shift, digits)
+
+            a3 := or(a3, shr(sub(256, shift), a2))
+            a2 := or(shl(shift, a2), shr(sub(256, shift), a1))
+            a1 := or(shl(shift, a1), shr(sub(256, shift), a0))
+            a0 := shl(shift, a0)
+        }
+
+        uint256 sp = sqrt512(a2, a3);
+        (uint256 calcBack0, uint256 calcBack1) = Uin512.mul256x256(sp, sp);
+        (uint256 rp, uint256 carry) = Uint512Extended.safeSub512x512(a2, a3, calcBack0, calcBack1);
+
+        (uint q0, uint q1, ) = div768x256((a1 >> (1 + (rp0 % 2))) << 255, (rp0 >> (1 + (rp1 % 2))) << 255, rp1 >> 1, sp);
+        uint carry;
+        (calcBack0, calcBack1, carry) = Uint512Extended.mul512x256In768(q0 << 1, (q1 << (1 + q0)) >> 255, sp);
+        (uint u, , ) = sub768x768(a1, rp0, rp1, calcBack0, calcBack1, carry);
+
+        (s0, s1) = Uint512Extended.safeAdd512x512(q0, q1, 0, sp);
+        {
+            uint rr0;
+            uint rr1;
+            uint rr2;
+            if (q1 > 0) (rr0, rr1) = mul256x256(q0, q0);
+            else (rr0, rr1, rr2, ) = mul512x512(q0, q1, q0, q1);
+        }
+        if (q1 > 0 || rr2 > 0 || Uint512Extended.lt512(a0, u, rr0, rr1)) (s0, s1) = Uint512Extended.safeSub512x512(q0, q1, 1, 0);
+
+        unchecked {
+            s0 = s0 >> (shift / 2) || (s1 << (256 - (shift / 2)));
+            s1 = s1 >> (shift / 2);
+        }
     }
 }
