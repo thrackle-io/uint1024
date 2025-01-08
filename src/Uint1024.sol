@@ -1173,46 +1173,39 @@ library Uint1024 {
             a0 := shl(_shift, a0)
         }
         uint s2;
-        (s0, s1, s2) = _helperSqrt1024(a0, a1, a2, a3);
+        uint1024 memory a = uint1024(a0, a1, a2, a3);
+        (s0, s1, s2) = _helperSqrt1024(a);
         unchecked {
             s0 = (s0 >> (shift / 2)) + (s1 << (256 - (shift / 2)));
             s1 = (s1 >> (shift / 2)) + (s2 << (256 - (shift / 2)));
         }
     }
 
-    function _helperSqrt1024(uint256 a0, uint256 a1, uint256 a2, uint256 a3) internal pure returns (uint s0, uint s1, uint s2) {
-        uint256 sp = Uint512.sqrt512(a2, a3);
-        (uint256 calcBack0, uint256 calcBack1) = Uint512.mul256x256(sp, sp);
-        (uint256 rp0, uint256 rp1) = Uint512Extended.safeSub512x512(a2, a3, calcBack0, calcBack1);
+    function _helperSqrt1024(uint1024 memory a) internal pure returns (uint s0, uint s1, uint s2) {
+        uint a0 = a._0;
+        uint q0;
+        uint q1;
+        uint u0;
+        uint u1;
+        uint256 sp = Uint512.sqrt512(a._2, a._3);
+        {
+            uint768 memory calculatedBack;
+            (calculatedBack._0, calculatedBack._1) = Uint512.mul256x256(sp, sp);
+            (uint256 rp0, uint256 rp1) = Uint512Extended.safeSub512x512(a._2, a._3, calculatedBack._0, calculatedBack._1);
 
-        (uint q0, uint q1, ) = div768x256((a1 >> 1) + (rp0 << 255), (rp0 >> 1) + (rp1 << 255), rp1 >> 1, sp);
-        (uint u0, uint u1) = _calculateU(a1, rp0, rp1, q0, q1, sp);
-
+            (q0, q1, ) = div768x256((a._1 >> 1) + (rp0 << 255), (rp0 >> 1) + (rp1 << 255), rp1 >> 1, sp);
+            (calculatedBack._0, calculatedBack._1, calculatedBack._2) = mul512x256In768(q0 << 1, (q1 << 1) + (q0 >> 255), sp);
+            (u0, u1, ) = sub768x768(a._1, rp0, rp1, calculatedBack._0, calculatedBack._1, calculatedBack._2);
+        }
         (s0, s1, s2) = add768x768(q0, q1, 0, 0, sp, 0);
-        (s0, s1, s2) = adjustS(a0, q0, q1, u0, u1, s0, s1, s2);
-    }
+        {
+            uint rr0;
+            uint rr1;
+            uint rr2;
+            if (q1 > 0) (rr0, rr1) = Uint512.mul256x256(q0, q0);
+            else (rr0, rr1, rr2, ) = mul512x512In1024(q0, q1, q0, q1);
 
-    function _calculateU(uint a1, uint rp0, uint rp1, uint q0, uint q1, uint sp) internal pure returns (uint u0, uint u1) {
-        (uint256 calcBack0, uint256 calcBack1, uint256 carry) = mul512x256In768(q0 << 1, (q1 << 1) + (q0 >> 255), sp);
-        (u0, u1, ) = sub768x768(a1, rp0, rp1, calcBack0, calcBack1, carry);
-    }
-
-    function adjustS(
-        uint256 a0,
-        uint q0,
-        uint q1,
-        uint u0,
-        uint u1,
-        uint _s0,
-        uint _s1,
-        uint _s2
-    ) internal pure returns (uint s0, uint s1, uint s2) {
-        uint rr0;
-        uint rr1;
-        uint rr2;
-        if (q1 > 0) (rr0, rr1) = Uint512.mul256x256(q0, q0);
-        else (rr0, rr1, rr2, ) = mul512x512In1024(q0, q1, q0, q1);
-
-        if (q1 > u1 || (q1 == u1 && lt768(a0, u0, u1, rr0, rr1, rr2))) (s0, s1, s2) = sub768x768(_s0, _s1, _s2, 1, 0, 0);
+            if (q1 > u1 || (q1 == u1 && lt768(a0, u0, u1, rr0, rr1, rr2))) (s0, s1, s2) = sub768x768(s0, s1, s2, 1, 0, 0);
+        }
     }
 }
