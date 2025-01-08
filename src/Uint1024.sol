@@ -1137,8 +1137,6 @@ library Uint1024 {
             a1 = a0;
             a0 = 0;
         }
-        console2.log("al", a0, a1);
-        console2.log("ah", a2, a3);
         assembly {
             let digits := mul(lt(a3, 0x100000000000000000000000000000000), 128)
             a3 := shl(digits, a3)
@@ -1174,39 +1172,47 @@ library Uint1024 {
             a1 := or(shl(_shift, a1), shr(sub(256, _shift), a0))
             a0 := shl(_shift, a0)
         }
-        console2.log("al", a0, a1);
-        console2.log("ah", a2, a3);
-        console2.log("shift: ", shift);
-        uint256 sp = Uint512.sqrt512(a2, a3);
-        console2.log("sp: ", sp);
-        (uint256 calcBack0, uint256 calcBack1) = Uint512.mul256x256(sp, sp);
-        (uint256 rp0, uint256 rp1) = Uint512Extended.safeSub512x512(a2, a3, calcBack0, calcBack1);
-        console2.log("rp: ", rp0, rp1);
-
-        (uint q0, uint q1, ) = div768x256((a1 >> 1) + (rp0 << 255), (rp0 >> 1) + (rp1 << 255), rp1 >> 1, sp);
-        console2.log("q: ", q0, q1);
-        uint carry;
-        (calcBack0, calcBack1, carry) = mul512x256In768(q0 << 1, (q1 << 1) + (q0 >> 255), sp);
-        (uint u0, uint u1, ) = sub768x768(a1, rp0, rp1, calcBack0, calcBack1, carry);
-        console2.log("u: ", u0, u1);
-
         uint s2;
-        (s0, s1, s2) = add768x768(q0, q1, 0, 0, sp, 0);
-        console2.log("s: ", s0, s1, s2);
-        {
-            uint rr0;
-            uint rr1;
-            uint rr2;
-            if (q1 > 0) (rr0, rr1) = Uint512.mul256x256(q0, q0);
-            else (rr0, rr1, rr2, ) = mul512x512In1024(q0, q1, q0, q1);
-
-            if (q1 > u1 || (q1 == u1 && lt768(a0, u0, u1, rr0, rr1, rr2))) (s0, s1, s2) = sub768x768(s0, s1, s2, 1, 0, 0);
-        }
-        console2.log("shift: ", shift);
+        (s0, s1, s2) = _helperSqrt1024(a0, a1, a2, a3);
         unchecked {
             s0 = (s0 >> (shift / 2)) + (s1 << (256 - (shift / 2)));
             s1 = (s1 >> (shift / 2)) + (s2 << (256 - (shift / 2)));
-            s2 = s2 >> (shift / 2);
         }
+    }
+
+    function _helperSqrt1024(uint256 a0, uint256 a1, uint256 a2, uint256 a3) internal pure returns (uint s0, uint s1, uint s2) {
+        uint256 sp = Uint512.sqrt512(a2, a3);
+        (uint256 calcBack0, uint256 calcBack1) = Uint512.mul256x256(sp, sp);
+        (uint256 rp0, uint256 rp1) = Uint512Extended.safeSub512x512(a2, a3, calcBack0, calcBack1);
+
+        (uint q0, uint q1, ) = div768x256((a1 >> 1) + (rp0 << 255), (rp0 >> 1) + (rp1 << 255), rp1 >> 1, sp);
+        (uint u0, uint u1) = _calculateU(a1, rp0, rp1, q0, q1, sp);
+
+        (s0, s1, s2) = add768x768(q0, q1, 0, 0, sp, 0);
+        (s0, s1, s2) = adjustS(a0, q0, q1, u0, u1, s0, s1, s2);
+    }
+
+    function _calculateU(uint a1, uint rp0, uint rp1, uint q0, uint q1, uint sp) internal pure returns (uint u0, uint u1) {
+        (uint256 calcBack0, uint256 calcBack1, uint256 carry) = mul512x256In768(q0 << 1, (q1 << 1) + (q0 >> 255), sp);
+        (u0, u1, ) = sub768x768(a1, rp0, rp1, calcBack0, calcBack1, carry);
+    }
+
+    function adjustS(
+        uint256 a0,
+        uint q0,
+        uint q1,
+        uint u0,
+        uint u1,
+        uint _s0,
+        uint _s1,
+        uint _s2
+    ) internal pure returns (uint s0, uint s1, uint s2) {
+        uint rr0;
+        uint rr1;
+        uint rr2;
+        if (q1 > 0) (rr0, rr1) = Uint512.mul256x256(q0, q0);
+        else (rr0, rr1, rr2, ) = mul512x512In1024(q0, q1, q0, q1);
+
+        if (q1 > u1 || (q1 == u1 && lt768(a0, u0, u1, rr0, rr1, rr2))) (s0, s1, s2) = sub768x768(_s0, _s1, _s2, 1, 0, 0);
     }
 }
