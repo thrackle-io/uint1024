@@ -4,6 +4,7 @@ pragma solidity ^0.8.24;
 import "./Uint512.sol";
 import "./Uint512Extended.sol";
 import "./UintTypes.sol";
+import "forge-std/console2.sol";
 
 library Uint1024 {
     using Uint512 for uint256;
@@ -1124,13 +1125,20 @@ library Uint1024 {
     }
 
     function sqrt1024(uint256 a0, uint256 a1, uint256 a2, uint256 a3) internal pure returns (uint256 s0, uint256 s1) {
-        // A simple 256 bit square root is sufficient
-        if (a2 == 0 && a3 == 0) return (sqrt512(a0, a1), 0);
-        // if(a3 >> 254 > 0) revert("sqrt1024: number with more than 1022 bits");
+        // A simple 512 bit square root is sufficient
+        if (a2 == 0 && a3 == 0) return (Uint512.sqrt512(a0, a1), 0);
 
-        // The used algorithm has the pre-condition a1 >= 2**254
+        // The used algorithm has the pre-condition a3 >= 2**254
         uint256 shift;
-
+        if (a3 == 0) {
+            shift = 256;
+            a3 = a2;
+            a2 = a1;
+            a1 = a0;
+            a0 = 0;
+        }
+        console2.log("al", a0, a1);
+        console2.log("ah", a2, a3);
         assembly {
             let digits := mul(lt(a3, 0x100000000000000000000000000000000), 128)
             a3 := shl(digits, a3)
@@ -1160,34 +1168,45 @@ library Uint1024 {
             a3 := shl(digits, a3)
             shift := add(shift, digits)
 
-            a3 := or(a3, shr(sub(256, shift), a2))
-            a2 := or(shl(shift, a2), shr(sub(256, shift), a1))
-            a1 := or(shl(shift, a1), shr(sub(256, shift), a0))
-            a0 := shl(shift, a0)
+            let _shift := mod(shift, 256)
+            a3 := or(a3, shr(sub(256, _shift), a2))
+            a2 := or(shl(_shift, a2), shr(sub(256, _shift), a1))
+            a1 := or(shl(_shift, a1), shr(sub(256, _shift), a0))
+            a0 := shl(_shift, a0)
         }
+        console2.log("al", a0, a1);
+        console2.log("ah", a2, a3);
+        console2.log("shift: ", shift);
+        uint256 sp = Uint512.sqrt512(a2, a3);
+        console2.log("sp: ", sp);
+        (uint256 calcBack0, uint256 calcBack1) = Uint512.mul256x256(sp, sp);
+        (uint256 rp0, uint256 rp1) = Uint512Extended.safeSub512x512(a2, a3, calcBack0, calcBack1);
+        console2.log("rp: ", rp0, rp1);
 
-        uint256 sp = sqrt512(a2, a3);
-        (uint256 calcBack0, uint256 calcBack1) = Uin512.mul256x256(sp, sp);
-        (uint256 rp, uint256 carry) = Uint512Extended.safeSub512x512(a2, a3, calcBack0, calcBack1);
-
-        (uint q0, uint q1, ) = div768x256((a1 >> (1 + (rp0 % 2))) << 255, (rp0 >> (1 + (rp1 % 2))) << 255, rp1 >> 1, sp);
+        (uint q0, uint q1, ) = div768x256((a1 >> 1) + (rp0 << 255), (rp0 >> 1) + (rp1 << 255), rp1 >> 1, sp);
+        console2.log("q: ", q0, q1);
         uint carry;
-        (calcBack0, calcBack1, carry) = Uint512Extended.mul512x256In768(q0 << 1, (q1 << (1 + q0)) >> 255, sp);
-        (uint u, , ) = sub768x768(a1, rp0, rp1, calcBack0, calcBack1, carry);
+        (calcBack0, calcBack1, carry) = mul512x256In768(q0 << 1, (q1 << 1) + (q0 >> 255), sp);
+        (uint u0, uint u1, ) = sub768x768(a1, rp0, rp1, calcBack0, calcBack1, carry);
+        console2.log("u: ", u0, u1);
 
-        (s0, s1) = Uint512Extended.safeAdd512x512(q0, q1, 0, sp);
+        uint s2;
+        (s0, s1, s2) = add768x768(q0, q1, 0, 0, sp, 0);
+        console2.log("s: ", s0, s1, s2);
         {
             uint rr0;
             uint rr1;
             uint rr2;
-            if (q1 > 0) (rr0, rr1) = mul256x256(q0, q0);
-            else (rr0, rr1, rr2, ) = mul512x512(q0, q1, q0, q1);
-        }
-        if (q1 > 0 || rr2 > 0 || Uint512Extended.lt512(a0, u, rr0, rr1)) (s0, s1) = Uint512Extended.safeSub512x512(q0, q1, 1, 0);
+            if (q1 > 0) (rr0, rr1) = Uint512.mul256x256(q0, q0);
+            else (rr0, rr1, rr2, ) = mul512x512In1024(q0, q1, q0, q1);
 
+            if (q1 > u1 || (q1 == u1 && lt768(a0, u0, u1, rr0, rr1, rr2))) (s0, s1, s2) = sub768x768(s0, s1, s2, 1, 0, 0);
+        }
+        console2.log("shift: ", shift);
         unchecked {
-            s0 = s0 >> (shift / 2) || (s1 << (256 - (shift / 2)));
-            s1 = s1 >> (shift / 2);
+            s0 = (s0 >> (shift / 2)) + (s1 << (256 - (shift / 2)));
+            s1 = (s1 >> (shift / 2)) + (s2 << (256 - (shift / 2)));
+            s2 = s2 >> (shift / 2);
         }
     }
 }
