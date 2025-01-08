@@ -1,10 +1,6 @@
 from util_1024 import utils
-import gmpy2
-from decimal import *
 
 def calculate_in_1024(args):
-    getcontext().prec = 117
-    gmpy2.get_context().precision=2048*2
 
     a, b, operator = utils.reconstruct_a_b_1024(args)
 
@@ -31,8 +27,6 @@ def calculate_in_1024(args):
         result = int(a) == int(b)
     elif(operator == "ge"):
         result = int(a) == int(b) or int(a) > int(b)
-    elif(operator == "sqrt"):
-        result = int(Decimal(a).sqrt())
     else: raise ValueError("Incorrect operator passed as argument")
 
     r0, r1, r2, r3, r4 = utils.deconstruct_1024(result)
