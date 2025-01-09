@@ -1,5 +1,5 @@
 # Uint1024
-[Git Source](https://github.com/thrackle-io/uint1024/blob/a6be4431c693a4eff9b6260f711b4c0df3882d4b/src/Uint1024.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/7f397ac7b73e1acb4d733100a2fcd10c88ca7c79/src/Uint1024.sol)
 
 
 ## Functions
@@ -1119,5 +1119,53 @@ function sub1024x1024(uint1024 memory a, uint1024 memory b) internal pure return
 |Name|Type|Description|
 |----|----|-----------|
 |`r`|`uint1024`|The 1024 result|
+
+
+### sqrt1024
+
+*calculates the square root of a uint1024 number *a**
+
+
+```solidity
+function sqrt1024(uint256 a0, uint256 a1, uint256 a2, uint256 a3) internal pure returns (uint256 s0, uint256 s1);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a0`|`uint256`|the lowest bits of *a*|
+|`a1`|`uint256`|the middle lower bits of *a*|
+|`a2`|`uint256`|the middle higher bits of *a*|
+|`a3`|`uint256`|the highest bits of *a*|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`s0`|`uint256`|the lower bits of the square root of *a*|
+|`s1`|`uint256`|the higher bits of the square root of *a*|
+
+
+### _helperSqrt1024
+
+*helper function for the calculation of the square root of a uint1024*
+
+
+```solidity
+function _helperSqrt1024(uint1024 memory a) private pure returns (uint256 s0, uint256 s1, uint256 s2);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a`|`uint1024`|the normalized packed version of *a*|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`s0`|`uint256`|the lower bits of the square root of normalized *a*|
+|`s1`|`uint256`|the middle bits of the shifted square root of normalized *a*|
+|`s2`|`uint256`|the higher bits of the shifted square root of normalized *a*|
 
 
