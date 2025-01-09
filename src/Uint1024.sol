@@ -510,7 +510,7 @@ library Uint1024 {
         uint bMod2N;
         (result, bMod2N) = _aproxDiv1024x512(a, b);
         (uint condition0, uint condition1, uint condition2, uint condition3) = mul512x512In1024(result._0, result._1, b._0, b._1);
-        if (condition3 > 0 || gt768(condition0, condition1, condition2, a._0, a._1, a._2)) {
+        if (condition3 > 0 || gt1024(condition0, condition1, condition2, condition3, a._0, a._1, a._2, a._3)) {
             // slither-disable-next-line uninitialized-local // aNew1024 is initialized in the next line
             uint1024 memory aNew1024;
             aNew1024 = sub1024x1024(aNew1024, uint1024(a._0, a._1, a._2, 0));
@@ -1049,9 +1049,35 @@ library Uint1024 {
         uint256 b2,
         uint256 b3
     ) internal pure returns (bool res) {
-        //return a3 < b3 || (a3 == b3 && (a2 < b2 || (a2 == b2 && (a1 < b1 || (a1 == b1 && a0 < b0)))));
         assembly {
             res := or(lt(a3, b3), and(eq(a3, b3), or(lt(a2, b2), and(eq(a2, b2), or(lt(a1, b1), and(eq(a1, b1), lt(a0, b0)))))))
+        }
+    }
+
+    /**
+     * @dev Checks the a > b where a and b are 1024 bits
+     * @param a0 A uint256 representing the lower bits of a
+     * @param a1 A uint256 representing the high bits of a
+     * @param a2 A uint256 representing the higher bits of a
+     * @param a3 A uint256 representing the highest bits of a
+     * @param b0 A uint256 representing the lower bits of b
+     * @param b1 A uint256 representing the high bits of b
+     * @param b2 A uint256 representing the higher bits of b
+     * @param b3 A uint256 representing the highest bits of b
+     * @return res Returns true if there would be an underflow/negative result
+     */
+    function gt1024(
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint256 a3,
+        uint256 b0,
+        uint256 b1,
+        uint256 b2,
+        uint256 b3
+    ) internal pure returns (bool res) {
+        assembly {
+            res := or(gt(a3, b3), and(eq(a3, b3), or(gt(a2, b2), and(eq(a2, b2), or(gt(a1, b1), and(eq(a1, b1), gt(a0, b0)))))))
         }
     }
 
@@ -1063,6 +1089,16 @@ library Uint1024 {
      */
     function lt1024(uint1024 memory a, uint1024 memory b) internal pure returns (bool) {
         return lt1024(a._0, a._1, a._2, a._3, b._0, b._1, b._2, b._3);
+    }
+
+    /**
+     * @notice Checks if the left opperand is greater than the right opperand
+     * @param a A uint1024 representing the left operand
+     * @param b A uint1024 representing the right operand
+     * @return Returns true a > b
+     */
+    function gt1024(uint1024 memory a, uint1024 memory b) internal pure returns (bool) {
+        return gt1024(a._0, a._1, a._2, a._3, b._0, b._1, b._2, b._3);
     }
 
     /**

@@ -62,6 +62,30 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
         }
     }
 
+    function testGt1024(uint a0, uint a1, uint a2, uint a3, uint b0, uint b1, uint b2, uint b3) public {
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, a3, b0, b1, b2, b3, "gt");
+        bytes memory res = vm.ffi(inputs);
+        console2.logBytes(res);
+        (pyR0, , , ) = abi.decode(res, (uint256, uint256, uint256, uint256));
+        console2.log("pyRes: ", pyR0);
+
+        solStA1024 = uint1024(a0, a1, a2, a3);
+        solStB1024 = uint1024(b0, b1, b2, b3);
+
+        bool solR = Uint1024.gt1024(a0, a1, a2, a3, b0, b1, b2, b3);
+        console2.log("solRes:", solR);
+
+        bool solRSt = Uint1024.gt1024(solStA1024, solStB1024);
+
+        if (pyR0 == 0) {
+            assertFalse(solR, "Python said No, Solidity said Aye");
+            assertFalse(solRSt, "Python said No, Solidity said Aye");
+        } else {
+            assertTrue(solR, "Python said Aye, Solidity said Nay");
+            assertTrue(solRSt, "Python said Aye, Solidity said Nay");
+        }
+    }
+
     function testGt768(uint a0, uint a1, uint a2, uint b0, uint b1, uint b2) public {
         string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, 0, b0, b1, b2, 0, "gt");
         bytes memory res = vm.ffi(inputs);
