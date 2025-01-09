@@ -1183,9 +1183,9 @@ library Uint1024 {
         uint s2;
         uint1024 memory a = uint1024(a0, a1, a2, a3);
         (s0, s1, s2) = _helperSqrt1024(a);
-        unchecked {
-            s0 = (s0 >> (shift / 2)) + (s1 << (256 - (shift / 2)));
-            s1 = (s1 >> (shift / 2)) + (s2 << (256 - (shift / 2)));
+        assembly {
+            s0 := or(shl(sub(256, shr(1, shift)), s1), shr(shr(1, shift), s0))
+            s1 := or(shl(sub(256, shr(1, shift)), s2), shr(shr(1, shift), s1))
         }
     }
 
@@ -1196,7 +1196,7 @@ library Uint1024 {
      * @return s1 the middle bits of the shifted square root of normalized *a*
      * @return s2 the higher bits of the shifted square root of normalized *a*
      */
-    function _helperSqrt1024(uint1024 memory a) internal pure returns (uint s0, uint s1, uint s2) {
+    function _helperSqrt1024(uint1024 memory a) private pure returns (uint s0, uint s1, uint s2) {
         uint a0 = a._0;
         uint q0;
         uint q1;
@@ -1207,7 +1207,7 @@ library Uint1024 {
             // slither-disable-next-line uninitialized-local // the variable is initialized in the next line
             uint768 memory calculatedBack;
             (calculatedBack._0, calculatedBack._1) = Uint512.mul256x256(sp, sp);
-            (uint256 rp0, uint256 rp1) = Uint512Extended.safeSub512x512(a._2, a._3, calculatedBack._0, calculatedBack._1);
+            (uint256 rp0, uint256 rp1) = Uint512.sub512x512(a._2, a._3, calculatedBack._0, calculatedBack._1);
 
             // original algorithm states that q = (rp*b + a1) / 2*sp. But since sp is most likely a full 256-bit number, doing it
             // this way might result with the denominator being a 512-bit number for which we would need to do an expensive 768x512
