@@ -443,8 +443,8 @@ library Uint1024 {
         if (condition3 > 0 || gt768(condition0, condition1, condition2, a._0, a._1, a._2)) {
             // slither-disable-next-line uninitialized-local // aNew1024 is initialized in the next line
             uint1024 memory aNew1024;
-            (aNew1024._0, aNew1024._1, aNew1024._2, aNew1024._3) = mul512x512In1024(result._0, result._1, b._0, b._1);
-            aNew1024 = sub1024x1024(aNew1024, uint1024(a._0, a._1, a._2, 0));
+            // (aNew1024._0, aNew1024._1, aNew1024._2, aNew1024._3) = mul512x512In1024(result._0, result._1, b._0, b._1);
+            aNew1024 = sub1024x1024(uint1024(condition0, condition1, condition2, condition3), uint1024(a._0, a._1, a._2, 0));
             uint768 memory aNew = uint768(aNew1024._0, aNew1024._1, aNew1024._2);
             uint512 memory rec = div768x512(aNew, b);
             (result._0, result._1) = result._0.sub512x512(result._1, rec._0, rec._1);
@@ -513,12 +513,10 @@ library Uint1024 {
         if (condition3 > 0 || gt768(condition0, condition1, condition2, a._0, a._1, a._2)) {
             // slither-disable-next-line uninitialized-local // aNew1024 is initialized in the next line
             uint1024 memory aNew1024;
-            (aNew1024._0, aNew1024._1, aNew1024._2, aNew1024._3) = mul512x512In1024(result._0, result._1, b._0, b._1);
             aNew1024 = sub1024x1024(aNew1024, uint1024(a._0, a._1, a._2, 0));
-            uint768 memory aNew = uint768(aNew1024._0, aNew1024._1, aNew1024._2);
-            uint512 memory rec = div768x512(aNew, b);
-            (result._0, result._1) = result._0.sub512x512(result._1, rec._0, rec._1);
-            (result._0, result._1) = result._0.sub512x512(result._1, 1, 0);
+            uint768 memory rec = div1024x512(aNew1024, b);
+            (result._0, result._1, result._2) = sub768x768(result._0, result._1, result._2, rec._0, rec._1, rec._2);
+            (result._0, result._1, result._2) = sub768x768(result._0, result._1, result._2, 1, 0, 0);
         }
     }
 
@@ -532,7 +530,7 @@ library Uint1024 {
      */
     function _aproxDiv1024x512(uint1024 memory a, uint512 memory b) private pure returns (uint768 memory aproxResult, uint bMod2N) {
         if (b._1 == 0) revert("Uint512Extended: div768x512 b1 can't be zero");
-        if (a._3 == 0 && a._2 == 0, a._0.lt512(a._1, b._0, b._1)) return (uint512(0, 0), 0);
+        if (a._3 == 0 && a._2 == 0 && a._0.lt512(a._1, b._0, b._1)) return (uint768(0, 0, 0), 0);
         uint bShifted;
         uint _bMod2N;
         uint1024 memory aShifted;
@@ -554,7 +552,7 @@ library Uint1024 {
      * @return aShifted the numerator shifted to the right by n bits
      */
     function getShiftedBitsDiv1024x512(
-        uint768 memory a,
+        uint1024 memory a,
         uint512 memory b
     ) private pure returns (uint bShifted, uint bMod2N, uint1024 memory aShifted) {
         /// we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
@@ -567,7 +565,7 @@ library Uint1024 {
         /// if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
         /// making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
         /// a / d
-        aShifted = div1024ByPowerOf2(a, uint8(n));
+        (aShifted, ) = div1024ByPowerOf2(a, uint8(n));
     }
 
     /**
@@ -643,7 +641,7 @@ library Uint1024 {
         }
         uint mask = (1 << n) - 1;
         remainder = a0 & mask;
-        assembly{
+        assembly {
             r2 := shr(n, a2)
             r1 := or(shl(sub(256, n), a2), shr(n, a1))
             r0 := or(shl(sub(256, n), a1), shr(n, a0))
@@ -683,7 +681,7 @@ library Uint1024 {
         }
         uint mask = (1 << n) - 1;
         remainder = a0 & mask;
-        assembly{
+        assembly {
             r3 := shr(n, a3)
             r2 := or(shl(sub(256, n), a3), shr(n, a2))
             r1 := or(shl(sub(256, n), a2), shr(n, a1))
@@ -691,7 +689,7 @@ library Uint1024 {
         }
     }
 
-     /**
+    /**
      * @dev Calculates the division of a 1024-bit unsigned integer by a denominator which is
      * a power of 2 less than 256.
      * @param a A uint1024 representing the low bits of the numerator
@@ -700,7 +698,7 @@ library Uint1024 {
      * @return rem The remainder of the division
      */
     function div1024ByPowerOf2(uint1024 memory a, uint8 n) internal pure returns (uint1024 memory r, uint256 rem) {
-        (r._0, r._1, r._2, r._3 rem) = div768ByPowerOf2(a._0, a._1, a._2, a._3, n);
+        (r._0, r._1, r._2, r._3, rem) = div1024ByPowerOf2(a._0, a._1, a._2, a._3, n);
     }
 
     /**
