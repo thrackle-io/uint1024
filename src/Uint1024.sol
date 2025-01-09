@@ -1204,6 +1204,7 @@ library Uint1024 {
         uint u1;
         uint256 sp = Uint512.sqrt512(a._2, a._3);
         {
+            // slither-disable-next-line uninitialized-local // the variable is initialized in the next line
             uint768 memory calculatedBack;
             (calculatedBack._0, calculatedBack._1) = Uint512.mul256x256(sp, sp);
             (uint256 rp0, uint256 rp1) = Uint512Extended.safeSub512x512(a._2, a._3, calculatedBack._0, calculatedBack._1);
@@ -1218,12 +1219,13 @@ library Uint1024 {
         }
         (s0, s1, s2) = add768x768(q0, q1, 0, 0, sp, 0);
         {
+            // slither-disable-start uninitialized-local // the variable are initialized right after
             uint rr0;
             uint rr1;
             uint rr2;
             if (q1 > 0) (rr0, rr1) = Uint512.mul256x256(q0, q0);
             else (rr0, rr1, rr2, ) = mul512x512In1024(q0, q1, q0, q1);
-
+            // slither-disable-end uninitialized-local
             if (q1 > u1 || (q1 == u1 && lt768(a0, u0, u1, rr0, rr1, rr2))) (s0, s1, s2) = sub768x768(s0, s1, s2, 1, 0, 0);
         }
     }
