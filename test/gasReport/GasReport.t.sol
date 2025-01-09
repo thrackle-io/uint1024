@@ -13,7 +13,7 @@ contract GasReports is Test, GasHelpers {
     string path = "test/gasReport/GasReport.json";
 
     // When compiling via ir, yul is highly optimized. Because of this, the gas report will be different when compiling via-ir.
-    // Note: Compiling via-ir will increase compile times and could create some inefficiencies in solidity code. 
+    // Note: Compiling via-ir will increase compile times and could create some inefficiencies in solidity code.
     // The gas savings from the highly optimized yul may negate the solidity inefficiencies.
 
     // To run the gas report when compiling via-ir, comment out the previous setting of the path variable and use the path below:
@@ -23,6 +23,8 @@ contract GasReports is Test, GasHelpers {
         _primer();
 
         _add1024x1024GasUsed();
+
+        _sqrt1024x1024GasUsed();
 
         _add768x768GasUsed();
 
@@ -89,6 +91,17 @@ contract GasReports is Test, GasHelpers {
         _div512x512GasUsed();
 
         _log2GasUsed();
+    }
+
+    function _sqrt1024x1024GasUsed() internal {
+        _resetGasUsed();
+
+        uint1024 memory a = solR1024;
+
+        startMeasuringGas("sqrt1024 returns 512");
+        Uint1024.sqrt1024(a._0, a._1, a._2, a._3);
+        gasUsed = stopMeasuringGas();
+        _writeJson(".Sqrt.sqrt1024");
     }
 
     function _add1024x1024GasUsed() internal {
@@ -163,7 +176,7 @@ contract GasReports is Test, GasHelpers {
             10000000000000000000000000000 // b
         );
         gasUsed = stopMeasuringGas();
-        _writeJson(".Div.div768x256");   
+        _writeJson(".Div.div768x256");
     }
 
     function _div768x512GasUsed() internal {
@@ -484,7 +497,7 @@ contract GasReports is Test, GasHelpers {
             10000000000000000000000000000 // b1
         );
         gasUsed = stopMeasuringGas();
-        _writeJson(".Mul.mul512x512Mod512");        
+        _writeJson(".Mul.mul512x512Mod512");
     }
 
     function _mul512x256In768GasUsed() internal {
@@ -526,7 +539,7 @@ contract GasReports is Test, GasHelpers {
             10000000000000000000000000000 // b
         );
         gasUsed = stopMeasuringGas();
-        _writeJson(".Mul.safeMul512x256");        
+        _writeJson(".Mul.safeMul512x256");
     }
 
     function _mul512x256GasUsed() internal {

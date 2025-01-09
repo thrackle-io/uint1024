@@ -3,6 +3,7 @@ pragma solidity ^0.8.24;
 import "forge-std/console2.sol";
 import "forge-std/Test.sol";
 import {Uint1024} from "src/Uint1024.sol";
+import {Uint512} from "../src/Uint512.sol";
 import {PythonUtils} from "test/PythonUtils.sol";
 import {TesterContract} from "test/TesterContract.sol";
 import "./UintUtils.sol";
@@ -31,8 +32,7 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
         if (pyR0 == 0) {
             assertFalse(solR, "Python said Nay, Solidity said Aye");
             assertFalse(solRSt, "Python said Nay, Solidity said Aye");
-        } 
-        else {
+        } else {
             assertTrue(solR, "Python said Aye, Solidity said Nay");
             assertTrue(solRSt, "Python said Aye, Solidity said Nay");
         }
@@ -56,11 +56,10 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
         if (pyR0 == 0) {
             assertFalse(solR, "Python said No, Solidity said Aye");
             assertFalse(solRSt, "Python said No, Solidity said Aye");
-        } 
-        else {
+        } else {
             assertTrue(solR, "Python said Aye, Solidity said Nay");
             assertTrue(solRSt, "Python said Aye, Solidity said Nay");
-        } 
+        }
     }
 
     function testGt768(uint a0, uint a1, uint a2, uint b0, uint b1, uint b2) public {
@@ -81,14 +80,11 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
         if (pyR0 == 0) {
             assertFalse(solR, "Python said Nay, Solidity said Aye");
             assertFalse(solRSt, "Python said Nay, Solidity said Aye");
-        } 
-        else {
+        } else {
             assertTrue(solR, "Python said Aye, Solidity said Nay");
             assertTrue(solRSt, "Python said Aye, Solidity said Nay");
         }
     }
-
-
 
     function testDiv512x256In512(uint a0, uint a1, uint b) public {
         b = bound(b, 1, type(uint256).max);
@@ -422,7 +418,7 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
 
         uint512 memory rem = uint512(0, 0);
         solStB512 = uint512(b0, b1);
-        
+
         (uint a0, uint a1, uint a2, uint a3) = b0.mul512x512In1024(b1, r0, r1);
         solStA1024 = uint1024(a0, a1, a2, a3);
 
@@ -498,5 +494,48 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
         if (solR768._0 != pyR0) revert("R0 bits different");
         if (solR768._1 != pyR1) revert("R1 bits different");
         if (solR768._2 != pyR2) revert("R2 bits different");
+    }
+
+    function testSqrt1024(uint a0, uint a1, uint a2, uint a3) public {
+        (solR0, solR1) = Uint1024.sqrt1024(a0, a1, a2, a3);
+        console2.log("solRes:", solR0, solR1);
+
+        /// NOTE: Python was not precise enough for this test. Instead, it is proven that result r is the correct
+        // square root of a by checking that r**2 <= a, and that (r + 1)**2 > a. We also test that
+        // (a - (r - 1)**2) > (a - r**2) as a further confirmation that r is indeed our result
+
+        // we make sure that the result square is less or equal to the original value, proving r is in the correct lower range
+        {
+            // _r**2
+            (uint rec0, uint rec1, uint rec2, uint rec3) = Uint1024.mul512x512In1024(solR0, solR1, solR0, solR1);
+            // a must not be less than r**2
+            if (Uint1024.lt1024(a0, a1, a2, a3, rec0, rec1, rec2, rec3)) revert("result square greater than a");
+        }
+
+        // we make sure that the result + 1 square is above original value, proving r + 1 is not the correct result
+        if (solR0 < type(uint).max || solR1 < type(uint).max) {
+            // _r = r + 1
+            (uint _solR0, uint _solR1) = Uint512.add512x512(solR0, solR1, 1, 0);
+            // _r**2
+            (uint rec0, uint rec1, uint rec2, uint rec3) = Uint1024.mul512x512In1024(_solR0, _solR1, _solR0, _solR1);
+            // _r**2 must not be less or equal than a
+            if (!Uint1024.lt1024(a0, a1, a2, a3, rec0, rec1, rec2, rec3)) revert("result + 1 square not greater than a");
+        }
+
+        // we make sure that the result - 1 square is further away than result square from original value, proving that r - 1 is not a better result than r
+        if (solR0 > 0 || solR1 > 0) {
+            // _r = r - 1
+            (uint _solR0, uint _solR1) = Uint512.sub512x512(solR0, solR1, 1, 0);
+            // _r**2
+            (uint rec0, uint rec1, uint rec2, uint rec3) = Uint1024.mul512x512In1024(_solR0, _solR1, _solR0, _solR1);
+            // a - _r**2
+            (rec0, rec1, rec2, rec3) = Uint1024.sub1024x1024(a0, a1, a2, a3, rec0, rec1, rec2, rec3);
+            // r**2
+            (uint og0, uint og1, uint og2, uint og3) = Uint1024.mul512x512In1024(solR0, solR1, solR0, solR1);
+            // a - r**2
+            (og0, og1, og2, og3) = Uint1024.sub1024x1024(a0, a1, a2, a3, og0, og1, og2, og3);
+            // (a - _r**2) must not be less or equal than (a - r**2)
+            if (!Uint1024.lt1024(og0, og1, og2, og3, rec0, rec1, rec2, rec3)) revert("result - 1 square closer to a than result square");
+        }
     }
 }
