@@ -501,6 +501,76 @@ library Uint1024 {
     }
 
     /**
+     * @dev Calculates the division of a 1024-bit dividend by a 512-bit divisor. The result will be a uint512.
+     * @param a A uint1024 representing the numerator
+     * @param b A uint512 representing the denominator
+     * @return result uint768 value
+     */
+    function div1024x512(uint1024 memory a, uint512 memory b) internal pure returns (uint768 memory result) {
+        uint bMod2N;
+        (result, bMod2N) = _aproxDiv1024x512(a, b);
+        (uint condition0, uint condition1, uint condition2, uint condition3) = mul512x512In1024(result._0, result._1, b._0, b._1);
+        if (condition3 > 0 || gt768(condition0, condition1, condition2, a._0, a._1, a._2)) {
+            // slither-disable-next-line uninitialized-local // aNew1024 is initialized in the next line
+            uint1024 memory aNew1024;
+            (aNew1024._0, aNew1024._1, aNew1024._2, aNew1024._3) = mul512x512In1024(result._0, result._1, b._0, b._1);
+            aNew1024 = sub1024x1024(aNew1024, uint1024(a._0, a._1, a._2, 0));
+            uint768 memory aNew = uint768(aNew1024._0, aNew1024._1, aNew1024._2);
+            uint512 memory rec = div768x512(aNew, b);
+            (result._0, result._1) = result._0.sub512x512(result._1, rec._0, rec._1);
+            (result._0, result._1) = result._0.sub512x512(result._1, 1, 0);
+        }
+    }
+
+    /**
+     * @dev Calculates the aproximation of the division of a 1024-bit dividend by a 512-bit divisor. The result will be a uint512.
+     * @notice this is a private helper function. It also returns some helper values to make the division exact.
+     * @param a A uint1024 representing the numerator
+     * @param b A uint512 representing the denominator
+     * @return aproxResult the approximation of a/b
+     * @return bMod2N the remainder of b/2^n where n is the number of bits of the most significant b's word
+     */
+    function _aproxDiv1024x512(uint1024 memory a, uint512 memory b) private pure returns (uint768 memory aproxResult, uint bMod2N) {
+        if (b._1 == 0) revert("Uint512Extended: div768x512 b1 can't be zero");
+        if (a._3 == 0 && a._2 == 0, a._0.lt512(a._1, b._0, b._1)) return (uint512(0, 0), 0);
+        uint bShifted;
+        uint _bMod2N;
+        uint1024 memory aShifted;
+        if (b._1 >> 255 == 1) (bShifted, _bMod2N, aShifted) = (b._1, b._0, uint1024(a._1, a._2, a._3, 0));
+        else (bShifted, _bMod2N, aShifted) = getShiftedBitsDiv1024x512(a, b);
+        uint rem = aShifted._2.mod512x256(aShifted._3, bShifted);
+        aproxResult._1 = aShifted._1.divRem512x256(aShifted._2, bShifted, rem);
+        aproxResult._0 = aShifted._0.safeDiv512x256(rem, bShifted);
+        bMod2N = _bMod2N;
+    }
+
+    /**
+     * @dev returns a and b shifted to the right by the amount of bits necessary to make b a uint256 value
+     * @notice this is a private helper function.
+     * @param a A uint1024 representing the numerator
+     * @param b A uint512 representing the denominator
+     * @return bShifted the denominator shifted to the right by n bits
+     * @return bMod2N the remainder of b / 2**n
+     * @return aShifted the numerator shifted to the right by n bits
+     */
+    function getShiftedBitsDiv1024x512(
+        uint768 memory a,
+        uint512 memory b
+    ) private pure returns (uint bShifted, uint bMod2N, uint1024 memory aShifted) {
+        /// we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
+        uint n = Uint512Extended.log2(b._1) + 1;
+        /// d = 2**n;
+        /// if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
+        uint overflowVal;
+        (bShifted, overflowVal, bMod2N) = Uint512Extended.div512ByPowerOf2(b._0, b._1, uint8(n));
+        if (overflowVal > 0) revert("div512x512: unsuccessful division by 2**n");
+        /// if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
+        /// making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
+        /// a / d
+        aShifted = div1024ByPowerOf2(a, uint8(n));
+    }
+
+    /**
      * @dev Calculates the division of a uint1024 by a uint256. The result is a uint1024.
      * @notice Used long division
      * @param a0 A uint256 representing the lowest bits of the first factor
@@ -571,14 +641,66 @@ library Uint1024 {
                 revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
             }
         }
-        uint _2ToTheNth = 2 ** n;
-        uint mask = _2ToTheNth - 1;
-        uint shiftedBitsA2 = a2 & mask;
-        uint shiftedBitsA1 = a1 & mask;
+        uint mask = (1 << n) - 1;
         remainder = a0 & mask;
-        r2 = a2 >> n;
-        r1 = (shiftedBitsA2 << (256 - n)) | (a1 >> n);
-        r0 = (shiftedBitsA1 << (256 - n)) | (a0 >> n);
+        assembly{
+            r2 := shr(n, a2)
+            r1 := or(shl(sub(256, n), a2), shr(n, a1))
+            r0 := or(shl(sub(256, n), a1), shr(n, a0))
+        }
+    }
+
+    /**
+     * @dev Calculates the division of a 768-bit unsigned integer by a denominator which is
+     * a power of 2 less than 256.
+     * @param a0 A uint256 representing the low bits of the numerator
+     * @param a1 A uint256 representing the middle-lower bits of the numerator
+     * @param a2 A uint256 representing the middle-higher bits of the numerator
+     * @param a3 A uint256 representing the high bits of the numerator
+     * @param n the power of 2 that the division will be carried out by (demominator = 2**n).
+     * @return r0 The lower bits of the result
+     * @return r1 The middle-lower bits of the result
+     * @return r2 The middle-higher bits of the result
+     * @return r3 The higher bits of the result
+     * @return remainder of the division
+     */
+    function div1024ByPowerOf2(
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint256 a3,
+        uint8 n
+    ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint r3, uint256 remainder) {
+        assembly {
+            if eq(n, 0) {
+                let ptr := mload(0x40) // Get free memory pointer
+                mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
+                mstore(add(ptr, 0x04), 0x20) // String offset
+                mstore(add(ptr, 0x24), 30) // Revert reason length
+                mstore(add(ptr, 0x44), "Uint1024: div768 Pow 2 n is 0")
+                revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
+            }
+        }
+        uint mask = (1 << n) - 1;
+        remainder = a0 & mask;
+        assembly{
+            r3 := shr(n, a3)
+            r2 := or(shl(sub(256, n), a3), shr(n, a2))
+            r1 := or(shl(sub(256, n), a2), shr(n, a1))
+            r0 := or(shl(sub(256, n), a1), shr(n, a0))
+        }
+    }
+
+     /**
+     * @dev Calculates the division of a 1024-bit unsigned integer by a denominator which is
+     * a power of 2 less than 256.
+     * @param a A uint1024 representing the low bits of the numerator
+     * @param n the power of 2 that the division will be carried out by (demominator = 2**n).
+     * @return r The result of the division
+     * @return rem The remainder of the division
+     */
+    function div1024ByPowerOf2(uint1024 memory a, uint8 n) internal pure returns (uint1024 memory r, uint256 rem) {
+        (r._0, r._1, r._2, r._3 rem) = div768ByPowerOf2(a._0, a._1, a._2, a._3, n);
     }
 
     /**
