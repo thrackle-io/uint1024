@@ -1136,7 +1136,7 @@ library Uint1024 {
         // A simple 512 bit square root is sufficient
         if (a2 == 0 && a3 == 0) return (Uint512.sqrt512(a0, a1), 0);
 
-        // The used algorithm has the pre-condition a3 >= 2**254
+        // The Karatsuba algorithm has the pre-condition a3 >= 2**254
         uint256 shift;
         if (a3 == 0) {
             shift = 256;
@@ -1209,7 +1209,7 @@ library Uint1024 {
             (calculatedBack._0, calculatedBack._1) = Uint512.mul256x256(sp, sp);
             (uint256 rp0, uint256 rp1) = Uint512.sub512x512(a._2, a._3, calculatedBack._0, calculatedBack._1);
 
-            // original algorithm states that q = (rp*b + a1) / 2*sp. But since sp is most likely a full 256-bit number, doing it
+            // Karatsuba's algorithm states that q = (rp*b + a1) / 2*sp. But since sp is most likely a full 256-bit number, doing it
             // this way might result with the denominator being a 512-bit number for which we would need to do an expensive 768x512
             // division. So we do instead q = ((rp*b + a1) / 2) / sp, which is equivalent, to be able to use cheap division by 256.
             (q0, q1, ) = div768x256((a._1 >> 1) + (rp0 << 255), (rp0 >> 1) + (rp1 << 255), rp1 >> 1, sp);
