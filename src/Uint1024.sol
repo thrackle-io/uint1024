@@ -1123,6 +1123,15 @@ library Uint1024 {
         (r._0, r._1, r._2, r._3) = sub1024x1024(a._0, a._1, a._2, a._3, b._0, b._1, b._2, b._3);
     }
 
+    /**
+     * @dev calculates the square root of a uint1024 number *a*
+     * @param a0 the lowest bits of *a*
+     * @param a1 the middle lower bits of *a*
+     * @param a2 the middle higher bits of *a*
+     * @param a3 the highest bits of *a*
+     * @return s0 the lower bits of the square root of *a*
+     * @return s1 the higher bits of the square root of *a*
+     */
     function sqrt1024(uint256 a0, uint256 a1, uint256 a2, uint256 a3) internal pure returns (uint256 s0, uint256 s1) {
         // A simple 512 bit square root is sufficient
         if (a2 == 0 && a3 == 0) return (Uint512.sqrt512(a0, a1), 0);
@@ -1180,6 +1189,13 @@ library Uint1024 {
         }
     }
 
+    /**
+     * @dev helper function for the calculation of the square root of a uint1024
+     * @param a the normalized packed version of *a*
+     * @return s0 the lower bits of the square root of normalized *a*
+     * @return s1 the middle bits of the shifted square root of normalized *a*
+     * @return s2 the higher bits of the shifted square root of normalized *a*
+     */
     function _helperSqrt1024(uint1024 memory a) internal pure returns (uint s0, uint s1, uint s2) {
         uint a0 = a._0;
         uint q0;
@@ -1192,7 +1208,11 @@ library Uint1024 {
             (calculatedBack._0, calculatedBack._1) = Uint512.mul256x256(sp, sp);
             (uint256 rp0, uint256 rp1) = Uint512Extended.safeSub512x512(a._2, a._3, calculatedBack._0, calculatedBack._1);
 
+            // original algorithm states that q = (rp*b + a1) / 2*sp. But since sp is most likely a full 256-bit number, doing it
+            // this way might result with the denominator being a 512-bit number for which we would need to do an expensive 768x512
+            // division. So we do instead q = ((rp*b + a1) / 2) / sp, which is equivalent, to be able to use cheap division by 256.
             (q0, q1, ) = div768x256((a._1 >> 1) + (rp0 << 255), (rp0 >> 1) + (rp1 << 255), rp1 >> 1, sp);
+            // We apply the same priciple here. Instead of doing (rp*b + a1)' = q * 2*sp, we do (rp*b + a1)' = 2*q * sp
             (calculatedBack._0, calculatedBack._1, calculatedBack._2) = mul512x256In768(q0 << 1, (q1 << 1) + (q0 >> 255), sp);
             (u0, u1, ) = sub768x768(a._1, rp0, rp1, calculatedBack._0, calculatedBack._1, calculatedBack._2);
         }

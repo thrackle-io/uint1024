@@ -501,7 +501,8 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
         console2.log("solRes:", solR0, solR1);
 
         /// NOTE: Python was not precise enough for this test. Instead, it is proven that result r is the correct
-        // square root of a by checking that r**2 <= a, that (r + 1)**2 > a, and that (a - (r - 1)**2) > (a - r**2)
+        // square root of a by checking that r**2 <= a, and that (r + 1)**2 > a. We also test that
+        // (a - (r - 1)**2) > (a - r**2) as a further confirmation that r is indeed our result
 
         // we make sure that the result square is less or equal to the original value, proving r is in the correct lower range
         {
