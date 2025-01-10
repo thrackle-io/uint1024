@@ -331,9 +331,10 @@ library Uint1024 {
     function mul512x512In1024ModularMethod(
         uint256 a0,
         uint256 a1,
+        uint256 a2,
         uint256 b0,
         uint256 b1
-    ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3) {
+    ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3, uint r4) {
         uint w1;
         uint w2;
         uint w3;
@@ -343,35 +344,35 @@ library Uint1024 {
             uint u;
             uint v;
             {
-                u = Uint512.mod512x256(a0, a1, M1);
+                u = mod768x256(a0, a1, a2, M1);
                 v = Uint512.mod512x256(b0, b1, M1);
                 assembly {
                     w1 := mulmod(u, v, M1)
                 }
             }
             {
-                u = Uint512.mod512x256(a0, a1, M2);
+                u = mod768x256(a0, a1, a2, M2);
                 v = Uint512.mod512x256(b0, b1, M2);
                 assembly {
                     w2 := mulmod(u, v, M2)
                 }
             }
             {
-                u = Uint512.mod512x256(a0, a1, M3);
+                u = mod768x256(a0, a1, a2, M3);
                 v = Uint512.mod512x256(b0, b1, M3);
                 assembly {
                     w3 := mulmod(u, v, M3)
                 }
             }
             {
-                u = Uint512.mod512x256(a0, a1, M4);
+                u = mod768x256(a0, a1, a2, M4);
                 v = Uint512.mod512x256(b0, b1, M4);
                 assembly {
                     w4 := mulmod(u, v, M4)
                 }
             }
             {
-                u = Uint512.mod512x256(a0, a1, M5);
+                u = mod768x256(a0, a1, a2, M5);
                 v = Uint512.mod512x256(b0, b1, M5);
                 assembly {
                     w5 := mulmod(u, v, M5)
@@ -441,12 +442,14 @@ library Uint1024 {
         _r3 = r3;
         assembly {
             ///(m1 + 1)*(m2*(w3 + m3*(w4*m4 + w4)) + w2) + w1
+            r4 := shr(11, r3)
             r3 := or(shl(245, r3), shr(11, r2))
             r2 := or(shl(245, r2), shr(11, r1))
             r1 := or(shl(245, r1), shr(11, r0))
             r0 := or(shl(245, r0), w1)
         }
         console2.log(r0, r1, r2, r3);
+        if (lt1024(r0, r1, r2, r3, _r0, _r1, _r2, _r3)) --r4;
         (r0, r1, r2, r3) = sub1024x1024(r0, r1, r2, r3, _r0, _r1, _r2, _r3);
     }
 

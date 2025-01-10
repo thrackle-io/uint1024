@@ -363,33 +363,32 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
         if (solR1024._3 != pyR3) revert("R2 bits different");
     }
 
-    function testMul512x512In1024ModularMethod(uint256 a0, uint256 a1, uint256 b0, uint256 b1) public {
-        solStA512 = uint512(a0, a1);
-        solStB512 = uint512(b0, b1);
-
-        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, 0, 0, b0, b1, 0, 0, "mul");
+    function testMul512x512In1024ModularMethod(uint256 a0, uint256 a1, uint a2, uint256 b0, uint256 b1) public {
+        a2 = a2 % (1 << 128);
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, 0, b0, b1, 0, 0, "mul");
         bytes memory res = vm.ffi(inputs);
         console2.logBytes(res);
         (pyR0, pyR1, pyR2, pyR3, pyR4) = abi.decode(res, (uint256, uint256, uint256, uint256, uint256));
         console2.log("pyRes: ", pyR0, pyR1, pyR2);
-        console2.log("Python highest Bits: ", pyR3);
-        console2.log("Python highest Bits: ", pyR4);
+        console2.log("Python highest Bits: ", pyR3, pyR4);
 
-        if (pyR4 > 0) revert("Mul512x512In1024 - Overflow");
-        (solR0, solR1, solR2, solR3) = Uint1024.mul512x512In1024ModularMethod(a0, a1, b0, b1);
+        // if (pyR4 > 0) revert("Mul512x512In1024 - Overflow");
+        uint solR4;
+        (solR0, solR1, solR2, solR3, solR4) = Uint1024.mul512x512In1024ModularMethod(a0, a1, a2, b0, b1);
         console2.log("solRes:", solR0, solR1, solR2);
-        console2.log("highest sol bits: ", solR3);
+        console2.log("highest sol bits: ", solR3, solR4);
 
         if (solR0 != pyR0) revert("R0 bits different");
         if (solR1 != pyR1) revert("R1 bits different");
         if (solR2 != pyR2) revert("R2 bits different");
         if (solR3 != pyR3) revert("R3 bits different");
+        if (solR4 != pyR4) revert("R4 bits different");
 
-        solR1024 = Uint1024.mul512x512In1024(solStA512, solStB512);
-        if (solR1024._0 != pyR0) revert("R0 bits different");
-        if (solR1024._1 != pyR1) revert("R1 bits different");
-        if (solR1024._2 != pyR2) revert("R2 bits different");
-        if (solR1024._3 != pyR3) revert("R2 bits different");
+        // solR1024 = Uint1024.mul512x512In1024(solStA512, solStB512);
+        // if (solR1024._0 != pyR0) revert("R0 bits different");
+        // if (solR1024._1 != pyR1) revert("R1 bits different");
+        // if (solR1024._2 != pyR2) revert("R2 bits different");
+        // if (solR1024._3 != pyR3) revert("R2 bits different");
     }
 
     function testDivMulInverse512(uint b0, uint b1) public {
