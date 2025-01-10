@@ -464,14 +464,12 @@ library Uint1024 {
         if (b._1 == 0) revert("Uint512Extended: div768x512 b1 can't be zero");
         if (a._2 == 0 && a._0.lt512(a._1, b._0, b._1)) return (uint512(0, 0), 0);
         uint bShifted;
-        uint _bMod2N;
         uint768 memory aShifted;
-        if (b._1 >> 255 == 1) (bShifted, _bMod2N, aShifted) = (b._1, b._0, uint768(a._1, a._2, 0));
-        else (bShifted, _bMod2N, aShifted) = getShiftedBitsDiv768x512(a, b);
+        if (b._1 >> 255 == 1) (bShifted, bMod2N, aShifted) = (b._1, b._0, uint768(a._1, a._2, 0));
+        else (bShifted, bMod2N, aShifted) = getShiftedBitsDiv768x512(a, b);
         uint rem = aShifted._1.mod512x256(aShifted._2, bShifted);
         aproxResult._1 = aShifted._1.divRem512x256(aShifted._2, bShifted, rem);
         aproxResult._0 = aShifted._0.safeDiv512x256(rem, bShifted);
-        bMod2N = _bMod2N;
     }
 
     /**
@@ -509,8 +507,8 @@ library Uint1024 {
     function div1024x512(uint1024 memory a, uint512 memory b) internal pure returns (uint768 memory result) {
         uint bMod2N;
         (result, bMod2N) = _aproxDiv1024x512(a, b);
-        (uint condition0, uint condition1, uint condition2, uint condition3) = mul512x512In1024(result._0, result._1, b._0, b._1);
-        if (condition3 > 0 || gt1024(condition0, condition1, condition2, condition3, a._0, a._1, a._2, a._3)) {
+        (uint condition0, uint condition1, uint condition2, uint condition3) = mul512x512In1024(result._1, result._2, b._0, b._1);
+        if (gt1024(condition0, condition1, condition2, condition3, a._0, a._1, a._2, a._3)) {
             // slither-disable-next-line uninitialized-local // aNew1024 is initialized in the next line
             uint1024 memory aNew1024;
             aNew1024 = sub1024x1024(aNew1024, uint1024(a._0, a._1, a._2, 0));
@@ -532,14 +530,10 @@ library Uint1024 {
         if (b._1 == 0) revert("Uint512Extended: div768x512 b1 can't be zero");
         if (a._3 == 0 && a._2 == 0 && a._0.lt512(a._1, b._0, b._1)) return (uint768(0, 0, 0), 0);
         uint bShifted;
-        uint _bMod2N;
         uint1024 memory aShifted;
-        if (b._1 >> 255 == 1) (bShifted, _bMod2N, aShifted) = (b._1, b._0, uint1024(a._1, a._2, a._3, 0));
-        else (bShifted, _bMod2N, aShifted) = getShiftedBitsDiv1024x512(a, b);
-        uint rem = aShifted._2.mod512x256(aShifted._3, bShifted);
-        aproxResult._1 = aShifted._1.divRem512x256(aShifted._2, bShifted, rem);
-        aproxResult._0 = aShifted._0.safeDiv512x256(rem, bShifted);
-        bMod2N = _bMod2N;
+        if (b._1 >> 255 == 1) (bShifted, bMod2N, aShifted) = (b._1, b._0, uint1024(a._1, a._2, a._3, 0));
+        else (bShifted, bMod2N, aShifted) = getShiftedBitsDiv1024x512(a, b);
+        (aproxResult._0, aproxResult._1, aproxResult._2, ) = div1024x256(a._0, a._1, a._2, a._3, bShifted);
     }
 
     /**

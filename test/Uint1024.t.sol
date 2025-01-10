@@ -210,6 +210,8 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
         string[] memory inputs = _buildFFI1024Arithmetic(a._0, a._1, a._2, a._3, b._0, b._1, 0, 0, "div");
         bytes memory res = vm.ffi(inputs);
         (pyR0, pyR1, pyR2, pyR4) = abi.decode(res, (uint, uint, uint, uint));
+        console2.log("solR", solR._0, solR._1, solR._2);
+        console2.log("pyR", pyR0, pyR1, pyR2);
 
         if (solR._2 != pyR2) revert("R2 bits different");
         if (solR._1 != pyR1) revert("R1 bits different");
