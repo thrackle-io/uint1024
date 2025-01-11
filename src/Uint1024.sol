@@ -649,9 +649,26 @@ library Uint1024 {
     function div1024x512(uint1024 memory a, uint512 memory b) internal pure returns (uint768 memory result) {
         uint bMod2N;
         (result, bMod2N) = _aproxDiv1024x512(a, b);
-        if (result._2 > 0) revert("result 768");
-        (uint condition0, uint condition1, uint condition2, uint condition3) = mul512x512In1024(result._1, result._2, b._0, b._1);
-        if (gt1024(condition0, condition1, condition2, condition3, a._0, a._1, a._2, a._3)) {
+        (uint condition0, uint condition1, uint condition2, uint condition3, uint condition4) = mul728x512In1240(
+            result._0,
+            result._1,
+            result._2,
+            b._0,
+            b._1
+        );
+        result = evaluateDiv1024Accuracy(condition0, condition1, condition2, condition3, condition4, a, b);
+    }
+
+    function evaluateDiv1024Accuracy(
+        uint condition0,
+        uint condition1,
+        uint condition2,
+        uint condition3,
+        uint condition4,
+        uint1024 memory a,
+        uint512 memory b
+    ) private pure returns (uint768 memory result) {
+        if (condition4 > 0 || gt1024(condition0, condition1, condition2, condition3, a._0, a._1, a._2, a._3)) {
             // slither-disable-next-line uninitialized-local // aNew1024 is initialized in the next line
             uint1024 memory aNew1024;
             aNew1024 = sub1024x1024(uint1024(condition0, condition1, condition2, condition3), uint1024(a._0, a._1, a._2, 0));
