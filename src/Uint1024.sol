@@ -342,7 +342,6 @@ library Uint1024 {
             r1 := or(shl(248, r1), shr(8, r0))
             r0 := or(shl(248, r0), w3)
         }
-        console2.log("r", r0, r1, r2);
         /// w3 + m3*(w4*m4 + w4)
         (r0, r1, r2) = sub768x768(r0, r1, r2, _r0, _r1, 0);
         _r0 = r0;
@@ -355,7 +354,6 @@ library Uint1024 {
             r1 := or(shr(9, r0), shl(247, r1))
             r0 := or(shl(247, r0), w2)
         }
-        console2.log("r", r0, r1, r2);
         /// m2*(w3 + m3*(w4*m4 + w4)) + w2
         (r0, r1, r2, r3) = sub1024x1024(r0, r1, r2, r3, _r0, _r1, _r2, 0);
         _r0 = r0;
@@ -370,7 +368,6 @@ library Uint1024 {
             r1 := or(shl(245, r1), shr(11, r0))
             r0 := or(shl(245, r0), w1)
         }
-        console2.log(r0, r1, r2, r3);
         if (lt1024(r0, r1, r2, r3, _r0, _r1, _r2, _r3)) --r4;
         (r0, r1, r2, r3) = sub1024x1024(r0, r1, r2, r3, _r0, _r1, _r2, _r3);
     }
@@ -579,13 +576,11 @@ library Uint1024 {
      * @return result uint512 value
      */
     function div768x512(uint768 memory a, uint512 memory b) internal pure returns (uint512 memory result) {
-        uint bMod2N;
-        (result, bMod2N) = _aproxDiv768x512(a, b);
+        result = _aproxDiv768x512(a, b);
         (uint condition0, uint condition1, uint condition2, uint condition3) = mul512x512In1024(result._0, result._1, b._0, b._1);
         if (condition3 > 0 || gt768(condition0, condition1, condition2, a._0, a._1, a._2)) {
             // slither-disable-next-line uninitialized-local // aNew1024 is initialized in the next line
             uint1024 memory aNew1024;
-            // (aNew1024._0, aNew1024._1, aNew1024._2, aNew1024._3) = mul512x512In1024(result._0, result._1, b._0, b._1);
             aNew1024 = sub1024x1024(uint1024(condition0, condition1, condition2, condition3), uint1024(a._0, a._1, a._2, 0));
             uint768 memory aNew = uint768(aNew1024._0, aNew1024._1, aNew1024._2);
             uint512 memory rec = div768x512(aNew, b);
@@ -600,15 +595,14 @@ library Uint1024 {
      * @param a A uint768 representing the numerator
      * @param b A uint512 representing the denominator
      * @return aproxResult the approximation of a/b
-     * @return bMod2N the remainder of b/2^n where n is the number of bits of the most significant b's word
      */
-    function _aproxDiv768x512(uint768 memory a, uint512 memory b) private pure returns (uint512 memory aproxResult, uint bMod2N) {
+    function _aproxDiv768x512(uint768 memory a, uint512 memory b) private pure returns (uint512 memory aproxResult) {
         if (b._1 == 0) revert("Uint512Extended: div768x512 b1 can't be zero");
-        if (a._2 == 0 && a._0.lt512(a._1, b._0, b._1)) return (uint512(0, 0), 0);
+        if (a._2 == 0 && a._0.lt512(a._1, b._0, b._1)) return uint512(0, 0);
         uint bShifted;
         uint768 memory aShifted;
-        if (b._1 >> 255 == 1) (bShifted, bMod2N, aShifted) = (b._1, b._0, uint768(a._1, a._2, 0));
-        else (bShifted, bMod2N, aShifted) = getShiftedBitsDiv768x512(a, b);
+        if (b._1 >> 255 == 1) (bShifted, aShifted) = (b._1, uint768(a._1, a._2, 0));
+        else (bShifted, aShifted) = getShiftedBitsDiv768x512(a, b);
         uint rem = aShifted._1.mod512x256(aShifted._2, bShifted);
         aproxResult._1 = aShifted._1.divRem512x256(aShifted._2, bShifted, rem);
         aproxResult._0 = aShifted._0.safeDiv512x256(rem, bShifted);
@@ -620,20 +614,14 @@ library Uint1024 {
      * @param a A uint768 representing the numerator
      * @param b A uint512 representing the denominator
      * @return bShifted the denominator shifted to the right by n bits
-     * @return bMod2N the remainder of b / 2**n
      * @return aShifted the numerator shifted to the right by n bits
      */
-    function getShiftedBitsDiv768x512(
-        uint768 memory a,
-        uint512 memory b
-    ) private pure returns (uint bShifted, uint bMod2N, uint768 memory aShifted) {
+    function getShiftedBitsDiv768x512(uint768 memory a, uint512 memory b) private pure returns (uint bShifted, uint768 memory aShifted) {
         /// we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
         uint n = Uint512Extended.log2(b._1) + 1;
         /// d = 2**n;
         /// if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
-        uint overflowVal;
-        (bShifted, overflowVal, bMod2N) = Uint512Extended.div512ByPowerOf2(b._0, b._1, uint8(n));
-        if (overflowVal > 0) revert("div512x512: unsuccessful division by 2**n");
+        (bShifted, , ) = Uint512Extended.div512ByPowerOf2(b._0, b._1, uint8(n));
         /// if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
         /// making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
         /// a / d
@@ -647,8 +635,7 @@ library Uint1024 {
      * @return result uint768 value
      */
     function div1024x512(uint1024 memory a, uint512 memory b) internal pure returns (uint768 memory result) {
-        uint bMod2N;
-        (result, bMod2N) = _aproxDiv1024x512(a, b);
+        result = _aproxDiv1024x512(a, b);
         (uint condition0, uint condition1, uint condition2, uint condition3, uint condition4) = mul728x512In1240(
             result._0,
             result._1,
@@ -656,7 +643,7 @@ library Uint1024 {
             b._0,
             b._1
         );
-        result = evaluateDiv1024Accuracy(condition0, condition1, condition2, condition3, condition4, a, b);
+        result = evaluateDiv1024Accuracy(condition0, condition1, condition2, condition3, condition4, a, b, result);
     }
 
     function evaluateDiv1024Accuracy(
@@ -666,16 +653,18 @@ library Uint1024 {
         uint condition3,
         uint condition4,
         uint1024 memory a,
-        uint512 memory b
+        uint512 memory b,
+        uint768 memory _result
     ) private pure returns (uint768 memory result) {
-        if (condition4 > 0 || gt1024(condition0, condition1, condition2, condition3, a._0, a._1, a._2, a._3)) {
+        bool isConditionGTa = gt1024(condition0, condition1, condition2, condition3, a._0, a._1, a._2, a._3);
+        if (condition4 > 0 || isConditionGTa) {
             // slither-disable-next-line uninitialized-local // aNew1024 is initialized in the next line
             uint1024 memory aNew1024;
-            aNew1024 = sub1024x1024(uint1024(condition0, condition1, condition2, condition3), uint1024(a._0, a._1, a._2, 0));
+            aNew1024 = sub1024x1024(uint1024(condition0, condition1, condition2, condition3), a);
             uint768 memory rec = div1024x512(aNew1024, b);
-            (result._0, result._1, result._2) = sub768x768(result._0, result._1, result._2, rec._0, rec._1, rec._2);
+            (result._0, result._1, result._2) = sub768x768(_result._0, _result._1, _result._2, rec._0, rec._1, rec._2);
             (result._0, result._1, result._2) = sub768x768(result._0, result._1, result._2, 1, 0, 0);
-        }
+        } else result = _result;
     }
 
     /**
@@ -684,16 +673,15 @@ library Uint1024 {
      * @param a A uint1024 representing the numerator
      * @param b A uint512 representing the denominator
      * @return aproxResult the approximation of a/b
-     * @return bMod2N the remainder of b/2^n where n is the number of bits of the most significant b's word
      */
-    function _aproxDiv1024x512(uint1024 memory a, uint512 memory b) private pure returns (uint768 memory aproxResult, uint bMod2N) {
+    function _aproxDiv1024x512(uint1024 memory a, uint512 memory b) private pure returns (uint768 memory aproxResult) {
         if (b._1 == 0) revert("Uint512Extended: div768x512 b1 can't be zero");
-        if (a._3 == 0 && a._2 == 0 && a._0.lt512(a._1, b._0, b._1)) return (uint768(0, 0, 0), 0);
+        if (a._3 == 0 && a._2 == 0 && a._0.lt512(a._1, b._0, b._1)) return uint768(0, 0, 0);
         uint bShifted;
         uint1024 memory aShifted;
-        if (b._1 >> 255 == 1) (bShifted, bMod2N, aShifted) = (b._1, b._0, uint1024(a._1, a._2, a._3, 0));
-        else (bShifted, bMod2N, aShifted) = getShiftedBitsDiv1024x512(a, b);
-        (aproxResult._0, aproxResult._1, aproxResult._2, ) = div1024x256(a._0, a._1, a._2, a._3, bShifted);
+        if (b._1 >> 255 == 1) (bShifted, aShifted) = (b._1, uint1024(a._1, a._2, a._3, 0));
+        else (bShifted, aShifted) = getShiftedBitsDiv1024x512(a, b);
+        (aproxResult._0, aproxResult._1, aproxResult._2, ) = div1024x256(aShifted._0, aShifted._1, aShifted._2, aShifted._3, bShifted);
     }
 
     /**
@@ -702,20 +690,14 @@ library Uint1024 {
      * @param a A uint1024 representing the numerator
      * @param b A uint512 representing the denominator
      * @return bShifted the denominator shifted to the right by n bits
-     * @return bMod2N the remainder of b / 2**n
      * @return aShifted the numerator shifted to the right by n bits
      */
-    function getShiftedBitsDiv1024x512(
-        uint1024 memory a,
-        uint512 memory b
-    ) private pure returns (uint bShifted, uint bMod2N, uint1024 memory aShifted) {
+    function getShiftedBitsDiv1024x512(uint1024 memory a, uint512 memory b) private pure returns (uint bShifted, uint1024 memory aShifted) {
         /// we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
         uint n = Uint512Extended.log2(b._1) + 1;
         /// d = 2**n;
         /// if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
-        uint overflowVal;
-        (bShifted, overflowVal, bMod2N) = Uint512Extended.div512ByPowerOf2(b._0, b._1, uint8(n));
-        if (overflowVal > 0) revert("div512x512: unsuccessful division by 2**n");
+        (bShifted, , ) = Uint512Extended.div512ByPowerOf2(b._0, b._1, uint8(n));
         /// if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
         /// making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
         /// a / d
