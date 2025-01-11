@@ -4,10 +4,27 @@ pragma solidity ^0.8.24;
 import "./Uint512.sol";
 import "./Uint512Extended.sol";
 import "./UintTypes.sol";
+import "forge-std/console2.sol";
 
 library Uint1024 {
     using Uint512 for uint256;
     using Uint512Extended for uint256;
+
+    uint constant M1 = 56539106072908298546665520023773392506479484700019806659891398441363832831;
+    uint constant M2 = 226156424291633194186662080095093570025917938800079226639565593765455331327;
+    uint constant M3 = 452312848583266388373324160190187140051835877600158453279131187530910662655;
+    uint constant M4 = 904625697166532776746648320380374280103671755200316906558262375061821325311;
+    uint constant M5 = 3618502788666131106986593281521497120414687020801267626233049500247285301247;
+    uint constant C12 = 75385474763877731395554026698364523341972646266693075546521864588485110441;
+    uint constant C13 = 323080606130904563123802971564419385751311341142970323770807991093507616181;
+    uint constant C14 = 60308379811102185116443221358691618673578117013354460437217491670788088353;
+    uint constant C15 = 3503629684264031706764796669409703561036442988394878177781206658969593704381;
+    uint constant C23 = 452312848583266388373324160190187140051835877600158453279131187530910662653;
+    uint constant C24 = 301541899055510925582216106793458093367890585066772302186087458353940441769;
+    uint constant C25 = 3136035750177313626055047510651964171026062084694431942735309566880980594413;
+    uint constant C34 = 904625697166532776746648320380374280103671755200316906558262375061821325309;
+    uint constant C35 = 2584644849047236504990423772515355086010490729143762590166463928748060929461;
+    uint constant C45 = 1206167596222043702328864427173832373471562340267089208744349833415761767081;
 
     /**
      * @notice Calculates the sum of two uint768. The result is a uint768.
@@ -231,6 +248,131 @@ library Uint1024 {
             // r3 is equal to the higher bits of a2 * b plus the overflow
             r3 := add(r3, r2Hi)
         }
+    }
+
+    function mul728x512In1240(
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint256 b0,
+        uint256 b1
+    ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3, uint r4) {
+        uint w1;
+        uint w2;
+        uint w3;
+        uint w4;
+        uint w5;
+        {
+            uint u;
+            uint v;
+            {
+                u = mod768x256(a0, a1, a2, M1);
+                v = Uint512.mod512x256(b0, b1, M1);
+                assembly {
+                    w1 := mulmod(u, v, M1)
+                }
+            }
+            {
+                u = mod768x256(a0, a1, a2, M2);
+                v = Uint512.mod512x256(b0, b1, M2);
+                assembly {
+                    w2 := mulmod(u, v, M2)
+                }
+            }
+            {
+                u = mod768x256(a0, a1, a2, M3);
+                v = Uint512.mod512x256(b0, b1, M3);
+                assembly {
+                    w3 := mulmod(u, v, M3)
+                }
+            }
+            {
+                u = mod768x256(a0, a1, a2, M4);
+                v = Uint512.mod512x256(b0, b1, M4);
+                assembly {
+                    w4 := mulmod(u, v, M4)
+                }
+            }
+            {
+                u = mod768x256(a0, a1, a2, M5);
+                v = Uint512.mod512x256(b0, b1, M5);
+                assembly {
+                    w5 := mulmod(u, v, M5)
+                }
+            }
+        }
+        uint _r0;
+        uint _r1;
+        uint _r2;
+        uint _r3;
+        // w_k' will be stored in w_k to avoid stack-too-deep error. This means that, from now on, all w is w'
+        assembly {
+            w2 := mulmod(addmod(w2, sub(M2, w1), M2), C12, M2)
+            w3 := mulmod(addmod(mulmod(addmod(w3, sub(M3, w1), M3), C13, M3), sub(M3, w2), M3), C23, M3)
+            w4 := mulmod(
+                addmod(mulmod(addmod(mulmod(addmod(w4, sub(M4, w1), M4), C14, M4), sub(M4, w2), M4), C24, M4), sub(M4, w3), M4),
+                C34,
+                M4
+            )
+            w5 := mulmod(
+                addmod(
+                    mulmod(
+                        addmod(mulmod(addmod(mulmod(addmod(w5, sub(M5, w1), M5), C15, M5), sub(M5, w2), M5), C25, M5), sub(M5, w3), M5),
+                        C35,
+                        M5
+                    ),
+                    sub(M5, w4),
+                    M5
+                ),
+                C45,
+                M5
+            )
+            /// w5*(m4 + 1)
+            r1 := shr(7, w5)
+            /// w5*m4 + w4
+            _r0 := or(shl(249, w5), w4)
+            r0 := sub(_r0, w5)
+            if lt(_r0, w5) {
+                r1 := sub(r1, 1)
+            }
+            _r0 := r0
+            _r1 := r1
+            /// (m3 + 1)*(w4*m4 + w4) + w3
+            r2 := shr(8, r1)
+            r1 := or(shl(248, r1), shr(8, r0))
+            r0 := or(shl(248, r0), w3)
+        }
+        console2.log("r", r0, r1, r2);
+        /// w3 + m3*(w4*m4 + w4)
+        (r0, r1, r2) = sub768x768(r0, r1, r2, _r0, _r1, 0);
+        _r0 = r0;
+        _r1 = r1;
+        _r2 = r2;
+        assembly {
+            /// (m2 + 1)*(w3 + m3*(w4*m4 + w4)) + w2
+            r3 := shr(9, r2)
+            r2 := or(shr(9, r1), shl(247, r2))
+            r1 := or(shr(9, r0), shl(247, r1))
+            r0 := or(shl(247, r0), w2)
+        }
+        console2.log("r", r0, r1, r2);
+        /// m2*(w3 + m3*(w4*m4 + w4)) + w2
+        (r0, r1, r2, r3) = sub1024x1024(r0, r1, r2, r3, _r0, _r1, _r2, 0);
+        _r0 = r0;
+        _r1 = r1;
+        _r2 = r2;
+        _r3 = r3;
+        assembly {
+            ///(m1 + 1)*(m2*(w3 + m3*(w4*m4 + w4)) + w2) + w1
+            r4 := shr(11, r3)
+            r3 := or(shl(245, r3), shr(11, r2))
+            r2 := or(shl(245, r2), shr(11, r1))
+            r1 := or(shl(245, r1), shr(11, r0))
+            r0 := or(shl(245, r0), w1)
+        }
+        console2.log(r0, r1, r2, r3);
+        if (lt1024(r0, r1, r2, r3, _r0, _r1, _r2, _r3)) --r4;
+        (r0, r1, r2, r3) = sub1024x1024(r0, r1, r2, r3, _r0, _r1, _r2, _r3);
     }
 
     /**
@@ -507,11 +649,12 @@ library Uint1024 {
     function div1024x512(uint1024 memory a, uint512 memory b) internal pure returns (uint768 memory result) {
         uint bMod2N;
         (result, bMod2N) = _aproxDiv1024x512(a, b);
+        if (result._2 > 0) revert("result 768");
         (uint condition0, uint condition1, uint condition2, uint condition3) = mul512x512In1024(result._1, result._2, b._0, b._1);
         if (gt1024(condition0, condition1, condition2, condition3, a._0, a._1, a._2, a._3)) {
             // slither-disable-next-line uninitialized-local // aNew1024 is initialized in the next line
             uint1024 memory aNew1024;
-            aNew1024 = sub1024x1024(aNew1024, uint1024(a._0, a._1, a._2, 0));
+            aNew1024 = sub1024x1024(uint1024(condition0, condition1, condition2, condition3), uint1024(a._0, a._1, a._2, 0));
             uint768 memory rec = div1024x512(aNew1024, b);
             (result._0, result._1, result._2) = sub768x768(result._0, result._1, result._2, rec._0, rec._1, rec._2);
             (result._0, result._1, result._2) = sub768x768(result._0, result._1, result._2, 1, 0, 0);
@@ -1199,14 +1342,14 @@ library Uint1024 {
         uint256 b3
     ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3) {
         assembly {
-            if or(lt(a3, b3), and(eq(a3, b3), or(lt(a2, b2), and(eq(a2, b2), or(lt(a1, b1), and(eq(a1, b1), lt(a0, b0))))))) {
-                let ptr := mload(0x40) // Get free memory pointer
-                mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
-                mstore(add(ptr, 0x04), 0x20) // String offset
-                mstore(add(ptr, 0x24), 27) // Revert reason length
-                mstore(add(ptr, 0x44), "Uint1024: sub1024 underflow")
-                revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
-            }
+            // if or(lt(a3, b3), and(eq(a3, b3), or(lt(a2, b2), and(eq(a2, b2), or(lt(a1, b1), and(eq(a1, b1), lt(a0, b0))))))) {
+            //     let ptr := mload(0x40) // Get free memory pointer
+            //     mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
+            //     mstore(add(ptr, 0x04), 0x20) // String offset
+            //     mstore(add(ptr, 0x24), 27) // Revert reason length
+            //     mstore(add(ptr, 0x44), "Uint1024: sub1024 underflow")
+            //     revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
+            // }
             // If b0 <= a0, find the difference of the lowest set of bits
             if or(lt(b0, a0), eq(b0, a0)) {
                 r0 := sub(a0, b0)
