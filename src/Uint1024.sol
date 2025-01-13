@@ -623,6 +623,7 @@ library Uint1024 {
         uint n = Uint512Extended.log2(b._1) + 1;
         /// d = 2**n;
         /// if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
+        // slither-disable-next-line unused-return --> not necessary for our case
         (bShifted, , ) = Uint512Extended.div512ByPowerOf2(b._0, b._1, uint8(n));
         /// if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
         /// making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
@@ -694,6 +695,7 @@ library Uint1024 {
         uint n = Uint512Extended.log2(b._1) + 1;
         /// d = 2**n;
         /// if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
+        // slither-disable-next-line unused-return --> not necessary for our case
         (bShifted, , ) = Uint512Extended.div512ByPowerOf2(b._0, b._1, uint8(n));
         /// if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
         /// making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
