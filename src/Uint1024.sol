@@ -250,6 +250,14 @@ library Uint1024 {
         }
     }
 
+    /**
+     * @dev Calculates the product of a uint728 and uint512. The result is a uint1240. Use modular multiplication algorithm from Knuth
+     * @notice a uses the type uint768 for convinience and gas efficieny. However a._2 can only be as large as 216 bits. Same goes for
+     * for the result r which uses a type uint1280, but where r._4 can only be as large as 216 bits.
+     * @param a A uint 728 number representing one of the factors
+     * @param b A uint512 representing the second factor
+     * @return r The result of a*b as a uint1240
+     */
     function mul728x512In1240(uint768 memory a, uint512 memory b) internal pure returns (uint1280 memory r) {
         uint1280 memory w;
         {
