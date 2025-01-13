@@ -250,126 +250,152 @@ library Uint1024 {
         }
     }
 
-    function mul728x512In1240(
-        uint256 a0,
-        uint256 a1,
-        uint256 a2,
-        uint256 b0,
-        uint256 b1
-    ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3, uint r4) {
-        uint w1;
-        uint w2;
-        uint w3;
-        uint w4;
-        uint w5;
+    function mul728x512In1240(uint768 memory a, uint512 memory b) internal pure returns (uint1280 memory r) {
+        uint1280 memory w;
         {
             uint u;
             uint v;
             {
-                u = mod768x256(a0, a1, a2, M1);
-                v = Uint512.mod512x256(b0, b1, M1);
+                u = mod768x256(a._0, a._1, a._2, M1);
+                v = Uint512.mod512x256(b._0, b._1, M1);
                 assembly {
-                    w1 := mulmod(u, v, M1)
+                    mstore(w, mulmod(u, v, M1))
                 }
             }
             {
-                u = mod768x256(a0, a1, a2, M2);
-                v = Uint512.mod512x256(b0, b1, M2);
+                u = mod768x256(a._0, a._1, a._2, M2);
+                v = Uint512.mod512x256(b._0, b._1, M2);
                 assembly {
-                    w2 := mulmod(u, v, M2)
+                    mstore(add(w, 0x20), mulmod(u, v, M2))
                 }
             }
             {
-                u = mod768x256(a0, a1, a2, M3);
-                v = Uint512.mod512x256(b0, b1, M3);
+                u = mod768x256(a._0, a._1, a._2, M3);
+                v = Uint512.mod512x256(b._0, b._1, M3);
                 assembly {
-                    w3 := mulmod(u, v, M3)
+                    mstore(add(w, 0x40), mulmod(u, v, M3))
                 }
             }
             {
-                u = mod768x256(a0, a1, a2, M4);
-                v = Uint512.mod512x256(b0, b1, M4);
+                u = mod768x256(a._0, a._1, a._2, M4);
+                v = Uint512.mod512x256(b._0, b._1, M4);
                 assembly {
-                    w4 := mulmod(u, v, M4)
+                    mstore(add(w, 0x60), mulmod(u, v, M4))
                 }
             }
             {
-                u = mod768x256(a0, a1, a2, M5);
-                v = Uint512.mod512x256(b0, b1, M5);
+                u = mod768x256(a._0, a._1, a._2, M5);
+                v = Uint512.mod512x256(b._0, b._1, M5);
                 assembly {
-                    w5 := mulmod(u, v, M5)
+                    mstore(add(w, 0x80), mulmod(u, v, M5))
                 }
             }
         }
-        uint _r0;
-        uint _r1;
-        uint _r2;
-        uint _r3;
+        r = _helperMul728x512In1240(w);
+    }
+
+    function _helperMul728x512In1240(uint1280 memory w) private pure returns (uint1280 memory r) {
         // w_k' will be stored in w_k to avoid stack-too-deep error. This means that, from now on, all w is w'
         assembly {
-            w2 := mulmod(addmod(w2, sub(M2, w1), M2), C12, M2)
-            w3 := mulmod(addmod(mulmod(addmod(w3, sub(M3, w1), M3), C13, M3), sub(M3, w2), M3), C23, M3)
-            w4 := mulmod(
-                addmod(mulmod(addmod(mulmod(addmod(w4, sub(M4, w1), M4), C14, M4), sub(M4, w2), M4), C24, M4), sub(M4, w3), M4),
-                C34,
-                M4
+            mstore(add(0x20, w), mulmod(addmod(mload(add(0x20, w)), sub(M2, mload(w)), M2), C12, M2))
+            mstore(
+                add(0x40, w),
+                mulmod(
+                    addmod(mulmod(addmod(mload(add(0x40, w)), sub(M3, mload(w)), M3), C13, M3), sub(M3, mload(add(0x20, w))), M3),
+                    C23,
+                    M3
+                )
             )
-            w5 := mulmod(
-                addmod(
-                    mulmod(
-                        addmod(mulmod(addmod(mulmod(addmod(w5, sub(M5, w1), M5), C15, M5), sub(M5, w2), M5), C25, M5), sub(M5, w3), M5),
-                        C35,
+            mstore(
+                add(0x60, w),
+                mulmod(
+                    addmod(
+                        mulmod(
+                            addmod(mulmod(addmod(mload(add(0x60, w)), sub(M4, mload(w)), M4), C14, M4), sub(M4, mload(add(0x20, w))), M4),
+                            C24,
+                            M4
+                        ),
+                        sub(M4, mload(add(0x40, w))),
+                        M4
+                    ),
+                    C34,
+                    M4
+                )
+            )
+            mstore(
+                add(0x80, w),
+                mulmod(
+                    addmod(
+                        mulmod(
+                            addmod(
+                                mulmod(
+                                    addmod(
+                                        mulmod(addmod(mload(add(0x80, w)), sub(M5, mload(w)), M5), C15, M5),
+                                        sub(M5, mload(add(0x20, w))),
+                                        M5
+                                    ),
+                                    C25,
+                                    M5
+                                ),
+                                sub(M5, mload(add(0x40, w))),
+                                M5
+                            ),
+                            C35,
+                            M5
+                        ),
+                        sub(M5, mload(add(0x60, w))),
                         M5
                     ),
-                    sub(M5, w4),
+                    C45,
                     M5
-                ),
-                C45,
-                M5
+                )
             )
+        }
+        uint1024 memory temp;
+        assembly {
             /// w5*(m4 + 1)
-            r1 := shr(7, w5)
+            mstore(add(0x20, r), shr(7, mload(add(0x80, w))))
             /// w5*m4 + w4
-            _r0 := or(shl(249, w5), w4)
-            r0 := sub(_r0, w5)
-            if lt(_r0, w5) {
-                r1 := sub(r1, 1)
+            mstore(temp, or(shl(249, mload(add(0x80, w))), mload(add(0x60, w))))
+            mstore(r, sub(mload(temp), mload(add(0x80, w))))
+            if lt(mload(temp), mload(add(0x80, w))) {
+                mstore(add(0x20, r), sub(mload(add(0x20, r)), 1))
             }
-            _r0 := r0
-            _r1 := r1
+            mstore(temp, mload(r))
+            mstore(add(0x20, temp), mload(add(0x20, r)))
             /// (m3 + 1)*(w4*m4 + w4) + w3
-            r2 := shr(8, r1)
-            r1 := or(shl(248, r1), shr(8, r0))
-            r0 := or(shl(248, r0), w3)
+            mstore(add(0x40, r), shr(8, mload(add(0x20, r))))
+            mstore(add(0x20, r), or(shl(248, mload(add(0x20, r))), shr(8, mload(r))))
+            mstore(r, or(shl(248, mload(r)), mload(add(0x40, w))))
         }
         /// w3 + m3*(w4*m4 + w4)
-        (r0, r1, r2) = sub768x768(r0, r1, r2, _r0, _r1, 0);
-        _r0 = r0;
-        _r1 = r1;
-        _r2 = r2;
+        (r._0, r._1, r._2) = sub768x768(r._0, r._1, r._2, temp._0, temp._1, 0);
+        temp._0 = r._0;
+        temp._1 = r._1;
+        temp._2 = r._2;
         assembly {
             /// (m2 + 1)*(w3 + m3*(w4*m4 + w4)) + w2
-            r3 := shr(9, r2)
-            r2 := or(shr(9, r1), shl(247, r2))
-            r1 := or(shr(9, r0), shl(247, r1))
-            r0 := or(shl(247, r0), w2)
+            mstore(add(0x60, r), shr(9, mload(add(0x40, r))))
+            mstore(add(0x40, r), or(shr(9, mload(add(0x20, r))), shl(247, mload(add(0x40, r)))))
+            mstore(add(0x20, r), or(shr(9, mload(r)), shl(247, mload(add(0x20, r)))))
+            mstore(r, or(shl(247, mload(r)), mload(add(0x20, w))))
         }
         /// m2*(w3 + m3*(w4*m4 + w4)) + w2
-        (r0, r1, r2, r3) = sub1024x1024(r0, r1, r2, r3, _r0, _r1, _r2, 0);
-        _r0 = r0;
-        _r1 = r1;
-        _r2 = r2;
-        _r3 = r3;
+        (r._0, r._1, r._2, r._3) = sub1024x1024(r._0, r._1, r._2, r._3, temp._0, temp._1, temp._2, 0);
+        temp._0 = r._0;
+        temp._1 = r._1;
+        temp._2 = r._2;
+        temp._3 = r._3;
         assembly {
             ///(m1 + 1)*(m2*(w3 + m3*(w4*m4 + w4)) + w2) + w1
-            r4 := shr(11, r3)
-            r3 := or(shl(245, r3), shr(11, r2))
-            r2 := or(shl(245, r2), shr(11, r1))
-            r1 := or(shl(245, r1), shr(11, r0))
-            r0 := or(shl(245, r0), w1)
+            mstore(add(0x80, r), shr(11, mload(add(0x60, r))))
+            mstore(add(0x60, r), or(shl(245, mload(add(0x60, r))), shr(11, mload(add(0x40, r)))))
+            mstore(add(0x40, r), or(shl(245, mload(add(0x40, r))), shr(11, mload(add(0x20, r)))))
+            mstore(add(0x20, r), or(shl(245, mload(add(0x20, r))), shr(11, mload(r))))
+            mstore(r, or(shl(245, mload(r)), mload(w)))
         }
-        if (lt1024(r0, r1, r2, r3, _r0, _r1, _r2, _r3)) --r4;
-        (r0, r1, r2, r3) = sub1024x1024(r0, r1, r2, r3, _r0, _r1, _r2, _r3);
+        if (lt1024(r._0, r._1, r._2, r._3, temp._0, temp._1, temp._2, temp._3)) --r._4;
+        (r._0, r._1, r._2, r._3) = sub1024x1024(r._0, r._1, r._2, r._3, temp._0, temp._1, temp._2, temp._3);
     }
 
     /**
@@ -636,14 +662,9 @@ library Uint1024 {
      */
     function div1024x512(uint1024 memory a, uint512 memory b) internal pure returns (uint768 memory result) {
         result = _aproxDiv1024x512(a, b);
-        (uint condition0, uint condition1, uint condition2, uint condition3, uint condition4) = mul728x512In1240(
-            result._0,
-            result._1,
-            result._2,
-            b._0,
-            b._1
-        );
-        result = evaluateDiv1024Accuracy(condition0, condition1, condition2, condition3, condition4, a, b, result);
+        uint1280 memory condition;
+        condition = mul728x512In1240(result, b);
+        result = evaluateDiv1024Accuracy(condition._0, condition._1, condition._2, condition._3, condition._4, a, b, result);
     }
 
     function evaluateDiv1024Accuracy(
