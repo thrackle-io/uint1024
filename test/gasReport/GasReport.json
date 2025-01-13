@@ -49,7 +49,7 @@
     "divRem512x256": 402,
     "div768x256Structs": 1226,
     "div768x256": 1064,
-    "div768x512": 6843,
+    "div768x512": 6847,
     "div768ByPowerOf2Structs": 526,
     "div768ByPowerOf2": 315,
     "divRem1024x512In512Structs": 8394,
@@ -58,7 +58,9 @@
     "div512x512": 2550,
     "div1024x256": 1496,
     "div1024x256Structs": 1703,
-    "div1024x512Structs": 35480
+    "div1024x512Structs": 35480,
+    "div1024ByPowerOf2Structs": 612,
+    "div1024ByPowerOf2": 352
   },
   "Sqrt": {
     "sqrt1024": 6487,
