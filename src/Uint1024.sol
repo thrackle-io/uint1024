@@ -372,7 +372,7 @@ library Uint1024 {
             mstore(r, or(shl(245, mload(r)), mload(w)))
         }
         if (lt1024(r._0, r._1, r._2, r._3, temp._0, temp._1, temp._2, temp._3)) --r._4;
-        (r._0, r._1, r._2, r._3) = sub1024x1024(r._0, r._1, r._2, r._3, temp._0, temp._1, temp._2, temp._3);
+        (r._0, r._1, r._2, r._3) = sub1024x1024Modular(r._0, r._1, r._2, r._3, temp._0, temp._1, temp._2, temp._3);
     }
 
     /**
@@ -658,7 +658,7 @@ library Uint1024 {
         if (condition4 > 0 || isConditionGTa) {
             // slither-disable-next-line uninitialized-local // aNew1024 is initialized in the next line
             uint1024 memory aNew1024;
-            aNew1024 = sub1024x1024(uint1024(condition0, condition1, condition2, condition3), a);
+            aNew1024 = sub1024x1024Modular(uint1024(condition0, condition1, condition2, condition3), a);
             uint768 memory rec = div1024x512(aNew1024, b);
             (result._0, result._1, result._2) = sub768x768(_result._0, _result._1, _result._2, rec._0, rec._1, rec._2);
             (result._0, result._1, result._2) = sub768x768(result._0, result._1, result._2, 1, 0, 0);

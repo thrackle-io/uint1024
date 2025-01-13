@@ -11,6 +11,8 @@
   "Sub": {
     "sub1024x1024Structs": 791,
     "sub1024x1024": 38,
+    "sub1024x1024ModularStructs": 791,
+    "sub1024x1024Modular": 38,
     "sub768x768Structs": 560,
     "sub768x768": 41,
     "safeSub512x512Structs": 291,

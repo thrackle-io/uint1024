@@ -34,6 +34,8 @@ contract GasReports is Test, GasHelpers {
 
         _sub1024x1024GasUsed();
 
+        _sub1024x1024ModularGasUsed();
+
         _sub768x768GasUsed();
 
         _safeSub512x512GasUsed();
@@ -394,6 +396,33 @@ contract GasReports is Test, GasHelpers {
         );
         gasUsed = stopMeasuringGas();
         _writeJson(".Sub.sub1024x1024");
+    }
+
+    function _sub1024x1024ModularGasUsed() internal {
+        _resetGasUsed();
+
+        uint1024 memory a = solR1024;
+        uint1024 memory b = solR1024;
+
+        startMeasuringGas("sub1024x1024Modular using structs - returns uint1024 struct");
+        Uint1024.sub1024x1024Modular(a, b);
+        gasUsed = stopMeasuringGas();
+        _writeJson(".Sub.sub1024x1024ModularStructs");
+        _resetGasUsed();
+
+        startMeasuringGas("sub1024x1024Modular - returns uint1024");
+        Uint1024.sub1024x1024(
+            10000000000000000000000000000, // a0
+            10000000000000000000000000000, // a1
+            10000000000000000000000000000, // a2
+            10000000000000000000000000000, // a3
+            10000000000000000000000000000, // b0
+            10000000000000000000000000000, // b1
+            10000000000000000000000000000, // b2
+            10000000000000000000000000000 // b3
+        );
+        gasUsed = stopMeasuringGas();
+        _writeJson(".Sub.sub1024x1024Modular");
     }
 
     function _sub768x768GasUsed() internal {
