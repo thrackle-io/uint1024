@@ -299,12 +299,9 @@ library Uint1024 {
                 }
             }
         }
-        r = _helperMul728x512In1240(w);
-    }
-
-    function _helperMul728x512In1240(uint1280 memory w) private pure returns (uint1280 memory r) {
         // w_k' will be stored in w_k to avoid stack-too-deep error. This means that, from now on, all w is w'
         assembly {
+            let _temp
             mstore(add(0x20, w), mulmod(addmod(mload(add(0x20, w)), sub(M2, mload(w)), M2), C12, M2))
             mstore(
                 add(0x40, w),
@@ -314,43 +311,15 @@ library Uint1024 {
                     M3
                 )
             )
-            mstore(
-                add(0x60, w),
-                mulmod(
-                    addmod(
-                        mulmod(
-                            addmod(mulmod(addmod(mload(add(0x60, w)), sub(M4, mload(w)), M4), C14, M4), sub(M4, mload(add(0x20, w))), M4),
-                            C24,
-                            M4
-                        ),
-                        sub(M4, mload(add(0x40, w))),
-                        M4
-                    ),
-                    C34,
-                    M4
-                )
-            )
+            _temp := addmod(mulmod(addmod(mload(add(0x60, w)), sub(M4, mload(w)), M4), C14, M4), sub(M4, mload(add(0x20, w))), M4)
+            mstore(add(0x60, w), mulmod(addmod(mulmod(_temp, C24, M4), sub(M4, mload(add(0x40, w))), M4), C34, M4))
+
+            _temp := addmod(mulmod(addmod(mload(add(0x80, w)), sub(M5, mload(w)), M5), C15, M5), sub(M5, mload(add(0x20, w))), M5)
             mstore(
                 add(0x80, w),
                 mulmod(
                     addmod(
-                        mulmod(
-                            addmod(
-                                mulmod(
-                                    addmod(
-                                        mulmod(addmod(mload(add(0x80, w)), sub(M5, mload(w)), M5), C15, M5),
-                                        sub(M5, mload(add(0x20, w))),
-                                        M5
-                                    ),
-                                    C25,
-                                    M5
-                                ),
-                                sub(M5, mload(add(0x40, w))),
-                                M5
-                            ),
-                            C35,
-                            M5
-                        ),
+                        mulmod(addmod(mulmod(_temp, C25, M5), sub(M5, mload(add(0x40, w))), M5), C35, M5),
                         sub(M5, mload(add(0x60, w))),
                         M5
                     ),
@@ -1370,14 +1339,14 @@ library Uint1024 {
         uint256 b3
     ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3) {
         assembly {
-            // if or(lt(a3, b3), and(eq(a3, b3), or(lt(a2, b2), and(eq(a2, b2), or(lt(a1, b1), and(eq(a1, b1), lt(a0, b0))))))) {
-            //     let ptr := mload(0x40) // Get free memory pointer
-            //     mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
-            //     mstore(add(ptr, 0x04), 0x20) // String offset
-            //     mstore(add(ptr, 0x24), 27) // Revert reason length
-            //     mstore(add(ptr, 0x44), "Uint1024: sub1024 underflow")
-            //     revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
-            // }
+            if or(lt(a3, b3), and(eq(a3, b3), or(lt(a2, b2), and(eq(a2, b2), or(lt(a1, b1), and(eq(a1, b1), lt(a0, b0))))))) {
+                let ptr := mload(0x40) // Get free memory pointer
+                mstore(ptr, 0x08c379a000000000000000000000000000000000000000000000000000000000) // Selector for method Error(string)
+                mstore(add(ptr, 0x04), 0x20) // String offset
+                mstore(add(ptr, 0x24), 27) // Revert reason length
+                mstore(add(ptr, 0x44), "Uint1024: sub1024 underflow")
+                revert(ptr, 0x64) // Revert data length is 4 bytes for selector and 3 slots of 0x20 bytes
+            }
             // If b0 <= a0, find the difference of the lowest set of bits
             if or(lt(b0, a0), eq(b0, a0)) {
                 r0 := sub(a0, b0)
@@ -1445,6 +1414,7 @@ library Uint1024 {
     }
 
     /**
+<<<<<<< HEAD
      * @dev calculates the square root of a uint1024 number *a*
      * @param a0 the lowest bits of *a*
      * @param a1 the middle lower bits of *a*
@@ -1507,10 +1477,91 @@ library Uint1024 {
         assembly {
             s0 := or(shl(sub(256, shr(1, shift)), s1), shr(shr(1, shift), s0))
             s1 := or(shl(sub(256, shr(1, shift)), s2), shr(shr(1, shift), s1))
+=======
+     * @notice Calculates the difference of two Uint1024. The result is a Uint1024.
+     * @param a0 A uint256 representing the lower bits of the minuend
+     * @param a1 A uint256 representing the high bits of the minuend
+     * @param a2 A uint256 representing the higher bits of the minuend
+     * @param a3 A uint256 representing the highest bits of the minuend
+     * @param b0 A uint256 representing the lower bits of the subtrahend
+     * @param b1 A uint256 representing the high bits of the subtrahend
+     * @param b2 A uint256 representing the higher bits of the subtrahend
+     * @param b3 A uint256 representing the highest bits of the subtrahend
+     * @return r0 The lower bits of the result
+     * @return r1 The high bits of the result
+     * @return r2 The higher bits of the result
+     * @return r3 The highest bits of the result
+     */
+    function sub1024x1024Modular(
+        uint256 a0,
+        uint256 a1,
+        uint256 a2,
+        uint256 a3,
+        uint256 b0,
+        uint256 b1,
+        uint256 b2,
+        uint256 b3
+    ) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3) {
+        assembly {
+            // If b0 <= a0, find the difference of the lowest set of bits
+            if or(lt(b0, a0), eq(b0, a0)) {
+                r0 := sub(a0, b0)
+            }
+            // When b0 > a0, we'll have to borrow from a higher set of bits
+            if gt(b0, a0) {
+                // r0 is the difference of a0 and negative b0
+                r0 := add(a0, sub(0, b0))
+                // If a1 == 0, we "borrow" a bit from a2 for the next step
+                if iszero(a1) {
+                    if iszero(a2) {
+                        a3 := sub(a3, 1)
+                    }
+                    a2 := sub(a2, 1)
+                }
+                // Subtract the extra bit from a1
+                a1 := sub(a1, 1)
+            }
+            // set a switch condition to 1 if b1 <= a1, else set the condition to 0
+            let condition := or(lt(b1, a1), eq(b1, a1))
+            switch condition
+            // case 0, where b1 > a1
+            case 0 {
+                // r1 is the sum of a1 and negative b1
+                r1 := add(a1, sub(0, b1))
+                // If a2 == 0, we "borrow" a bit from a3 for the next step
+                if iszero(a2) {
+                    a3 := sub(a3, 1)
+                }
+                // Subtract the extra bit from a2
+                a2 := sub(a2, 1)
+            }
+            // case 1, where b1 <= a1
+            case 1 {
+                // r1 is simply the difference of a1 and b1
+                r1 := sub(a1, b1)
+            }
+            // set a switch condition to 1 if b2 <= a2, else set the condition to 0
+            condition := or(lt(b2, a2), eq(b2, a2))
+            switch condition
+            // case 0, where b2 > a2
+            case 0 {
+                // r2 is the sum of a2 and negative b2
+                r2 := add(a2, sub(0, b2))
+                a3 := sub(a3, 1)
+            }
+            // case 1, where b2 <= a2
+            case 1 {
+                // r2 is simply the difference of a2 and b2
+                r2 := sub(a2, b2)
+            }
+            // r3 is the difference of a3 and b3
+            r3 := sub(a3, b3)
+>>>>>>> 3927d55 (stack too depp error solved. Added modular version of the sub1024)
         }
     }
 
     /**
+<<<<<<< HEAD
      * @dev helper function for the calculation of the square root of a uint1024
      * @param a the normalized packed version of *a*
      * @return s0 the lower bits of the square root of normalized *a*
@@ -1549,5 +1600,14 @@ library Uint1024 {
             // slither-disable-end uninitialized-local
             if (q1 > u1 || (q1 == u1 && lt768(a0, u0, u1, rr0, rr1, rr2))) (s0, s1, s2) = sub768x768(s0, s1, s2, 1, 0, 0);
         }
+=======
+     * @notice Calculates the difference of two Uint1024. The result is a Uint1024.
+     * @param a A uint1024 representing the minuend
+     * @param b A uint1024 representing the subtrahend
+     * @return r The 1024 result
+     */
+    function sub1024x1024Modular(uint1024 memory a, uint1024 memory b) internal pure returns (uint1024 memory r) {
+        (r._0, r._1, r._2, r._3) = sub1024x1024Modular(a._0, a._1, a._2, a._3, b._0, b._1, b._2, b._3);
+>>>>>>> 3927d55 (stack too depp error solved. Added modular version of the sub1024)
     }
 }
