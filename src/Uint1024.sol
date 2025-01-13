@@ -1414,7 +1414,6 @@ library Uint1024 {
     }
 
     /**
-<<<<<<< HEAD
      * @dev calculates the square root of a uint1024 number *a*
      * @param a0 the lowest bits of *a*
      * @param a1 the middle lower bits of *a*
@@ -1477,7 +1476,51 @@ library Uint1024 {
         assembly {
             s0 := or(shl(sub(256, shr(1, shift)), s1), shr(shr(1, shift), s0))
             s1 := or(shl(sub(256, shr(1, shift)), s2), shr(shr(1, shift), s1))
-=======
+        }
+    }
+
+    /**
+     * @dev helper function for the calculation of the square root of a uint1024
+     * @param a the normalized packed version of *a*
+     * @return s0 the lower bits of the square root of normalized *a*
+     * @return s1 the middle bits of the shifted square root of normalized *a*
+     * @return s2 the higher bits of the shifted square root of normalized *a*
+     */
+    function _helperSqrt1024(uint1024 memory a) private pure returns (uint s0, uint s1, uint s2) {
+        uint a0 = a._0;
+        uint q0;
+        uint q1;
+        uint u0;
+        uint u1;
+        uint256 sp = Uint512.sqrt512(a._2, a._3);
+        {
+            // slither-disable-next-line uninitialized-local // the variable is initialized in the next line
+            uint768 memory calculatedBack;
+            (calculatedBack._0, calculatedBack._1) = Uint512.mul256x256(sp, sp);
+            (uint256 rp0, uint256 rp1) = Uint512.sub512x512(a._2, a._3, calculatedBack._0, calculatedBack._1);
+
+            // Karatsuba's algorithm states that q = (rp*b + a1) / 2*sp. But since sp is most likely a full 256-bit number, doing it
+            // this way might result with the denominator being a 512-bit number for which we would need to do an expensive 768x512
+            // division. So we do instead q = ((rp*b + a1) / 2) / sp, which is equivalent, to be able to use cheap division by 256.
+            (q0, q1, ) = div768x256((a._1 >> 1) + (rp0 << 255), (rp0 >> 1) + (rp1 << 255), rp1 >> 1, sp);
+            // We apply the same priciple here. Instead of doing (rp*b + a1)' = q * 2*sp, we do (rp*b + a1)' = 2*q * sp
+            (calculatedBack._0, calculatedBack._1, calculatedBack._2) = mul512x256In768(q0 << 1, (q1 << 1) + (q0 >> 255), sp);
+            (u0, u1, ) = sub768x768(a._1, rp0, rp1, calculatedBack._0, calculatedBack._1, calculatedBack._2);
+        }
+        (s0, s1, s2) = add768x768(q0, q1, 0, 0, sp, 0);
+        {
+            // slither-disable-start uninitialized-local // the variable are initialized right after
+            uint rr0;
+            uint rr1;
+            uint rr2;
+            if (q1 > 0) (rr0, rr1) = Uint512.mul256x256(q0, q0);
+            else (rr0, rr1, rr2, ) = mul512x512In1024(q0, q1, q0, q1);
+            // slither-disable-end uninitialized-local
+            if (q1 > u1 || (q1 == u1 && lt768(a0, u0, u1, rr0, rr1, rr2))) (s0, s1, s2) = sub768x768(s0, s1, s2, 1, 0, 0);
+        }
+    }
+
+    /**
      * @notice Calculates the difference of two Uint1024. The result is a Uint1024.
      * @param a0 A uint256 representing the lower bits of the minuend
      * @param a1 A uint256 representing the high bits of the minuend
@@ -1556,51 +1599,10 @@ library Uint1024 {
             }
             // r3 is the difference of a3 and b3
             r3 := sub(a3, b3)
->>>>>>> 3927d55 (stack too depp error solved. Added modular version of the sub1024)
         }
     }
 
     /**
-<<<<<<< HEAD
-     * @dev helper function for the calculation of the square root of a uint1024
-     * @param a the normalized packed version of *a*
-     * @return s0 the lower bits of the square root of normalized *a*
-     * @return s1 the middle bits of the shifted square root of normalized *a*
-     * @return s2 the higher bits of the shifted square root of normalized *a*
-     */
-    function _helperSqrt1024(uint1024 memory a) private pure returns (uint s0, uint s1, uint s2) {
-        uint a0 = a._0;
-        uint q0;
-        uint q1;
-        uint u0;
-        uint u1;
-        uint256 sp = Uint512.sqrt512(a._2, a._3);
-        {
-            // slither-disable-next-line uninitialized-local // the variable is initialized in the next line
-            uint768 memory calculatedBack;
-            (calculatedBack._0, calculatedBack._1) = Uint512.mul256x256(sp, sp);
-            (uint256 rp0, uint256 rp1) = Uint512.sub512x512(a._2, a._3, calculatedBack._0, calculatedBack._1);
-
-            // Karatsuba's algorithm states that q = (rp*b + a1) / 2*sp. But since sp is most likely a full 256-bit number, doing it
-            // this way might result with the denominator being a 512-bit number for which we would need to do an expensive 768x512
-            // division. So we do instead q = ((rp*b + a1) / 2) / sp, which is equivalent, to be able to use cheap division by 256.
-            (q0, q1, ) = div768x256((a._1 >> 1) + (rp0 << 255), (rp0 >> 1) + (rp1 << 255), rp1 >> 1, sp);
-            // We apply the same priciple here. Instead of doing (rp*b + a1)' = q * 2*sp, we do (rp*b + a1)' = 2*q * sp
-            (calculatedBack._0, calculatedBack._1, calculatedBack._2) = mul512x256In768(q0 << 1, (q1 << 1) + (q0 >> 255), sp);
-            (u0, u1, ) = sub768x768(a._1, rp0, rp1, calculatedBack._0, calculatedBack._1, calculatedBack._2);
-        }
-        (s0, s1, s2) = add768x768(q0, q1, 0, 0, sp, 0);
-        {
-            // slither-disable-start uninitialized-local // the variable are initialized right after
-            uint rr0;
-            uint rr1;
-            uint rr2;
-            if (q1 > 0) (rr0, rr1) = Uint512.mul256x256(q0, q0);
-            else (rr0, rr1, rr2, ) = mul512x512In1024(q0, q1, q0, q1);
-            // slither-disable-end uninitialized-local
-            if (q1 > u1 || (q1 == u1 && lt768(a0, u0, u1, rr0, rr1, rr2))) (s0, s1, s2) = sub768x768(s0, s1, s2, 1, 0, 0);
-        }
-=======
      * @notice Calculates the difference of two Uint1024. The result is a Uint1024.
      * @param a A uint1024 representing the minuend
      * @param b A uint1024 representing the subtrahend
@@ -1608,6 +1610,5 @@ library Uint1024 {
      */
     function sub1024x1024Modular(uint1024 memory a, uint1024 memory b) internal pure returns (uint1024 memory r) {
         (r._0, r._1, r._2, r._3) = sub1024x1024Modular(a._0, a._1, a._2, a._3, b._0, b._1, b._2, b._3);
->>>>>>> 3927d55 (stack too depp error solved. Added modular version of the sub1024)
     }
 }

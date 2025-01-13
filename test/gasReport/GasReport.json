@@ -2,21 +2,17 @@
   "Add": {
     "add1024x1024Structs": 546,
     "add1024x1024": 290,
-<<<<<<< HEAD
     "add768x768Structs": 443,
-=======
-    "add768x768Structs": 440,
->>>>>>> 3927d55 (stack too depp error solved. Added modular version of the sub1024)
     "add768x768": 233,
     "safeAdd512x512Structs": 319,
     "safeAdd512x512": 176,
     "add512x512": 37
   },
   "Sub": {
-    "sub1024x1024Structs": 644,
-    "sub1024x1024": 398,
-    "sub1024x1024ModularStructs": 791,
-    "sub1024x1024Modular": 38,
+    "sub1024x1024Structs": 742,
+    "sub1024x1024": 496,
+    "sub1024x1024ModularStructs": 655,
+    "sub1024x1024Modular": 496,
     "sub768x768Structs": 566,
     "sub768x768": 369,
     "safeSub512x512Structs": 320,
@@ -26,13 +22,8 @@
   "Mul": {
     "mulInverseMod512Structs": 7051,
     "mulInverseMod512": 6931,
-<<<<<<< HEAD
-    "mul512x512In1024Structs": 995,
-    "mul728x512In1240Structs": 4719,
-=======
     "mul512x512In1024Structs": 991,
-    "mul728x512In1240Structs": 5903,
->>>>>>> 3927d55 (stack too depp error solved. Added modular version of the sub1024)
+    "mul728x512In1240Structs": 6003,
     "mul512x512In1024": 791,
     "mul512x512Mod512Structs": 621,
     "mul512x512Mod512": 489,
@@ -41,11 +32,7 @@
     "safeMul512x256Structs": 529,
     "safeMul512x256": 415,
     "mulMod256x256": 186,
-<<<<<<< HEAD
     "mul768x256Structs": 836,
-=======
-    "mul768x256Structs": 835,
->>>>>>> 3927d55 (stack too depp error solved. Added modular version of the sub1024)
     "mul768x256In1024": 644,
     "mul512x256": 177,
     "mul256x256": 151,
@@ -54,27 +41,27 @@
   "Div": {
     "div512ByPowerOf2Structs": 844,
     "div512ByPowerOf2": 690,
-    "safeDiv512x256Structs": 683,
-    "safeDiv512x256": 620,
+    "safeDiv512x256Structs": 682,
+    "safeDiv512x256": 619,
     "div512x256In512Structs": 597,
     "div512x256In512": 483,
     "div512x256": 461,
-    "divRem512x256": 403,
+    "divRem512x256": 402,
     "div768x256Structs": 1226,
     "div768x256": 1064,
-    "div768x512": 8185,
-    "div768ByPowerOf2Structs": 1003,
-    "div768ByPowerOf2": 792,
-    "divRem1024x512In512Structs": 8392,
+    "div768x512": 6843,
+    "div768ByPowerOf2Structs": 526,
+    "div768ByPowerOf2": 315,
+    "divRem1024x512In512Structs": 8394,
     "divRem1024x512In512": 8202,
     "div512x512Structs": 2596,
     "div512x512": 2550,
     "div1024x256": 1496,
     "div1024x256Structs": 1703,
-    "div1024x512Structs": 30209
+    "div1024x512Structs": 35480
   },
   "Sqrt": {
-    "sqrt1024": 6488,
+    "sqrt1024": 6487,
     "sqrt512": 1887,
     "sqrt256": 970
   },

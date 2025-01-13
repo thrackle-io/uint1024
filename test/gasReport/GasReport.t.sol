@@ -17,7 +17,7 @@ contract GasReports is Test, GasHelpers {
     // The gas savings from the highly optimized yul may negate the solidity inefficiencies.
 
     // To run the gas report when compiling via-ir, comment out the previous setting of the path variable and use the path below:
-    //string path = "test/gasReport/GasReportViaIr.json";
+    // string path = "test/gasReport/GasReportViaIr.json";
 
     function testMeasureGas() public {
         _primer();
