@@ -55,7 +55,8 @@
     "div512x512Structs": 1704,
     "div512x512": 41,
     "div1024x256": 38,
-    "div1024x256Structs": 880
+    "div1024x256Structs": 880,
+    "div1024x512Structs": 0
   },
   "Sqrt": {
     "sqrt512": 1112,

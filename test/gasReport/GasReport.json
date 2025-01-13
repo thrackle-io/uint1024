@@ -9,18 +9,19 @@
     "add512x512": 37
   },
   "Sub": {
-    "sub1024x1024Structs": 742,
-    "sub1024x1024": 496,
-    "sub768x768Structs": 566,
-    "sub768x768": 369,
-    "safeSub512x512Structs": 320,
-    "safeSub512x512": 188,
-    "sub512x512": 37
+    "sub1024x1024Structs": 729,
+    "sub1024x1024": 38,
+    "sub768x768Structs": 598,
+    "sub768x768": 41,
+    "safeSub512x512Structs": 292,
+    "safeSub512x512": 41,
+    "sub512x512": 38
   },
   "Mul": {
     "mulInverseMod512Structs": 7051,
     "mulInverseMod512": 6931,
     "mul512x512In1024Structs": 995,
+    "mul728x512In1240Structs": 4719,
     "mul512x512In1024": 791,
     "mul512x512Mod512Structs": 621,
     "mul512x512Mod512": 489,
@@ -54,7 +55,8 @@
     "div512x512Structs": 2596,
     "div512x512": 2550,
     "div1024x256": 1496,
-    "div1024x256Structs": 1703
+    "div1024x256Structs": 1703,
+    "div1024x512Structs": 30209
   },
   "Sqrt": {
     "sqrt1024": 6488,
@@ -62,12 +64,12 @@
     "sqrt256": 970
   },
   "Log": {
-    "log2": 459
+    "log2": 38
   },
   "Mod": {
-    "mod768x256Structs": 426,
-    "mod768x256": 365,
-    "mod1024x256Structs": 681,
-    "mod1024x256": 611
+    "mod768x256Structs": 38,
+    "mod768x256": 38,
+    "mod1024x256Structs": 38,
+    "mod1024x256": 38
   }
 }

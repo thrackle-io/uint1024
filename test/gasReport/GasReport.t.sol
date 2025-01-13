@@ -72,6 +72,8 @@ contract GasReports is Test, GasHelpers {
 
         _div1024x256GasUsed();
 
+        _div1024x512GasUsed();
+
         _divRem512x256GasUsed();
 
         _sqrt256GasUsed();
@@ -720,6 +722,18 @@ contract GasReports is Test, GasHelpers {
         );
         gasUsed = stopMeasuringGas();
         _writeJson(".Div.div1024x256");
+    }
+
+    function _div1024x512GasUsed() internal {
+        _resetGasUsed();
+
+        uint1024 memory a = solR1024;
+        uint512 memory b = solR512;
+
+        startMeasuringGas("div1024x512 using structs - returns uint768 struct");
+        Uint1024.div1024x512(a, b);
+        gasUsed = stopMeasuringGas();
+        _writeJson(".Div.div1024x512Structs");
     }
 
     function _divRem512x256GasUsed() internal {
