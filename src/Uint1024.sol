@@ -263,7 +263,7 @@ library Uint1024 {
      * @return r The result of a*b as a uint1240
      */
     function mul728x512In1240(uint768 memory a, uint512 memory b) internal pure returns (uint1280 memory r) {
-        if (a._2 > (1 << 216)) revert("a is larger than 728 bits");
+        if (a._2 >= (1 << 216)) revert("a is larger than 728 bits");
         uint1280 memory w;
         {
             uint u;
