@@ -44,7 +44,7 @@ contract GasReports is Test, GasHelpers {
 
         _mul512x512In1024GasUsed();
 
-        _mul728x512In1240GasUsed();
+        _mul728x512In1240UnsafeGasUsed();
 
         _mul512x512Mod512GasUsed();
 
@@ -512,16 +512,16 @@ contract GasReports is Test, GasHelpers {
         _writeJson(".Mul.mul512x512In1024");
     }
 
-    function _mul728x512In1240GasUsed() internal {
+    function _mul728x512In1240UnsafeGasUsed() internal {
         _resetGasUsed();
 
         uint768 memory a = solR768;
         uint512 memory b = solR512;
 
-        startMeasuringGas("mul728x512In1240 using structs - returns uint1240 struct");
-        Uint1024.mul728x512In1240(a, b);
+        startMeasuringGas("mul728x512In1240Unsafe using structs - returns uint1240 struct");
+        Uint1024.mul728x512In1240Unsafe(a, b);
         gasUsed = stopMeasuringGas();
-        _writeJson(".Mul.mul728x512In1240Structs");
+        _writeJson(".Mul.mul728x512In1240UnsafeStructs");
     }
 
     function _mul512x512Mod512GasUsed() internal {

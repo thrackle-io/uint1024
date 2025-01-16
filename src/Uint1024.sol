@@ -262,8 +262,7 @@ library Uint1024 {
      * @param b A uint512 representing the second factor
      * @return r The result of a*b as a uint1240
      */
-    function mul728x512In1240(uint768 memory a, uint512 memory b) internal pure returns (uint1280 memory r) {
-        // if (a._2 >> 240 > 0) revert("a is larger than 728 bits");
+    function mul728x512In1240Unsafe(uint768 memory a, uint512 memory b) internal pure returns (uint1280 memory r) {
         uint1280 memory w;
         {
             uint u;
@@ -646,7 +645,7 @@ library Uint1024 {
     function div1024x512(uint1024 memory a, uint512 memory b) internal pure returns (uint768 memory result) {
         result = _approxDiv1024x512(a, b);
         uint1280 memory condition;
-        condition = mul728x512In1240(result, b);
+        condition = mul728x512In1240Unsafe(result, b);
         result = evaluateDiv1024Accuracy(condition._0, condition._1, condition._2, condition._3, condition._4, a, b, result);
     }
 

@@ -23,7 +23,7 @@
     "mulInverseMod512Structs": 7051,
     "mulInverseMod512": 6931,
     "mul512x512In1024Structs": 991,
-    "mul728x512In1240Structs": 6038,
+    "mul728x512In1240UnsafeStructs": 6038,
     "mul512x512In1024": 791,
     "mul512x512Mod512Structs": 621,
     "mul512x512Mod512": 489,

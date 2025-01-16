@@ -436,7 +436,7 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
         if (solR1024._3 != pyR3) revert("R2 bits different");
     }
 
-    function testMul728x512In1240(uint256 a0, uint256 a1, uint a2, uint256 b0, uint256 b1) public {
+    function testmul728x512In1240Unsafe(uint256 a0, uint256 a1, uint a2, uint256 b0, uint256 b1) public {
         // The max number this algorith can produce accurately is equivalent to the multiplication of its moduli.
         // The moduli here are the mersenne numbers of the powers 245, 247, 248, 249 and 251 which are the same
         // as (256 - 11), (256 - 9), (256 - 8), (256 - 7), and (256 - 5). Therefore, we make sure the test only
@@ -452,7 +452,7 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
 
         uint768 memory a = uint768(a0, a1, a2);
         uint512 memory b = uint512(b0, b1);
-        uint1280 memory solR = Uint1024.mul728x512In1240(a, b);
+        uint1280 memory solR = Uint1024.mul728x512In1240Unsafe(a, b);
         console2.log("solRes:", solR._0, solR._1, solR._2);
         console2.log("highest sol bits: ", solR._3, solR._4);
 
