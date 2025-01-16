@@ -1,5 +1,115 @@
 # Uint1024
-[Git Source](https://github.com/thrackle-io/uint1024/blob/7f397ac7b73e1acb4d733100a2fcd10c88ca7c79/src/Uint1024.sol)
+[Git Source](https://github.com/thrackle-io/uint1024/blob/01acffe4bcc7c2f2309c968fddbd0b0aec7abb41/src/Uint1024.sol)
+
+
+## State Variables
+### M1
+*The following are constants for the multiplication algorithm *B from Knuth. All Mn represent a
+modulus which are the mersenne numbers of the powers 245, 247, 248, 249, and 251. The Cij are also
+precomputed where Cij is the inverse multiplicative of Mi modulo Mj.*
+
+
+```solidity
+uint256 constant M1 = 56539106072908298546665520023773392506479484700019806659891398441363832831;
+```
+
+
+### M2
+
+```solidity
+uint256 constant M2 = 226156424291633194186662080095093570025917938800079226639565593765455331327;
+```
+
+
+### M3
+
+```solidity
+uint256 constant M3 = 452312848583266388373324160190187140051835877600158453279131187530910662655;
+```
+
+
+### M4
+
+```solidity
+uint256 constant M4 = 904625697166532776746648320380374280103671755200316906558262375061821325311;
+```
+
+
+### M5
+
+```solidity
+uint256 constant M5 = 3618502788666131106986593281521497120414687020801267626233049500247285301247;
+```
+
+
+### C12
+
+```solidity
+uint256 constant C12 = 75385474763877731395554026698364523341972646266693075546521864588485110441;
+```
+
+
+### C13
+
+```solidity
+uint256 constant C13 = 323080606130904563123802971564419385751311341142970323770807991093507616181;
+```
+
+
+### C14
+
+```solidity
+uint256 constant C14 = 60308379811102185116443221358691618673578117013354460437217491670788088353;
+```
+
+
+### C15
+
+```solidity
+uint256 constant C15 = 3503629684264031706764796669409703561036442988394878177781206658969593704381;
+```
+
+
+### C23
+
+```solidity
+uint256 constant C23 = 452312848583266388373324160190187140051835877600158453279131187530910662653;
+```
+
+
+### C24
+
+```solidity
+uint256 constant C24 = 301541899055510925582216106793458093367890585066772302186087458353940441769;
+```
+
+
+### C25
+
+```solidity
+uint256 constant C25 = 3136035750177313626055047510651964171026062084694431942735309566880980594413;
+```
+
+
+### C34
+
+```solidity
+uint256 constant C34 = 904625697166532776746648320380374280103671755200316906558262375061821325309;
+```
+
+
+### C35
+
+```solidity
+uint256 constant C35 = 2584644849047236504990423772515355086010490729143762590166463928748060929461;
+```
+
+
+### C45
+
+```solidity
+uint256 constant C45 = 1206167596222043702328864427173832373471562340267089208744349833415761767081;
+```
 
 
 ## Functions
@@ -195,7 +305,40 @@ function mul768x256In1024(uint256 a0, uint256 a1, uint256 a2, uint256 b)
 |`r3`|`uint256`|The highest bits of the result|
 
 
+### mul728x512In1240Unsafe
+
+a uses the type uint768 for convinience and gas efficieny. However a._2 can only be as large as 216 bits. Same goes for
+for the result r which uses a type uint1280, but where r._4 can only be as large as 216 bits.
+
+*Calculates the product of a uint728 and uint512. The result is a uint1240. Use modular multiplication algorithm from Knuth*
+
+
+```solidity
+function mul728x512In1240Unsafe(uint768 memory a, uint512 memory b) internal pure returns (uint1280 memory r);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a`|`uint768`|A uint 728 number representing one of the factors|
+|`b`|`uint512`|A uint512 representing the second factor|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`r`|`uint1280`|The result of a*b as a uint1240|
+
+
 ### mul768x256In1024
+
+w5*(m4 + 1)
+w5*m4 + w4
+(m3 + 1)*(w4*m4 + w4) + w3
+w3 + m3*(w4*m4 + w4)
+(m2 + 1)*(w3 + m3*(w4*m4 + w4)) + w2
+m2*(w3 + m3*(w4*m4 + w4)) + w2
+(m1 + 1)*(m2*(w3 + m3*(w4*m4 + w4)) + w2) + w1
 
 Calculates the product of a uint768 and uint256. The result is a uint1024.
 
@@ -463,18 +606,15 @@ function div768x512(uint768 memory a, uint512 memory b) internal pure returns (u
 |`result`|`uint512`|uint512 value|
 
 
-### _aproxDiv768x512
+### _approxDiv768x512
 
 this is a private helper function. It also returns some helper values to make the division exact.
 
-*Calculates the aproximation of the division of a 768-bit dividend by a 512-bit divisor. The result will be a uint512.*
+*Calculates the approximation of the division of a 768-bit dividend by a 512-bit divisor. The result will be a uint512.*
 
 
 ```solidity
-function _aproxDiv768x512(uint768 memory a, uint512 memory b)
-    private
-    pure
-    returns (uint512 memory aproxResult, uint256 bMod2N);
+function _approxDiv768x512(uint768 memory a, uint512 memory b) private pure returns (uint512 memory approxResult);
 ```
 **Parameters**
 
@@ -487,8 +627,7 @@ function _aproxDiv768x512(uint768 memory a, uint512 memory b)
 
 |Name|Type|Description|
 |----|----|-----------|
-|`aproxResult`|`uint512`|the approximation of a/b|
-|`bMod2N`|`uint256`|the remainder of b/2^n where n is the number of bits of the most significant b's word|
+|`approxResult`|`uint512`|the approximation of a/b|
 
 
 ### getShiftedBitsDiv768x512
@@ -502,7 +641,7 @@ this is a private helper function.
 function getShiftedBitsDiv768x512(uint768 memory a, uint512 memory b)
     private
     pure
-    returns (uint256 bShifted, uint256 bMod2N, uint768 memory aShifted);
+    returns (uint256 bShifted, uint768 memory aShifted);
 ```
 **Parameters**
 
@@ -516,8 +655,126 @@ function getShiftedBitsDiv768x512(uint768 memory a, uint512 memory b)
 |Name|Type|Description|
 |----|----|-----------|
 |`bShifted`|`uint256`|the denominator shifted to the right by n bits|
-|`bMod2N`|`uint256`|the remainder of b / 2**n|
 |`aShifted`|`uint768`|the numerator shifted to the right by n bits|
+
+
+### div1024x512
+
+we find the amount of bits we need to shift in the higher bits of the denominator for it to be 0
+d = 2**n;
+if b = c * d + e, where e = k * (c * d) then b = c * d * ( 1 + e / (c * d))
+if b = c * d * ( 1 + e / (c * d)) then a / b = (( a / d) / c) / (1 + e / (c * d)) where e / (c * d) is neglegibly small
+making the whole term close to 1 and therefore an unnecessary step which yields a final computation of a / b = (a / d) / c
+a / d
+
+*Calculates the division of a 1024-bit dividend by a 512-bit divisor. The result will be a uint512.*
+
+
+```solidity
+function div1024x512(uint1024 memory a, uint512 memory b) internal pure returns (uint768 memory result);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a`|`uint1024`|A uint1024 representing the numerator|
+|`b`|`uint512`|A uint512 representing the denominator|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`result`|`uint768`|uint768 value|
+
+
+### evaluateDiv1024Accuracy
+
+*evaluates the accuracy of the current result of the division 1024x512, and tries to adjust the result
+to make it exact through recursion.*
+
+
+```solidity
+function evaluateDiv1024Accuracy(
+    uint256 condition0,
+    uint256 condition1,
+    uint256 condition2,
+    uint256 condition3,
+    uint256 condition4,
+    uint1024 memory a,
+    uint512 memory b,
+    uint768 memory _result
+) private pure returns (uint768 memory result);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`condition0`|`uint256`|the least significant word of the condition being evaluated|
+|`condition1`|`uint256`|the second least significant word of the condition being evaluated|
+|`condition2`|`uint256`|the third least significant word of the condition being evaluated|
+|`condition3`|`uint256`|the second most significant word of the condition being evaluated|
+|`condition4`|`uint256`|the most significant word of the condition being evaluated|
+|`a`|`uint1024`|the 1024 numerator|
+|`b`|`uint512`|the 512 denominator|
+|`_result`|`uint768`|the current result of the division|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`result`|`uint768`|the adjusted result|
+
+
+### _approxDiv1024x512
+
+this is a private helper function
+
+*Calculates the approximation of the division of a 1024-bit dividend by a 512-bit divisor. The result will be a uint768.*
+
+
+```solidity
+function _approxDiv1024x512(uint1024 memory a, uint512 memory b) private pure returns (uint768 memory approxResult);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a`|`uint1024`|A uint1024 representing the numerator|
+|`b`|`uint512`|A uint512 representing the denominator|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`approxResult`|`uint768`|the approximation of a/b|
+
+
+### getShiftedBitsDiv1024x512
+
+this is a private helper function.
+
+*returns a and b shifted to the right by the amount of bits necessary to make b a uint256 value*
+
+
+```solidity
+function getShiftedBitsDiv1024x512(uint1024 memory a, uint512 memory b)
+    private
+    pure
+    returns (uint256 bShifted, uint1024 memory aShifted);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a`|`uint1024`|A uint1024 representing the numerator|
+|`b`|`uint512`|A uint512 representing the denominator|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`bShifted`|`uint256`|the denominator shifted to the right by n bits|
+|`aShifted`|`uint1024`|the numerator shifted to the right by n bits|
 
 
 ### div1024x256
@@ -613,6 +870,63 @@ function div768ByPowerOf2(uint256 a0, uint256 a1, uint256 a2, uint8 n)
 |`r1`|`uint256`|The middle bits of the result|
 |`r2`|`uint256`|The higher bits of the result|
 |`remainder`|`uint256`|of the division|
+
+
+### div1024ByPowerOf2
+
+*Calculates the division of a 768-bit unsigned integer by a denominator which is
+a power of 2 less than 256.*
+
+
+```solidity
+function div1024ByPowerOf2(uint256 a0, uint256 a1, uint256 a2, uint256 a3, uint8 n)
+    internal
+    pure
+    returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3, uint256 remainder);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a0`|`uint256`|A uint256 representing the low bits of the numerator|
+|`a1`|`uint256`|A uint256 representing the middle-lower bits of the numerator|
+|`a2`|`uint256`|A uint256 representing the middle-higher bits of the numerator|
+|`a3`|`uint256`|A uint256 representing the high bits of the numerator|
+|`n`|`uint8`|the power of 2 that the division will be carried out by (demominator = 2**n).|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`r0`|`uint256`|The lower bits of the result|
+|`r1`|`uint256`|The middle-lower bits of the result|
+|`r2`|`uint256`|The middle-higher bits of the result|
+|`r3`|`uint256`|The higher bits of the result|
+|`remainder`|`uint256`|of the division|
+
+
+### div1024ByPowerOf2
+
+*Calculates the division of a 1024-bit unsigned integer by a denominator which is
+a power of 2 less than 256.*
+
+
+```solidity
+function div1024ByPowerOf2(uint1024 memory a, uint8 n) internal pure returns (uint1024 memory r, uint256 rem);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a`|`uint1024`|A uint1024 representing the low bits of the numerator|
+|`n`|`uint8`|the power of 2 that the division will be carried out by (demominator = 2**n).|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`r`|`uint1024`|The result of the division|
+|`rem`|`uint256`|The remainder of the division|
 
 
 ### div768ByPowerOf2
@@ -987,6 +1301,37 @@ function lt1024(uint256 a0, uint256 a1, uint256 a2, uint256 a3, uint256 b0, uint
 |`res`|`bool`|Returns true if there would be an underflow/negative result|
 
 
+### gt1024
+
+*Checks the a > b where a and b are 1024 bits*
+
+
+```solidity
+function gt1024(uint256 a0, uint256 a1, uint256 a2, uint256 a3, uint256 b0, uint256 b1, uint256 b2, uint256 b3)
+    internal
+    pure
+    returns (bool res);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a0`|`uint256`|A uint256 representing the lower bits of a|
+|`a1`|`uint256`|A uint256 representing the high bits of a|
+|`a2`|`uint256`|A uint256 representing the higher bits of a|
+|`a3`|`uint256`|A uint256 representing the highest bits of a|
+|`b0`|`uint256`|A uint256 representing the lower bits of b|
+|`b1`|`uint256`|A uint256 representing the high bits of b|
+|`b2`|`uint256`|A uint256 representing the higher bits of b|
+|`b3`|`uint256`|A uint256 representing the highest bits of b|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`res`|`bool`|Returns true if there would be an underflow/negative result|
+
+
 ### lt1024
 
 Checks if the left opperand is less than the right opperand
@@ -1007,6 +1352,28 @@ function lt1024(uint1024 memory a, uint1024 memory b) internal pure returns (boo
 |Name|Type|Description|
 |----|----|-----------|
 |`<none>`|`bool`|Returns true if there would be an underflow/negative result|
+
+
+### gt1024
+
+Checks if the left opperand is greater than the right opperand
+
+
+```solidity
+function gt1024(uint1024 memory a, uint1024 memory b) internal pure returns (bool);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a`|`uint1024`|A uint1024 representing the left operand|
+|`b`|`uint1024`|A uint1024 representing the right operand|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`<none>`|`bool`|Returns true a > b|
 
 
 ### add1024x1024
@@ -1167,5 +1534,67 @@ function _helperSqrt1024(uint1024 memory a) private pure returns (uint256 s0, ui
 |`s0`|`uint256`|the lower bits of the square root of normalized *a*|
 |`s1`|`uint256`|the middle bits of the shifted square root of normalized *a*|
 |`s2`|`uint256`|the higher bits of the shifted square root of normalized *a*|
+
+
+### sub1024x1024Modular
+
+Calculates the difference of two Uint1024. The result is a Uint1024.
+
+
+```solidity
+function sub1024x1024Modular(
+    uint256 a0,
+    uint256 a1,
+    uint256 a2,
+    uint256 a3,
+    uint256 b0,
+    uint256 b1,
+    uint256 b2,
+    uint256 b3
+) internal pure returns (uint256 r0, uint256 r1, uint256 r2, uint256 r3);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a0`|`uint256`|A uint256 representing the lower bits of the minuend|
+|`a1`|`uint256`|A uint256 representing the high bits of the minuend|
+|`a2`|`uint256`|A uint256 representing the higher bits of the minuend|
+|`a3`|`uint256`|A uint256 representing the highest bits of the minuend|
+|`b0`|`uint256`|A uint256 representing the lower bits of the subtrahend|
+|`b1`|`uint256`|A uint256 representing the high bits of the subtrahend|
+|`b2`|`uint256`|A uint256 representing the higher bits of the subtrahend|
+|`b3`|`uint256`|A uint256 representing the highest bits of the subtrahend|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`r0`|`uint256`|The lower bits of the result|
+|`r1`|`uint256`|The high bits of the result|
+|`r2`|`uint256`|The higher bits of the result|
+|`r3`|`uint256`|The highest bits of the result|
+
+
+### sub1024x1024Modular
+
+Calculates the difference of two Uint1024. The result is a Uint1024.
+
+
+```solidity
+function sub1024x1024Modular(uint1024 memory a, uint1024 memory b) internal pure returns (uint1024 memory r);
+```
+**Parameters**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`a`|`uint1024`|A uint1024 representing the minuend|
+|`b`|`uint1024`|A uint1024 representing the subtrahend|
+
+**Returns**
+
+|Name|Type|Description|
+|----|----|-----------|
+|`r`|`uint1024`|The 1024 result|
 
 

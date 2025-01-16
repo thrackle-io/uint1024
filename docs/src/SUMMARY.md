@@ -7,3 +7,4 @@
   - [uint512](src/UintTypes.sol/struct.uint512.md)
   - [uint768](src/UintTypes.sol/struct.uint768.md)
   - [uint1024](src/UintTypes.sol/struct.uint1024.md)
+  - [uint1280](src/UintTypes.sol/struct.uint1280.md)
