@@ -11,7 +11,7 @@ library Uint1024 {
 
     /**
      * @dev The following are constants for the multiplication algorithm *B from Knuth. All Mn represent a
-     * moduli which are the mersenne numbers of the powers 245, 247, 248, 249, and 251. The Cij are also
+     * modulus which are the mersenne numbers of the powers 245, 247, 248, 249, and 251. The Cij are also
      * precomputed where Cij is the inverse multiplicative of Mi modulo Mj.
      */
     uint constant M1 = 56539106072908298546665520023773392506479484700019806659891398441363832831;
