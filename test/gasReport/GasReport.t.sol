@@ -413,7 +413,7 @@ contract GasReports is Test, GasHelpers {
         _resetGasUsed();
 
         startMeasuringGas("sub1024x1024Modular - returns uint1024");
-        Uint1024.sub1024x1024(
+        Uint1024.sub1024x1024Modular(
             10000000000000000000000000000, // a0
             10000000000000000000000000000, // a1
             10000000000000000000000000000, // a2

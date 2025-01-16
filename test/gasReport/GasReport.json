@@ -11,8 +11,8 @@
   "Sub": {
     "sub1024x1024Structs": 742,
     "sub1024x1024": 496,
-    "sub1024x1024ModularStructs": 655,
-    "sub1024x1024Modular": 496,
+    "sub1024x1024ModularStructs": 644,
+    "sub1024x1024Modular": 397,
     "sub768x768Structs": 566,
     "sub768x768": 369,
     "safeSub512x512Structs": 320,
@@ -23,7 +23,7 @@
     "mulInverseMod512Structs": 7051,
     "mulInverseMod512": 6931,
     "mul512x512In1024Structs": 991,
-    "mul728x512In1240Structs": 6003,
+    "mul728x512In1240Structs": 6038,
     "mul512x512In1024": 791,
     "mul512x512Mod512Structs": 621,
     "mul512x512Mod512": 489,
@@ -58,7 +58,7 @@
     "div512x512": 2550,
     "div1024x256": 1496,
     "div1024x256Structs": 1703,
-    "div1024x512Structs": 35480,
+    "div1024x512Structs": 35563,
     "div1024ByPowerOf2Structs": 612,
     "div1024ByPowerOf2": 352
   },

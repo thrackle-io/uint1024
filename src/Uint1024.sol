@@ -9,6 +9,11 @@ library Uint1024 {
     using Uint512 for uint256;
     using Uint512Extended for uint256;
 
+    /**
+     * @dev The following are constants for the multiplication algorithm *B from Knuth. All Mn represent a
+     * moduli which are the mersenne numbers of the powers 245, 247, 248, 249, and 251. The Cij are also
+     * precomputed where Cij is the inverse multiplicative of Mi modulo Mj.
+     */
     uint constant M1 = 56539106072908298546665520023773392506479484700019806659891398441363832831;
     uint constant M2 = 226156424291633194186662080095093570025917938800079226639565593765455331327;
     uint constant M3 = 452312848583266388373324160190187140051835877600158453279131187530910662655;
@@ -258,6 +263,7 @@ library Uint1024 {
      * @return r The result of a*b as a uint1240
      */
     function mul728x512In1240(uint768 memory a, uint512 memory b) internal pure returns (uint1280 memory r) {
+        if (a._2 > (1 << 216)) revert("a is larger than 728 bits");
         uint1280 memory w;
         {
             uint u;
@@ -578,7 +584,7 @@ library Uint1024 {
      * @return result uint512 value
      */
     function div768x512(uint768 memory a, uint512 memory b) internal pure returns (uint512 memory result) {
-        result = _aproxDiv768x512(a, b);
+        result = _approxDiv768x512(a, b);
         (uint condition0, uint condition1, uint condition2, uint condition3) = mul512x512In1024(result._0, result._1, b._0, b._1);
         if (condition3 > 0 || gt768(condition0, condition1, condition2, a._0, a._1, a._2)) {
             // slither-disable-next-line uninitialized-local // aNew1024 is initialized in the next line
@@ -592,13 +598,13 @@ library Uint1024 {
     }
 
     /**
-     * @dev Calculates the aproximation of the division of a 768-bit dividend by a 512-bit divisor. The result will be a uint512.
+     * @dev Calculates the approximation of the division of a 768-bit dividend by a 512-bit divisor. The result will be a uint512.
      * @notice this is a private helper function. It also returns some helper values to make the division exact.
      * @param a A uint768 representing the numerator
      * @param b A uint512 representing the denominator
-     * @return aproxResult the approximation of a/b
+     * @return approxResult the approximation of a/b
      */
-    function _aproxDiv768x512(uint768 memory a, uint512 memory b) private pure returns (uint512 memory aproxResult) {
+    function _approxDiv768x512(uint768 memory a, uint512 memory b) private pure returns (uint512 memory approxResult) {
         if (b._1 == 0) revert("Uint512Extended: div768x512 b1 can't be zero");
         if (a._2 == 0 && a._0.lt512(a._1, b._0, b._1)) return uint512(0, 0);
         uint bShifted;
@@ -606,8 +612,8 @@ library Uint1024 {
         if (b._1 >> 255 == 1) (bShifted, aShifted) = (b._1, uint768(a._1, a._2, 0));
         else (bShifted, aShifted) = getShiftedBitsDiv768x512(a, b);
         uint rem = aShifted._1.mod512x256(aShifted._2, bShifted);
-        aproxResult._1 = aShifted._1.divRem512x256(aShifted._2, bShifted, rem);
-        aproxResult._0 = aShifted._0.safeDiv512x256(rem, bShifted);
+        approxResult._1 = aShifted._1.divRem512x256(aShifted._2, bShifted, rem);
+        approxResult._0 = aShifted._0.safeDiv512x256(rem, bShifted);
     }
 
     /**
@@ -638,12 +644,25 @@ library Uint1024 {
      * @return result uint768 value
      */
     function div1024x512(uint1024 memory a, uint512 memory b) internal pure returns (uint768 memory result) {
-        result = _aproxDiv1024x512(a, b);
+        result = _approxDiv1024x512(a, b);
         uint1280 memory condition;
         condition = mul728x512In1240(result, b);
         result = evaluateDiv1024Accuracy(condition._0, condition._1, condition._2, condition._3, condition._4, a, b, result);
     }
 
+    /**
+     * @dev evaluates the accuracy of the current result of the division 1024x512, and tries to adjust the result
+     * to make it exact through recursion.
+     * @param condition0 the least significant word of the condition being evaluated
+     * @param condition1 the second least significant word of the condition being evaluated
+     * @param condition2 the third least significant word of the condition being evaluated
+     * @param condition3 the second most significant word of the condition being evaluated
+     * @param condition4 the most significant word of the condition being evaluated
+     * @param a the 1024 numerator
+     * @param b the 512 denominator
+     * @param _result the current result of the division
+     * @return result the adjusted result
+     */
     function evaluateDiv1024Accuracy(
         uint condition0,
         uint condition1,
@@ -666,20 +685,20 @@ library Uint1024 {
     }
 
     /**
-     * @dev Calculates the aproximation of the division of a 1024-bit dividend by a 512-bit divisor. The result will be a uint512.
-     * @notice this is a private helper function. It also returns some helper values to make the division exact.
+     * @dev Calculates the approximation of the division of a 1024-bit dividend by a 512-bit divisor. The result will be a uint768.
+     * @notice this is a private helper function
      * @param a A uint1024 representing the numerator
      * @param b A uint512 representing the denominator
-     * @return aproxResult the approximation of a/b
+     * @return approxResult the approximation of a/b
      */
-    function _aproxDiv1024x512(uint1024 memory a, uint512 memory b) private pure returns (uint768 memory aproxResult) {
+    function _approxDiv1024x512(uint1024 memory a, uint512 memory b) private pure returns (uint768 memory approxResult) {
         if (b._1 == 0) revert("Uint512Extended: div768x512 b1 can't be zero");
         if (a._3 == 0 && a._2 == 0 && a._0.lt512(a._1, b._0, b._1)) return uint768(0, 0, 0);
         uint bShifted;
         uint1024 memory aShifted;
         if (b._1 >> 255 == 1) (bShifted, aShifted) = (b._1, uint1024(a._1, a._2, a._3, 0));
         else (bShifted, aShifted) = getShiftedBitsDiv1024x512(a, b);
-        (aproxResult._0, aproxResult._1, aproxResult._2, ) = div1024x256(aShifted._0, aShifted._1, aShifted._2, aShifted._3, bShifted);
+        (approxResult._0, approxResult._1, approxResult._2, ) = div1024x256(aShifted._0, aShifted._1, aShifted._2, aShifted._3, bShifted);
     }
 
     /**

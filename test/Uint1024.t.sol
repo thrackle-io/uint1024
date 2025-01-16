@@ -437,6 +437,10 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
     }
 
     function testMul728x512In1240(uint256 a0, uint256 a1, uint a2, uint256 b0, uint256 b1) public {
+        // The max number this algorith can produce accurately is equivalent to the multiplication of its moduli.
+        // The moduli here are the mersenne numbers of the powers 245, 247, 248, 249 and 251 which are the same
+        // as (256 - 11), (256 - 9), (256 - 8), (256 - 7), and (256 - 5). Therefore, we make sure the test only
+        // runs with numbers that will produce numbers within the safe range. This is the same as saying 1 << 216
         a2 = a2 % (1 << (256 - (5 + 7 + 8 + 9 + 11)));
         string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, 0, b0, b1, 0, 0, "mul");
         bytes memory res = vm.ffi(inputs);
