@@ -17,7 +17,7 @@ contract GasReports is Test, GasHelpers {
     // The gas savings from the highly optimized yul may negate the solidity inefficiencies.
 
     // To run the gas report when compiling via-ir, comment out the previous setting of the path variable and use the path below:
-    //string path = "test/gasReport/GasReportViaIr.json";
+    // string path = "test/gasReport/GasReportViaIr.json";
 
     function testMeasureGas() public {
         _primer();
@@ -34,6 +34,8 @@ contract GasReports is Test, GasHelpers {
 
         _sub1024x1024GasUsed();
 
+        _sub1024x1024ModularGasUsed();
+
         _sub768x768GasUsed();
 
         _safeSub512x512GasUsed();
@@ -41,6 +43,8 @@ contract GasReports is Test, GasHelpers {
         _sub512x512GasUsed();
 
         _mul512x512In1024GasUsed();
+
+        _mul728x512In1240UnsafeGasUsed();
 
         _mul512x512Mod512GasUsed();
 
@@ -69,6 +73,10 @@ contract GasReports is Test, GasHelpers {
         _div512x256GasUsed();
 
         _div1024x256GasUsed();
+
+        _div1024x512GasUsed();
+
+        _div1024ByPowerOf2();
 
         _divRem512x256GasUsed();
 
@@ -392,6 +400,33 @@ contract GasReports is Test, GasHelpers {
         _writeJson(".Sub.sub1024x1024");
     }
 
+    function _sub1024x1024ModularGasUsed() internal {
+        _resetGasUsed();
+
+        uint1024 memory a = solR1024;
+        uint1024 memory b = solR1024;
+
+        startMeasuringGas("sub1024x1024Modular using structs - returns uint1024 struct");
+        Uint1024.sub1024x1024Modular(a, b);
+        gasUsed = stopMeasuringGas();
+        _writeJson(".Sub.sub1024x1024ModularStructs");
+        _resetGasUsed();
+
+        startMeasuringGas("sub1024x1024Modular - returns uint1024");
+        Uint1024.sub1024x1024Modular(
+            10000000000000000000000000000, // a0
+            10000000000000000000000000000, // a1
+            10000000000000000000000000000, // a2
+            10000000000000000000000000000, // a3
+            10000000000000000000000000000, // b0
+            10000000000000000000000000000, // b1
+            10000000000000000000000000000, // b2
+            10000000000000000000000000000 // b3
+        );
+        gasUsed = stopMeasuringGas();
+        _writeJson(".Sub.sub1024x1024Modular");
+    }
+
     function _sub768x768GasUsed() internal {
         _resetGasUsed();
 
@@ -475,6 +510,18 @@ contract GasReports is Test, GasHelpers {
         );
         gasUsed = stopMeasuringGas();
         _writeJson(".Mul.mul512x512In1024");
+    }
+
+    function _mul728x512In1240UnsafeGasUsed() internal {
+        _resetGasUsed();
+
+        uint768 memory a = solR768;
+        uint512 memory b = solR512;
+
+        startMeasuringGas("mul728x512In1240Unsafe using structs - returns uint1240 struct");
+        Uint1024.mul728x512In1240Unsafe(a, b);
+        gasUsed = stopMeasuringGas();
+        _writeJson(".Mul.mul728x512In1240UnsafeStructs");
     }
 
     function _mul512x512Mod512GasUsed() internal {
@@ -706,6 +753,42 @@ contract GasReports is Test, GasHelpers {
         );
         gasUsed = stopMeasuringGas();
         _writeJson(".Div.div1024x256");
+    }
+
+    function _div1024x512GasUsed() internal {
+        _resetGasUsed();
+
+        uint1024 memory a = solR1024;
+        uint512 memory b = solR512;
+
+        startMeasuringGas("div1024x512 using structs - returns uint768 struct");
+        Uint1024.div1024x512(a, b);
+        gasUsed = stopMeasuringGas();
+        _writeJson(".Div.div1024x512Structs");
+    }
+
+    function _div1024ByPowerOf2() internal {
+        _resetGasUsed();
+
+        uint1024 memory a = solR1024;
+        uint8 n = 100;
+
+        startMeasuringGas("div1024ByPowerOf2 using structs - returns uint1024 struct");
+        Uint1024.div1024ByPowerOf2(a, n);
+        gasUsed = stopMeasuringGas();
+        _writeJson(".Div.div1024ByPowerOf2Structs");
+        _resetGasUsed();
+
+        startMeasuringGas("div1024ByPowerOf2 - returns uint1024");
+        Uint1024.div1024ByPowerOf2(
+            10000000000000000000000000000, // a0
+            10000000000000000000000000000, // a1
+            10000000000000000000000000000, // a2
+            10000000000000000000000000000, // a3
+            100 // n
+        );
+        gasUsed = stopMeasuringGas();
+        _writeJson(".Div.div1024ByPowerOf2");
     }
 
     function _divRem512x256GasUsed() internal {

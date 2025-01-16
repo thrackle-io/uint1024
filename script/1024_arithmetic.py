@@ -17,6 +17,8 @@ def calculate_in_1024(args):
             # Setting result to int(word)**4 instead of negative result to ensure correct reversion on the solidity implementation
             result = int(utils.word)**4 
         else: result = int(a) - int(b)
+    elif(operator == "subMod"):
+        result = (int(a) - int(b)) % int(2**1024)
     elif(operator == "lt"):
         result = int(a) < int(b)
     elif(operator == "gt"):

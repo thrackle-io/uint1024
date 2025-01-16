@@ -62,6 +62,30 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
         }
     }
 
+    function testGt1024(uint a0, uint a1, uint a2, uint a3, uint b0, uint b1, uint b2, uint b3) public {
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, a3, b0, b1, b2, b3, "gt");
+        bytes memory res = vm.ffi(inputs);
+        console2.logBytes(res);
+        (pyR0, , , ) = abi.decode(res, (uint256, uint256, uint256, uint256));
+        console2.log("pyRes: ", pyR0);
+
+        solStA1024 = uint1024(a0, a1, a2, a3);
+        solStB1024 = uint1024(b0, b1, b2, b3);
+
+        bool solR = Uint1024.gt1024(a0, a1, a2, a3, b0, b1, b2, b3);
+        console2.log("solRes:", solR);
+
+        bool solRSt = Uint1024.gt1024(solStA1024, solStB1024);
+
+        if (pyR0 == 0) {
+            assertFalse(solR, "Python said No, Solidity said Aye");
+            assertFalse(solRSt, "Python said No, Solidity said Aye");
+        } else {
+            assertTrue(solR, "Python said Aye, Solidity said Nay");
+            assertTrue(solRSt, "Python said Aye, Solidity said Nay");
+        }
+    }
+
     function testGt768(uint a0, uint a1, uint a2, uint b0, uint b1, uint b2) public {
         string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, 0, b0, b1, b2, 0, "gt");
         bytes memory res = vm.ffi(inputs);
@@ -176,6 +200,25 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
         if (solR1024._3 != pyR3) revert("R3 bits different");
     }
 
+    function testDiv1024x512(uint a0, uint a1, uint a2, uint a3, uint b0, uint b1) public {
+        // a3 = a3 % (b1 >> 1);
+        b1 = bound(b1, 1, type(uint256).max);
+        uint1024 memory a = uint1024(a0, a1, a2, a3);
+        uint512 memory b = uint512(b0, b1);
+        uint768 memory solR;
+        solR = Uint1024.div1024x512(a, b);
+
+        string[] memory inputs = _buildFFI1024Arithmetic(a._0, a._1, a._2, a._3, b._0, b._1, 0, 0, "div");
+        bytes memory res = vm.ffi(inputs);
+        (pyR0, pyR1, pyR2, pyR4) = abi.decode(res, (uint, uint, uint, uint));
+        console2.log("solR", solR._0, solR._1, solR._2);
+        console2.log("pyR", pyR0, pyR1, pyR2);
+
+        if (solR._2 != pyR2) revert("R2 bits different");
+        if (solR._1 != pyR1) revert("R1 bits different");
+        if (solR._0 != pyR0) revert("R0 bits different");
+    }
+
     function testAdd768x768(uint a0, uint a1, uint a2, uint b0, uint b1, uint b2) public {
         solStA768 = uint768(a0, a1, a2);
         solStB768 = uint768(b0, b1, b2);
@@ -285,6 +328,35 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
         if (solR1024._3 != pyR3) revert("R3 bits different");
     }
 
+    function testSub1024x1024Modular(uint a0, uint a1, uint a2, uint256 a3, uint b0, uint b1, uint b2, uint256 b3) public {
+        if (b0 == 0 && b1 == 0 && b2 == 0) b0 = 1;
+
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, a3, b0, b1, b2, b3, "subMod");
+        bytes memory res = vm.ffi(inputs);
+        console2.logBytes(res);
+        (pyR0, pyR1, pyR2, pyR3, pyR4) = abi.decode(res, (uint256, uint256, uint256, uint256, uint256));
+        console2.log("pythonRes:", pyR0, pyR1, pyR2);
+        console2.log("Python highest Bits: ", pyR3, pyR4);
+
+        solStA1024 = uint1024(a0, a1, a2, a3);
+        solStB1024 = uint1024(b0, b1, b2, b3);
+
+        (solR0, solR1, solR2, solR3) = Uint1024.sub1024x1024Modular(a0, a1, a2, a3, b0, b1, b2, b3);
+        console2.log("solRes:", solR0, solR1, solR2);
+        console2.log("solRes cont:", solR3);
+
+        if (solR0 != pyR0) revert("R0 bits different");
+        if (solR1 != pyR1) revert("R1 bits different");
+        if (solR2 != pyR2) revert("R2 bits different");
+        if (solR3 != pyR3) revert("R3 bits different");
+
+        solR1024 = Uint1024.sub1024x1024Modular(solStA1024, solStB1024);
+        if (solR1024._0 != pyR0) revert("R0 bits different");
+        if (solR1024._1 != pyR1) revert("R1 bits different");
+        if (solR1024._2 != pyR2) revert("R2 bits different");
+        if (solR1024._3 != pyR3) revert("R3 bits different");
+    }
+
     function testMul512x256In768(uint a0, uint a1, uint b) public {
         solStA512 = uint512(a0, a1);
 
@@ -362,6 +434,33 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
         if (solR1024._1 != pyR1) revert("R1 bits different");
         if (solR1024._2 != pyR2) revert("R2 bits different");
         if (solR1024._3 != pyR3) revert("R2 bits different");
+    }
+
+    function testmul728x512In1240Unsafe(uint256 a0, uint256 a1, uint a2, uint256 b0, uint256 b1) public {
+        // The max number this algorith can produce accurately is equivalent to the multiplication of its moduli.
+        // The moduli here are the mersenne numbers of the powers 245, 247, 248, 249 and 251 which are the same
+        // as (256 - 11), (256 - 9), (256 - 8), (256 - 7), and (256 - 5). Therefore, we make sure the test only
+        // runs with numbers that will produce numbers within the safe range. This is the same as saying 1 << 216
+        a2 = a2 % (1 << (((256 - (5 + 7 + 8 + 9 + 11))) - 1));
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, 0, b0, b1, 0, 0, "mul");
+        bytes memory res = vm.ffi(inputs);
+        console2.logBytes(res);
+        (pyR0, pyR1, pyR2, pyR3, pyR4) = abi.decode(res, (uint256, uint256, uint256, uint256, uint256));
+        console2.log("pyRes: ", pyR0, pyR1, pyR2);
+        console2.log("Python highest Bits: ", pyR3, pyR4);
+        console2.log("Python highest Bits: ", pyR4);
+
+        uint768 memory a = uint768(a0, a1, a2);
+        uint512 memory b = uint512(b0, b1);
+        uint1280 memory solR = Uint1024.mul728x512In1240Unsafe(a, b);
+        console2.log("solRes:", solR._0, solR._1, solR._2);
+        console2.log("highest sol bits: ", solR._3, solR._4);
+
+        if (solR._0 != pyR0) revert("R0 bits different");
+        if (solR._1 != pyR1) revert("R1 bits different");
+        if (solR._2 != pyR2) revert("R2 bits different");
+        if (solR._3 != pyR3) revert("R3 bits different");
+        if (solR._4 != pyR4) revert("R3 bits different");
     }
 
     function testDivMulInverse512(uint b0, uint b1) public {
@@ -537,5 +636,32 @@ contract Uint1024FuzzTests is Test, PythonUtils, UintUtils {
             // (a - _r**2) must not be less or equal than (a - r**2)
             if (!Uint1024.lt1024(og0, og1, og2, og3, rec0, rec1, rec2, rec3)) revert("result - 1 square closer to a than result square");
         }
+    }
+
+    function testDiv1024ByPowerOf2(uint a0, uint a1, uint a2, uint a3, uint8 n) public {
+        n = (n % 255) + 1;
+
+        solStA1024 = uint1024(a0, a1, a2, a3);
+
+        (solR0, solR1, solR2, solR3, ) = Uint1024.div1024ByPowerOf2(a0, a1, a2, a3, n);
+        console2.log("solRes:", solR0, solR1, solR2);
+        console2.log("solRes high:", solR3);
+
+        string[] memory inputs = _buildFFI1024Arithmetic(a0, a1, a2, a3, 2 ** n, 0, 0, 0, "div");
+        bytes memory res = vm.ffi(inputs);
+        (pyR0, pyR1, pyR2, pyR3) = abi.decode(res, (uint, uint, uint, uint));
+        console2.log("pyRes:", pyR0, pyR1, pyR2);
+        console2.log("pyRes high:", pyR3);
+
+        if (solR0 != pyR0) revert("R0 bits different");
+        if (solR1 != pyR1) revert("R1 bits different");
+        if (solR2 != pyR2) revert("R2 bits different");
+        if (solR3 != pyR3) revert("R2 bits different");
+
+        (solR1024, ) = Uint1024.div1024ByPowerOf2(solStA1024, n);
+        if (solR1024._0 != pyR0) revert("R0 bits different struct");
+        if (solR1024._1 != pyR1) revert("R1 bits different struct");
+        if (solR1024._2 != pyR2) revert("R2 bits different struct");
+        if (solR1024._3 != pyR3) revert("R3 bits different struct");
     }
 }
