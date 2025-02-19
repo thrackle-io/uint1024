@@ -59,7 +59,7 @@ Once everything is installed, the repo is ready to use locally.
 This library is intended to be used as an import, similar to how you would import any other library.
 
 ```solidity
-// SPDX-License-Identifier: UNLICENSED
+// SPDX-License-Identifier: MIT
 pragma solidity ^0.8.24;
 
 /**
